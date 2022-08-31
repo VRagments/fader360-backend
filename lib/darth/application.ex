@@ -14,8 +14,7 @@ defmodule Darth.Application do
       DarthWeb.Endpoint,
       Darth.Scheduler,
       Darth.AssetProcessor,
-      Guardian.DB.Token.SweeperServer,
-      {Goth, name: Darth.Goth, source: Darth.Goth.source()}
+      Guardian.DB.Token.SweeperServer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -78,14 +78,3 @@ if config_env() == :prod do
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
   config :swoosh, :api_client, Swoosh.ApiClient.Hackney
 end
-
-config :darth,
-  goth_credentials:
-    System.get_env("GOTH_CREDENTIALS") ||
-      raise("""
-      Environment variable GOTH_CREDENTIALS is missing.
-      Example value: {
-        "type": "service_account",
-        "project_id": "fader- ...
-      }
-      """)
