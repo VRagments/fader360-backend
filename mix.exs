@@ -7,6 +7,7 @@ defmodule Darth.MixProject do
       version: "0.1.0",
       elixir: "~> 1.13.4",
       elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -52,8 +53,6 @@ defmodule Darth.MixProject do
       {:timex, "~> 3.7"},
       {:sweet_xml, "~> 0.7"},
       {:ex_machina, "~> 2.7", only: [:dev, :test]},
-      {:guardian, "~> 2.2"},
-      {:guardian_db, "~> 2.1"},
       {:quantum, "~> 3.5"},
       {:scrivener_ecto, "~> 2.7"},
       {:stripity_stripe, "~> 2.15"},

@@ -23,12 +23,6 @@ defmodule Darth.Feature do
     |> verify_limits(feature, user)
   end
 
-  def enabled?(%Plug.Conn{} = conn, feature) do
-    conn
-    |> Guardian.Plug.current_resource()
-    |> enabled?(feature)
-  end
-
   def enabled?(nil, feature) do
     feature
     |> default()
@@ -48,12 +42,6 @@ defmodule Darth.Feature do
     |> Map.get(:metadata, %{})
     |> get_in(["features", feature])
     |> value(feature)
-  end
-
-  def limit(%Plug.Conn{} = conn, feature) do
-    conn
-    |> Guardian.Plug.current_resource()
-    |> limit(feature)
   end
 
   def limit(nil, feature) do

@@ -4,7 +4,7 @@ defmodule Darth.Model.User do
   use Darth.Model
 
   alias Darth.{AccountPlan}
-  alias Darth.Model.{AssetLease, Project, EmailVerification, PasswordReset}
+  alias Darth.Model.{AssetLease, Project, User}
 
   schema "users" do
     field(:email, :string)
@@ -22,10 +22,9 @@ defmodule Darth.Model.User do
     field(:metadata, :map)
     field(:account_generation, :integer)
     field(:account_plan, :string)
+    field(:confirmed_at, :naive_datetime)
 
     has_many(:projects, Project)
-    has_many(:email_verifications, EmailVerification)
-    has_many(:password_resets, PasswordReset)
 
     many_to_many(:asset_leases, AssetLease,
       join_through: "users_asset_leases",
@@ -36,6 +35,9 @@ defmodule Darth.Model.User do
 
     timestamps()
   end
+
+  @pw_min_len Application.get_env(:darth, :user_password_min_len, 10)
+  @pw_max_len Application.get_env(:darth, :user_password_max_len, 100)
 
   def search_attributes do
     ~w(
@@ -51,9 +53,6 @@ defmodule Darth.Model.User do
   @required_fields ~w(is_email_verified username email is_admin account_generation account_plan)a
 
   def changeset(model, params \\ %{}) do
-    pw_min_len = Application.get_env(:darth, :user_password_min_len, 10)
-    pw_max_len = Application.get_env(:darth, :user_password_max_len, 100)
-
     params_clean =
       params
       |> trim_string_params()
@@ -63,7 +62,7 @@ defmodule Darth.Model.User do
 
     model
     |> common_changeset(params_clean)
-    |> validate_length(:password, min: pw_min_len, max: pw_max_len)
+    |> validate_length(:password, min: @pw_min_len, max: @pw_max_len)
     |> validate_confirmation(:password, message: "Passwords do not match")
     |> hash_password()
   end
@@ -119,10 +118,32 @@ defmodule Darth.Model.User do
     |> validate_required(@required_fields)
     |> validate_length(:username, min: 1)
     |> validate_length(:email, min: 1)
-    |> validate_format(:email, @email_regex)
+    |> validate_format(:email, @email_regex, message: "must have the @ sign and no spaces")
+    |> unsafe_validate_unique(:email, Darth.Repo)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
     |> validate_account_plan()
+  end
+
+  def email_changeset(model, attrs) do
+    model
+    |> cast(attrs, [:email])
+    |> validate_length(:email, min: 1)
+    |> validate_format(:email, @email_regex, message: "must have the @ sign and no spaces")
+    |> unsafe_validate_unique(:email, Darth.Repo)
+    |> case do
+      %{changes: %{email: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :email, "did not change")
+    end
+  end
+
+  def password_changeset(model, attrs) do
+    model
+    |> cast(attrs, [:password])
+    |> validate_confirmation(:password, message: "does not match password")
+    |> validate_length(:password, min: @pw_min_len, max: @pw_max_len)
+    |> validate_confirmation(:password, message: "Passwords do not match")
+    |> hash_password()
   end
 
   defp filter_custom_colorscheme(params) do
@@ -240,6 +261,33 @@ defmodule Darth.Model.User do
       |> put_change(:metadata, metadata1)
     else
       cset
+    end
+  end
+
+  def confirm_changeset(user) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    attr = %{confirmed_at: now, is_email_verified: true}
+    change(user, attr)
+  end
+
+  def valid_password?(%User{hashed_password: hashed_password}, password)
+      when is_binary(hashed_password) and byte_size(password) > 0 do
+    Bcrypt.verify_pass(password, hashed_password)
+  end
+
+  def valid_password?(_, _) do
+    Bcrypt.no_user_verify()
+    false
+  end
+
+  @doc """
+  Validates the current password otherwise adds an error to the changeset.
+  """
+  def validate_current_password(changeset, password) do
+    if valid_password?(changeset.data, password) do
+      changeset
+    else
+      add_error(changeset, :current_password, "is not valid")
     end
   end
 end

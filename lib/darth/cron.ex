@@ -5,7 +5,7 @@ defmodule Darth.Cron do
   import Swoosh.Email
 
   alias Darth.{AccountPlan, Controller, Mailer, Repo}
-  alias Darth.Model.{EmailVerification, PasswordReset, User}
+  alias Darth.Model.User
 
   # Ensure we've generated the last updated field for all projects
   def ensure_project_last_updated do
@@ -13,28 +13,9 @@ defmodule Darth.Cron do
     {:ok, _res} = Ecto.Adapters.SQL.query(Repo, query, [])
   end
 
-  # Tag verifications which have expired
-  def expire_email_verifications do
-    validity = Application.get_env(:darth, :email_verification_token_validity, 48)
-
-    EmailVerification
-    |> where([e], not (e.is_expired or e.is_invalid or e.is_activated) and e.inserted_at < ago(^validity, "hour"))
-    |> Repo.all()
-    |> Enum.map(&Controller.EmailVerification.expire(&1.id))
-  end
-
   def update_user_agent_database do
     UAInspector.Downloader.download()
     UAInspector.reload()
-  end
-
-  def expire_password_resets do
-    now = Timex.now()
-
-    PasswordReset
-    |> where([r], r.status == "active" and r.valid_until < ^now)
-    |> Repo.all()
-    |> Enum.map(&Controller.PasswordReset.expire(&1))
   end
 
   def fix_invalid_metadata do

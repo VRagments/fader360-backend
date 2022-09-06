@@ -21,26 +21,6 @@ config :darth, DarthWeb.Endpoint,
   pubsub_server: Darth.PubSub,
   live_view: [signing_salt: "iMX9wAB3"]
 
-config :guardian, Darth.Guardian,
-  allowed_algos: ["HS512"],
-  verify_module: Guardian.JWT,
-  ttl: {1, :day},
-  verify_issuer: true,
-  permissions: %{
-    default: [
-      :read_profile,
-      :write_profile,
-      :read_token,
-      :revoke_token
-    ]
-  }
-
-config :guardian, Guardian.DB,
-  repo: Darth.Repo,
-  schema_name: "guardian_tokens",
-  # default: 60 minutes
-  sweep_interval: 60
-
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

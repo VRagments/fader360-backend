@@ -13,8 +13,7 @@ defmodule Darth.Application do
       {Phoenix.PubSub, name: Darth.PubSub},
       DarthWeb.Endpoint,
       Darth.Scheduler,
-      Darth.AssetProcessor,
-      Guardian.DB.Token.SweeperServer
+      Darth.AssetProcessor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

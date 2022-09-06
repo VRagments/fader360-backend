@@ -4,7 +4,7 @@ defmodule Darth.Factory do
   use ExMachina.Ecto, repo: Darth.Repo
 
   alias Darth.{AccountPlan}
-  alias Darth.Model.{Asset, AssetLease, Project, ProjectCategory, User, PasswordReset, EmailVerification}
+  alias Darth.Model.{Asset, AssetLease, Project, ProjectCategory, User}
 
   def project_factory do
     %Project{
@@ -70,38 +70,6 @@ defmodule Darth.Factory do
       license: Enum.random(Ecto.Enum.values(AssetLease, :license)),
       valid_since: valid_since,
       valid_until: nil
-    }
-  end
-
-  def password_reset_factory do
-    status = Enum.random(Ecto.Enum.values(PasswordReset, :status) -- [:active])
-
-    valid_until =
-      case status do
-        :expired ->
-          Timex.shift(Timex.now(), days: -1)
-
-        _ ->
-          Timex.shift(Timex.now(), days: 1)
-      end
-
-    %PasswordReset{
-      token: sequence(:password_reset_token, &"secret_password_reset_token-#{&1}"),
-      status: status,
-      valid_until: valid_until
-    }
-  end
-
-  def email_verification_factory do
-    is_invalid = Enum.random([false, true])
-    is_expired = if is_invalid, do: false, else: Enum.random([false, true])
-    is_activated = if is_expired, do: false, else: Enum.random([false, true])
-
-    %EmailVerification{
-      token: sequence(:email_verification_token, &"secret_email_verification_token-#{&1}"),
-      is_expired: is_expired,
-      is_invalid: is_invalid,
-      is_activated: is_activated
     }
   end
 
