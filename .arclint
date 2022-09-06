@@ -1,0 +1,48 @@
+{
+    "linters": {
+        "chmod": {
+            "type": "chmod"
+        },
+        "filename": {
+            "type": "filename"
+        },
+        "generated": {
+            "type": "generated"
+        },
+        "json": {
+            "type": "json",
+            "include": [
+                "(^\\.arcconfig$)",
+                "(^\\.arclint$)",
+                "(^\\.arcunit$)",
+                "(\\.json$)"
+            ]
+        },
+        "merge-conflict": {
+            "type": "merge-conflict"
+        },
+        "text": {
+            "type": "text",
+            "text.max-line-length": 120,
+            "exclude": [
+                "(^deps/)",
+                "(^assets/node_modules/)",
+                "(^assets/css/)",
+                "(^rel/)",
+                "(^docs/)",
+                "(^_build/)",
+                "(^Makefile$)",
+                "(^Makefile.ci$)",
+                "(^mix\\.lock$)",
+                "(yarn\\.lock$)",
+                "(^default\\.nix$)",
+                "(^README.md$)",
+                "(priv/repo/seeds.exs)",
+                "(.*\\.heex$)"
+            ]
+        },
+        "spelling": {
+            "type": "spelling"
+        }
+    }
+}

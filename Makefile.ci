@@ -1,0 +1,24 @@
+.PHONY: setup
+setup:
+	nix-shell --run "\
+		export MIX_ENV=ci && \
+		mix local.hex --force && \
+		mix local.rebar --force && \
+		make init && \
+		mix do ecto.drop, ecto.create, ecto.migrate \
+	"
+
+.PHONY: build
+build:
+	echo 0
+
+.PHONY: lint
+lint:
+	nix-shell --run "\
+		export MIX_ENV=ci && \
+		make check-lint \
+	"
+
+.PHONY: test
+test:
+	echo 0

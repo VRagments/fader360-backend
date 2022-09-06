@@ -22,7 +22,7 @@ defmodule Darth.Model.UserNotifier do
 
     ==============================
 
-    Hi #{user.email},
+    Hi #{user.firstname} #{user.surname},
 
     You can confirm your account by visiting the URL below:
 
@@ -39,7 +39,7 @@ defmodule Darth.Model.UserNotifier do
 
     ==============================
 
-    Hi #{user.email},
+    Hi #{user.firstname} #{user.surname},
 
     You can reset your password by visiting the URL below:
 
@@ -56,7 +56,7 @@ defmodule Darth.Model.UserNotifier do
 
     ==============================
 
-    Hi #{user.email},
+    Hi #{user.firstname} #{user.surname},
 
     You can change your email by visiting the URL below:
 
