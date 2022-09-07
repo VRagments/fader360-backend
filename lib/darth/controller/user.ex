@@ -92,7 +92,7 @@ defmodule Darth.Controller.User do
   end
 
   def record_login(user) do
-    case update(user.id, %{"last_logged_in_at" => Timex.now()}) do
+    case update(user.id, %{"last_logged_in_at" => DateTime.utc_now()}) do
       {:ok, _} ->
         :ok
 

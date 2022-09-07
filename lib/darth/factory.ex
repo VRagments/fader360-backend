@@ -9,7 +9,7 @@ defmodule Darth.Factory do
   def project_factory do
     %Project{
       data: map_factory(),
-      last_updated_at: Timex.now(),
+      last_updated_at: DateTime.utc_now(),
       name: Faker.Team.name(),
       primary_asset_lease_id: nil,
       user: build(:user),
@@ -18,7 +18,7 @@ defmodule Darth.Factory do
   end
 
   def user_factory do
-    email_prefix = Timex.now() |> Timex.to_unix() |> Integer.to_string()
+    email_prefix = DateTime.utc_now() |> DateTime.to_unix() |> Integer.to_string()
     generation = Enum.random(AccountPlan.generations())
     plan = Enum.random(AccountPlan.list(generation))
     {:ok, features} = AccountPlan.details(plan, generation)

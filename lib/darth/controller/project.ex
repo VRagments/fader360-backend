@@ -58,7 +58,7 @@ defmodule Darth.Controller.Project do
     params = Map.put_new(params, "visibility", :private)
 
     project = %Project{
-      last_updated_at: Timex.now()
+      last_updated_at: DateTime.utc_now()
     }
 
     Project.changeset(project, params)

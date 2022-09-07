@@ -30,7 +30,7 @@ defmodule Darth.Controller.AssetLease do
   end
 
   def new(asset_id, license \\ :owner, valid_since \\ nil, valid_until \\ nil) do
-    valid_since = if valid_since, do: valid_since, else: Timex.now()
+    valid_since = if valid_since, do: valid_since, else: DateTime.utc_now()
 
     params = %{
       asset_id: asset_id,
@@ -307,7 +307,7 @@ defmodule Darth.Controller.AssetLease do
 
   def disable(%AssetLease{} = lease) do
     lease
-    |> AssetLease.changeset(%{valid_until: Timex.now()})
+    |> AssetLease.changeset(%{valid_until: DateTime.utc_now()})
     |> Repo.update()
   end
 
@@ -344,7 +344,7 @@ defmodule Darth.Controller.AssetLease do
   end
 
   def valid_now?(%AssetLease{valid_since: valid_since, valid_until: valid_until}) do
-    now = Timex.now()
+    now = DateTime.utc_now()
 
     DateTime.compare(valid_since, now) == :lt and
       (is_nil(valid_until) or DateTime.compare(now, valid_until) == :lt)
@@ -442,7 +442,7 @@ defmodule Darth.Controller.AssetLease do
   end
 
   def query_valid_now(query) do
-    now = Timex.now()
+    now = DateTime.utc_now()
     where(query, [al], al.valid_since < ^now and (is_nil(al.valid_until) or al.valid_until > ^now))
   end
 
