@@ -14,34 +14,18 @@ defmodule DarthWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_query_params
+  end
+
+  pipeline :api_auth do
+    plug :api
+    plug :ensure_user_login
   end
 
   scope "/", DarthWeb do
     pipe_through :browser
 
     get "/", PageController, :index
-  end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", DarthWeb do
-  #   pipe_through :api
-  # end
-
-  # Enables LiveDashboard only for development
-  #
-  # If you want to use the LiveDashboard in production, you should put
-  # it behind authentication and allow only admins to access it.
-  # If your application does not have an admins-only section yet,
-  # you can use Plug.BasicAuth to set up some basic authentication
-  # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
-
-    scope "/" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: DarthWeb.Telemetry
-    end
   end
 
   # Enables the Swoosh mailbox preview in development.
@@ -54,6 +38,23 @@ defmodule DarthWeb.Router do
 
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  # API routes
+
+  scope "/api/auth", DarthWeb do
+    pipe_through [:api]
+    get "/login", ApiAuthController, :login
+  end
+
+  scope "/api/auth", DarthWeb do
+    pipe_through [:api_auth]
+    post "/logout", ApiAuthController, :logout
+    post "/refresh", ApiAuthController, :refresh
+  end
+
+  if Application.get_env(:darth, :env, :dev) in ~w(dev)a do
+    forward "/swagger", PhoenixSwagger.Plug.SwaggerUI, otp_app: :darth, swagger_file: "swagger.json"
   end
 
   ## Authentication routes
@@ -87,5 +88,14 @@ defmodule DarthWeb.Router do
     post "/users/confirm", UserConfirmationController, :create
     get "/users/confirm/:token", UserConfirmationController, :edit
     post "/users/confirm/:token", UserConfirmationController, :update
+  end
+
+  def swagger_info do
+    %{
+      info: %{
+        version: "1.0",
+        title: "Darth Fader"
+      }
+    }
   end
 end

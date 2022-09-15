@@ -6,13 +6,6 @@ defmodule Darth.Model.UserToken do
   @hash_algorithm :sha256
   @rand_size 32
 
-  # It is very important to keep the reset password token expiry short,
-  # since someone with access to the email may take over the account.
-  @reset_password_validity_in_days 1
-  @confirm_validity_in_days 7
-  @change_email_validity_in_days 7
-  @session_validity_in_days 60
-
   schema "users_tokens" do
     field :token, :binary
     field :context, :string
@@ -22,7 +15,7 @@ defmodule Darth.Model.UserToken do
     timestamps(updated_at: false)
   end
 
-  @spec build_session_token(atom | %{:id => any, optional(any) => any}) ::
+  @spec build_token(atom | %{:id => any, optional(any) => any}, String.t()) ::
           {any,
            %Darth.Model.UserToken{
              __meta__: Ecto.Schema.Metadata.t(),
@@ -34,16 +27,18 @@ defmodule Darth.Model.UserToken do
              user: Ecto.Association.NotLoaded.t(),
              user_id: any
            }}
-  def build_session_token(user) do
+  def build_token(user, context) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    {token, %UserToken{token: token, context: "session", user_id: user.id}}
+    {token, %UserToken{token: token, context: context, user_id: user.id}}
   end
 
-  def verify_session_token_query(token) do
+  def verify_token_query(token, context) do
+    session_validity_in_days = Application.fetch_env!(:darth, :session_validity_in_days)
+
     query =
-      from token in token_and_context_query(token, "session"),
+      from token in token_and_context_query(token, context),
         join: user in assoc(token, :user),
-        where: token.inserted_at > ago(@session_validity_in_days, "day"),
+        where: token.inserted_at > ago(^session_validity_in_days, "day"),
         select: user
 
     {:ok, query}
@@ -85,17 +80,19 @@ defmodule Darth.Model.UserToken do
     end
   end
 
-  defp days_for_context("confirm"), do: @confirm_validity_in_days
-  defp days_for_context("reset_password"), do: @reset_password_validity_in_days
+  defp days_for_context("confirm"), do: Application.fetch_env!(:darth, :confirm_validity_in_days)
+  defp days_for_context("reset_password"), do: Application.fetch_env!(:darth, :reset_password_validity_in_days)
 
   def verify_change_email_token_query(token, "change:" <> _ = context) do
+    change_email_validity_in_days = Application.fetch_env!(:darth, :change_email_validity_in_days)
+
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
         hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
 
         query =
           from token in token_and_context_query(hashed_token, context),
-            where: token.inserted_at > ago(@change_email_validity_in_days, "day")
+            where: token.inserted_at > ago(^change_email_validity_in_days, "day")
 
         {:ok, query}
 

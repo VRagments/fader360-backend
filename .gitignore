@@ -33,3 +33,4 @@ npm-debug.log
 /assets/node_modules/
 
 .direnv
+priv/static/swagger.json

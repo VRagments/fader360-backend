@@ -13,7 +13,7 @@ init-web-assets: ## initialize web assets
 .PHONY: init
 init: | deps init-web-assets
 init: ## initialize configurations and dependencies
-	mix ua_inspector.download
+	mix ua_inspector.download --force
 	mix compile
 
 

@@ -18,6 +18,7 @@ config :darth, Darth.Repo,
 config :darth, DarthWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
+  url: [host: "localhost", port: 45000, scheme: "http"],
   http: [ip: {127, 0, 0, 1}, port: 45000],
   check_origin: false,
   code_reloader: true,
@@ -61,7 +62,8 @@ config :darth, DarthWeb.Endpoint,
       ~r"lib/darth_web/(live|views)/.*(ex)$",
       ~r"lib/darth_web/templates/.*(eex)$"
     ]
-  ]
+  ],
+  reloadable_compilers: [:phoenix_swagger]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

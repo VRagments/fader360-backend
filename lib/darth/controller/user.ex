@@ -315,6 +315,12 @@ defmodule Darth.Controller.User do
     if User.valid_password?(user, password), do: user
   end
 
+  def get_user_by_username_and_password(username, password)
+      when is_binary(username) and is_binary(password) do
+    user = Repo.get_by(User, username: username)
+    if User.valid_password?(user, password), do: user
+  end
+
   def get_user!(id), do: Repo.get!(User, id)
 
   def change_user_registration(%User{} = user, attrs \\ %{}) do
@@ -373,20 +379,19 @@ defmodule Darth.Controller.User do
     end
   end
 
-  ## Session
-  def generate_user_session_token(user) do
-    {token, user_token} = UserToken.build_session_token(user)
+  def generate_user_token(user, context) do
+    {token, user_token} = UserToken.build_token(user, context)
     Repo.insert!(user_token)
     token
   end
 
-  def get_user_by_session_token(token) do
-    {:ok, query} = UserToken.verify_session_token_query(token)
+  def get_user_by_token(token, context) do
+    {:ok, query} = UserToken.verify_token_query(token, context)
     Repo.one(query)
   end
 
-  def delete_session_token(token) do
-    Repo.delete_all(UserToken.token_and_context_query(token, "session"))
+  def delete_token(token, context) do
+    Repo.delete_all(UserToken.token_and_context_query(token, context))
     :ok
   end
 

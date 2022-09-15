@@ -21,9 +21,13 @@ defmodule DarthWeb do
     quote do
       use Phoenix.Controller, namespace: DarthWeb
 
+      use PhoenixSwagger
       import Plug.Conn
       import DarthWeb.Gettext
+      alias DarthWeb.FallbackController
       alias DarthWeb.Router.Helpers, as: Routes
+
+      action_fallback(FallbackController)
     end
   end
 

@@ -43,6 +43,15 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
+# App configurations
+config :darth,
+  reset_password_validity_in_days: 1,
+  confirm_validity_in_days: 7,
+  change_email_validity_in_days: 7,
+  session_validity_in_days: 60,
+  max_age_in_seconds: 60 * 60 * 24 * 60,
+  remember_me_cookie: "_darth_web_user_remember_me"
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
@@ -53,6 +62,14 @@ config :phoenix, :json_library, Jason
 
 config :ua_inspector,
   database_path: Path.join("/tmp", "darth_ua_inspector")
+
+config :darth, :phoenix_swagger,
+  swagger_files: %{
+    "priv/static/swagger.json" => [
+      router: DarthWeb.Router,
+      endpoint: DarthWeb.Endpoint
+    ]
+  }
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
