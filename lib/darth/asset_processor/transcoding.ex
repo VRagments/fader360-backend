@@ -94,7 +94,7 @@ defmodule Darth.AssetProcessor.Transcoding do
     image: "./apps/**/transcode_image.sh",
     video: "./apps/**/transcode_video.sh"
   }
-  @video_profiles Application.get_env(:darth, :transcoding_video_profiles, "720_1")
+  @video_profiles Application.compile_env(:darth, :transcoding_video_profiles, "720_1")
   defp run_asset(%{media_type: media_type} = asset) do
     norm_media_type = Controller.Asset.normalized_media_type(media_type)
 

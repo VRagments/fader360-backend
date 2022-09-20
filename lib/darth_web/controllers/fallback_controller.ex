@@ -10,25 +10,18 @@ defmodule DarthWeb.FallbackController do
     |> render(:"401", %{})
   end
 
-  def call(conn, {:error, :could_not_delete_token}) do
-    conn
-    |> put_status(:unprocessable_entity)
-    |> put_view(ErrorView)
-    |> render(:"422", %{})
-  end
-
-  def call(conn, {:error, :already_logged_in}) do
-    conn
-    |> put_status(:unprocessable_entity)
-    |> put_view(ErrorView)
-    |> render(:"422", %{})
-  end
-
   def call(conn, {:error, :not_implemented}) do
     conn
     |> put_status(:not_implemented)
     |> put_view(ErrorView)
     |> render(:"501", %{})
+  end
+
+  def call(conn, {:error, :missing_parameters}) do
+    conn
+    |> put_status(:not_acceptable)
+    |> put_view(ErrorView)
+    |> render(:"406", %{})
   end
 
   def call(conn, {:error, reason}) when is_binary(reason) or is_atom(reason) do

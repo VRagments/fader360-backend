@@ -53,7 +53,7 @@ defmodule DarthWeb.Router do
     post "/refresh", ApiAuthController, :refresh
   end
 
-  if Application.get_env(:darth, :env, :dev) in ~w(dev)a do
+  if Application.compile_env(:darth, :env, :dev) in ~w(dev)a do
     forward "/swagger", PhoenixSwagger.Plug.SwaggerUI, otp_app: :darth, swagger_file: "swagger.json"
   end
 
@@ -64,8 +64,8 @@ defmodule DarthWeb.Router do
 
     get "/users/register", UserRegistrationController, :new
     post "/users/register", UserRegistrationController, :create
-    get "/users/log_in", UserSessionController, :new
-    post "/users/log_in", UserSessionController, :create
+    get "/users/login", UserSessionController, :new
+    post "/users/logn", UserSessionController, :create
     get "/users/reset_password", UserResetPasswordController, :new
     post "/users/reset_password", UserResetPasswordController, :create
     get "/users/reset_password/:token", UserResetPasswordController, :edit
@@ -83,7 +83,7 @@ defmodule DarthWeb.Router do
   scope "/", DarthWeb do
     pipe_through [:browser]
 
-    delete "/users/log_out", UserSessionController, :delete
+    delete "/users/logout", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
     get "/users/confirm/:token", UserConfirmationController, :edit
@@ -92,9 +92,17 @@ defmodule DarthWeb.Router do
 
   def swagger_info do
     %{
+      openapi: "2.0",
       info: %{
         version: "1.0",
         title: "Darth Fader"
+      },
+      securityDefinitions: %{
+        Bearer: %{
+          type: "apiKey",
+          name: "Authorization",
+          in: "header"
+        }
       }
     }
   end

@@ -36,8 +36,8 @@ defmodule Darth.Model.User do
     timestamps()
   end
 
-  @pw_min_len Application.get_env(:darth, :user_password_min_len, 10)
-  @pw_max_len Application.get_env(:darth, :user_password_max_len, 100)
+  @pw_min_len Application.compile_env(:darth, :user_password_min_len, 10)
+  @pw_max_len Application.compile_env(:darth, :user_password_max_len, 100)
 
   def search_attributes do
     ~w(

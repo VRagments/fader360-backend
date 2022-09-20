@@ -66,20 +66,19 @@ defmodule DarthWeb.ApiAuthController do
   end
 
   def login(conn, %{"username" => username, "password" => password}) do
-    case User.get_user_by_username_and_password(username, password) do
-      %UserStruct{} = user_struct ->
-        binary_token = User.generate_user_token(user_struct, "api")
-        token = Base.encode64(binary_token)
-
-        conn
-        |> render("token.json", token: token, user: user_struct)
-
-      nil ->
+    with %UserStruct{} = user_struct <- User.get_user_by_username_and_password(username, password),
+         binary_token = User.generate_user_token(user_struct, "api"),
+         token = Base.encode64(binary_token),
+         {:ok, user_struct} <- User.record_login(user_struct) do
+      conn
+      |> render("token.json", token: token, user: user_struct)
+    else
+      _ ->
         {:error, :unauthorized}
     end
   end
 
-  def login(_conn, _params), do: {:error, "missing parameters"}
+  def login(_conn, _params), do: {:error, :missing_parameters}
   #
   # Authenticated Requests
   #
@@ -91,8 +90,8 @@ defmodule DarthWeb.ApiAuthController do
     description(~s(The used token cannot be used anymore in other API calls which require authentication.))
 
     produces("application/json")
-
     QueryParameters.authorization()
+    security([%{Bearer: []}])
 
     response(204, "Success - No Content")
     response(422, "Couldn't delete token")
@@ -111,8 +110,8 @@ defmodule DarthWeb.ApiAuthController do
     description(~s(The former token cannot be used anymore in other API calls which require authentication.))
 
     produces("application/json")
-
     QueryParameters.authorization()
+    security([%{Bearer: []}])
 
     response(200, "OK", Schema.ref(:AuthResponse))
     response(422, "Couldn't refresh token")

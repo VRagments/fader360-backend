@@ -358,8 +358,8 @@ defmodule Darth.AssetProcessor do
   defp stop_job_processor(:analyzing, pid), do: Analyzing.cancel(pid)
   defp stop_job_processor(:transcoding, pid), do: Transcoding.cancel(pid)
 
-  @parallel_analyzers Application.get_env(:darth, :parallel_analyzers, 4)
-  @parallel_transcoders Application.get_env(:darth, :parallel_transcoders, 2)
+  @parallel_analyzers Application.compile_env(:darth, :parallel_analyzers, 4)
+  @parallel_transcoders Application.compile_env(:darth, :parallel_transcoders, 2)
   defp parallel_jobs(:analyzing), do: @parallel_analyzers
   defp parallel_jobs(:transcoding), do: @parallel_transcoders
 

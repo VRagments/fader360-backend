@@ -24,7 +24,7 @@ defmodule DarthWeb.UserRegistrationController do
           "User created successfully. Please verify your email through the verification link we've sent to
                          your email address."
         )
-        |> UserAuth.log_in_user(user)
+        |> UserAuth.login_user(user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)

@@ -59,15 +59,9 @@ defmodule Darth.Controller.User do
   def update({:ok, user}, params), do: update(user, params)
 
   def update(%User{} = user, params) do
-    cset = User.changeset(user, params)
-
-    case Repo.update(cset) do
-      {:ok, _} = ok ->
-        ok
-
-      err ->
-        err
-    end
+    user
+    |> User.changeset(params)
+    |> Repo.update()
   end
 
   def update(id, params), do: id |> read() |> update(params)
@@ -93,12 +87,12 @@ defmodule Darth.Controller.User do
 
   def record_login(user) do
     case update(user.id, %{"last_logged_in_at" => DateTime.utc_now()}) do
-      {:ok, _} ->
-        :ok
+      {:ok, user} ->
+        {:ok, user}
 
       err ->
-        _ = Logger.debug(~s(Error while recording login for user #{user.id}: #{err |> inspect}))
-        :ok
+        Logger.debug(~s(Error while recording login for user #{user.id}: #{inspect(err)}))
+        err
     end
   end
 

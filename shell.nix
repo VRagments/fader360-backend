@@ -15,7 +15,7 @@ mkShell {
   name = "new_darth-shell";
   nativeBuildInputs = [
     ## erlang
-    beam.packages.erlangR25.elixir_1_13
+    beam.packages.erlangR25.elixir_1_14
     ## node
     nodejs-16_x
     (yarn.override { nodejs = nodejs-16_x; })

@@ -16,6 +16,8 @@ defmodule DarthWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  alias Darth.Controller.User
+  alias Darth.TestUtils
 
   using do
     quote do
@@ -23,12 +25,35 @@ defmodule DarthWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import DarthWeb.ConnCase
+      import Darth.TestUtils
 
       alias DarthWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint DarthWeb.Endpoint
     end
+  end
+
+  def preauth_api(conn, user \\ nil) do
+    preauth_conn(conn, user)
+  end
+
+  #
+  # INTERNAL FUNCTIONS
+  #
+
+  defp preauth_conn(conn, user) do
+    {:ok, user} = if is_nil(user), do: TestUtils.test_user(), else: user
+
+    login(conn, user)
+  end
+
+  defp login(conn, user) do
+    binary_token = User.generate_user_token(user, "api")
+    token = Base.encode64(binary_token)
+
+    conn
+    |> Plug.Conn.put_req_header("authorization", "Bearer " <> token)
   end
 
   setup tags do

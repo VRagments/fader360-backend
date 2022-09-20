@@ -27,6 +27,10 @@ refresh-db: ## re-initialize database
 run: ## run local development server
 	iex -S mix phx.server
 
+.PHONY: test
+test: ## run integration test suite
+	mix test
+
 .PHONY: check-lint
 check-lint: | check-lint-elixir check-lint-js check-lint-html
 check-lint: ## check all linting targets

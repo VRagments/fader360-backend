@@ -9,7 +9,7 @@ defmodule DarthWeb.UserAuth do
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
   # the token expiry itself in UserToken.
-  max_age_in_seconds = Application.fetch_env!(:darth, :max_age_in_seconds)
+  max_age_in_seconds = Application.compile_env!(:darth, :max_age_in_seconds)
   @remember_me_options [sign: true, max_age_in_seconds: max_age_in_seconds, same_site: "Lax"]
 
   @doc """
@@ -24,17 +24,25 @@ defmodule DarthWeb.UserAuth do
   disconnected on log out. The line can be safely removed
   if you are not using LiveView.
   """
-  def log_in_user(conn, user, params \\ %{}) do
+  def login_user(conn, user, params \\ %{}) do
     token = User.generate_user_token(user, "session")
     user_return_to = get_session(conn, :user_return_to)
-    User.record_login(user)
 
-    conn
-    |> renew_session()
-    |> put_session(:user_token, token)
-    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
-    |> maybe_write_remember_me_cookie(token, params)
-    |> redirect(to: user_return_to || signed_in_path(conn))
+    case User.record_login(user) do
+      {:ok, _user} ->
+        conn
+        |> renew_session()
+        |> put_session(:user_token, token)
+        |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
+        |> maybe_write_remember_me_cookie(token, params)
+        |> redirect(to: user_return_to || signed_in_path(conn))
+
+      _ ->
+        conn
+        |> put_flash(:error, "Unable to record the login in Database")
+        |> put_status(:unprocessable_entity)
+        |> halt()
+    end
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
@@ -71,7 +79,7 @@ defmodule DarthWeb.UserAuth do
 
   It clears all session data for safety. See renew_session.
   """
-  def log_out_user(conn) do
+  def logout_user(conn) do
     user_token = get_session(conn, :user_token)
     user_token && User.delete_token(user_token, "session")
 
@@ -104,14 +112,14 @@ defmodule DarthWeb.UserAuth do
     else
       _ ->
         conn
-        |> Plug.Conn.send_resp(422, "Not found")
+        |> Plug.Conn.send_resp(422, Jason.encode!(:unprocessable_entity))
         |> halt
     end
   end
 
   defp get_token(conn) do
     case get_req_header(conn, "authorization") do
-      [token] -> Base.decode64(token)
+      ["Bearer " <> token] -> Base.decode64(token)
       _ -> :error
     end
   end
