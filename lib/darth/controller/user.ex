@@ -41,6 +41,7 @@ defmodule Darth.Controller.User do
     defaults = %{
       "is_admin" => "false",
       "is_email_verified" => "false",
+      "mv_node" => nil,
       "account_generation" => AccountPlan.active_generation(),
       "account_plan" => AccountPlan.default()
     }
@@ -379,6 +380,12 @@ defmodule Darth.Controller.User do
     token
   end
 
+  def generate_user_token(user, token, context) do
+    {token, user_token} = UserToken.build_token(user, token, context)
+    Repo.insert!(user_token)
+    token
+  end
+
   def get_user_by_token(token, context) do
     {:ok, query} = UserToken.verify_token_query(token, context)
     Repo.one(query)
@@ -436,6 +443,16 @@ defmodule Darth.Controller.User do
     |> case do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  def get_user_token_struct(current_user) do
+    case Repo.preload(current_user, [:user_token]).user_token do
+      nil ->
+        nil
+
+      user_token ->
+        user_token
     end
   end
 

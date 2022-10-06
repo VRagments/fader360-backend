@@ -45,6 +45,27 @@ defmodule DarthWeb.UserAuth do
     end
   end
 
+  def mv_login_user(conn, user, token, params \\ %{}) do
+    token = User.generate_user_token(user, token, "session")
+    user_return_to = get_session(conn, :user_return_to)
+
+    case User.record_login(user) do
+      {:ok, _user} ->
+        conn
+        |> renew_session()
+        |> put_session(:user_token, token)
+        |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
+        |> maybe_write_remember_me_cookie(token, params)
+        |> redirect(to: user_return_to || signed_in_path(conn))
+
+      _ ->
+        conn
+        |> put_flash(:error, "Unable to record the login in Database")
+        |> put_status(:unprocessable_entity)
+        |> halt()
+    end
+  end
+
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
     put_resp_cookie(conn, Application.fetch_env!(:darth, :remember_me_cookie), token, @remember_me_options)
   end

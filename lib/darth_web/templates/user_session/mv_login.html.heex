@@ -1,0 +1,29 @@
+<.form let={f} for={@changeset} action={Routes.user_session_path(@conn, :mv_login)}>
+    <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+        <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+    <% end %>
+
+    <%= label f, :mediaverse_node %>
+    <%= text_input f, :mediaverse_node, value: @default_mv_node %>
+    <%= error_tag f, :mediaverse_node %>
+
+    <%= if @username_taken do %>
+    <%= label f, :username %>
+    <%= text_input f, :username, required: true %>
+    <%= error_tag f, :username %>
+    <% end %>
+
+    <%= label f, :email %>
+    <%= email_input f, :email, required: true %>
+    <%= error_tag f, :email %>
+
+    <%= label f, :password %>
+    <%= password_input f, :password, required: true %>
+    <%= error_tag f, :password %>
+
+    <div>
+        <%= submit "Login" %>
+    </div>
+</.form>

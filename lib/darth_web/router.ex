@@ -65,11 +65,13 @@ defmodule DarthWeb.Router do
     get "/users/register", UserRegistrationController, :new
     post "/users/register", UserRegistrationController, :create
     get "/users/login", UserSessionController, :new
-    post "/users/logn", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
-    post "/users/reset_password", UserResetPasswordController, :create
-    get "/users/reset_password/:token", UserResetPasswordController, :edit
-    put "/users/reset_password/:token", UserResetPasswordController, :update
+    post "/users/login", UserSessionController, :create
+    get "/users/mv-login", UserSessionController, :mv_login
+    post "/users/mv-login", UserSessionController, :mv_login_post
+    get "/users/reset-password", UserResetPasswordController, :new
+    post "/users/reset-password", UserResetPasswordController, :create
+    get "/users/reset-password/:token", UserResetPasswordController, :edit
+    put "/users/reset-password/:token", UserResetPasswordController, :update
   end
 
   scope "/", DarthWeb do
@@ -77,7 +79,7 @@ defmodule DarthWeb.Router do
 
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
-    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+    get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
   end
 
   scope "/", DarthWeb do

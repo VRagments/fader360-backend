@@ -17,7 +17,8 @@ defmodule Darth.Repo.Migrations.CreateUsers do
       add(:display_name, :string)
       add(:stripe_id, :string)
       add(:metadata, :map)
-      add(:confirmed_at, :naive_datetime)
+      add(:confirmed_at, :utc_datetime)
+      add(:mv_node, :string)
 
       timestamps()
     end

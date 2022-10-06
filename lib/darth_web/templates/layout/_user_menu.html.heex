@@ -3,9 +3,11 @@
     <li>
         <%= @current_user.email %>
     </li>
+    <%= if is_nil(@current_user.mv_node) do %>
     <li>
         <%= link "Settings" , to: Routes.user_settings_path(@conn, :edit) %>
     </li>
+    <% end %>
     <li>
         <%= link "Log out" , to: Routes.user_session_path(@conn, :delete), method: :delete %>
     </li>
@@ -15,6 +17,9 @@
     </li>
     <li>
         <%= link "Log in" , to: Routes.user_session_path(@conn, :new) %>
+    </li>
+    <li>
+        <%= link "Log in with MediaVerse" , to: Routes.user_session_path(@conn, :mv_login) %>
     </li>
     <% end %>
 </ul>

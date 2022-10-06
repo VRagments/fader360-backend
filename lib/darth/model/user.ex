@@ -22,7 +22,8 @@ defmodule Darth.Model.User do
     field(:metadata, :map)
     field(:account_generation, :integer)
     field(:account_plan, :string)
-    field(:confirmed_at, :naive_datetime)
+    field(:confirmed_at, :utc_datetime)
+    field(:mv_node, :string)
 
     has_many(:projects, Project)
 
@@ -49,7 +50,7 @@ defmodule Darth.Model.User do
 
   @allowed_fields ~w(is_email_verified hashed_password password password_confirmation username last_logged_in_at
                      firstname surname display_name email is_admin stripe_id metadata
-                     account_generation account_plan)a
+                     account_generation account_plan mv_node)a
   @required_fields ~w(is_email_verified username email is_admin account_generation account_plan)a
 
   def changeset(model, params \\ %{}) do
@@ -265,7 +266,7 @@ defmodule Darth.Model.User do
   end
 
   def confirm_changeset(user) do
-    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
     attr = %{confirmed_at: now, is_email_verified: true}
     change(user, attr)
   end

@@ -32,6 +32,10 @@ defmodule Darth.Model.UserToken do
     {token, %UserToken{token: token, context: context, user_id: user.id}}
   end
 
+  def build_token(user, token, context) do
+    {token, %UserToken{token: token, context: context, user_id: user.id}}
+  end
+
   def verify_token_query(token, context) do
     session_validity_in_days = Application.fetch_env!(:darth, :session_validity_in_days)
 

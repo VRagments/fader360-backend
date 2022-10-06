@@ -45,6 +45,9 @@ config :esbuild,
 
 # App configurations
 config :darth,
+  default_mv_node: "https://dashboard.mediaverse.atc.gr/dam"
+
+config :darth,
   reset_password_validity_in_days: 1,
   confirm_validity_in_days: 7,
   change_email_validity_in_days: 7,
