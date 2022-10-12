@@ -22,12 +22,6 @@ defmodule DarthWeb.Router do
     plug :ensure_user_login
   end
 
-  scope "/", DarthWeb do
-    pipe_through :browser
-
-    get "/", PageController, :index
-  end
-
   # Enables the Swoosh mailbox preview in development.
   #
   # Note that preview only shows emails that were sent by the same
@@ -76,7 +70,7 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :require_authenticated_user]
-
+    get "/", PageController, :index
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email

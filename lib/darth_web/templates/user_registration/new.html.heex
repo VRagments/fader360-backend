@@ -1,44 +1,63 @@
-<h1>Register</h1>
+<section class="h-screen">
+    <div class="container mx-auto px-6 py-12 h-full">
+        <div class="flex justify-center items-center flex-wrap h-full g-6 text-gray-800">
+            <div class="md:w-8/12 lg:w-6/12 mb-12 md:mb-0">
+                <img src={Routes.static_path(@conn, "/images/Fader_Color_20180326-182538.svg" )}
+                    class="w-full" alt="Phone image" />
+            </div>
+            <div class="md:w-8/12 lg:w-5/12 lg:ml-20">
+                <.form let={f} for={@changeset} action={Routes.user_registration_path(@conn,
+                    :create)} as={:user}>
+                    <!-- Email input -->
+                    <div class="mb-6">
+                        <%= text_input f, :surname, required: true, type: "text", autocomplete: "surname", placeholder: "Surname", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :surname %> </div>
 
-<.form let={f} for={@changeset} action={Routes.user_registration_path(@conn, :create)}>
-    <%= if @changeset.action do %>
-    <div class="alert alert-danger">
-        <p>Oops, something went wrong! Please check the errors below.</p>
+                    <div class="mb-6">
+                        <%= text_input f, :firstname, required: true, type: "text", autocomplete: "firstname", placeholder: "First Name", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :firstname %> </div>
+
+                    <div class="mb-6">
+                        <%= text_input f, :display_name, required: true, type: "text", autocomplete: "display_name", placeholder: "Display Name", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :display_name %> </div>
+
+                    <div class="mb-6">
+                        <%= text_input f, :username, required: true, type: "text", autocomplete: "username", placeholder: "Username", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :username %> </div>
+
+                    <div class="mb-6">
+                        <%= email_input f, :email, required: true, type: "email", autocomplete: "email", placeholder: "Email",  class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :email %> </div>
+
+                    <!-- Password input -->
+                    <div class="mb-6">
+                        <%= password_input f, :password, required: true, type: "password", autocomplete: "password", placeholder: "Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :password %> </div>
+
+                    <div class="mb-6">
+                        <%= password_input f, :password_confirmation, required: true, type: "password", autocomplete: "password", placeholder: "Confirm Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                    </div>
+                    <div> <%= error_tag f, :password_confirmation %> </div>
+
+                    <!-- Submit button -->
+                    <button type="submit"
+                        class="inline-block px-7 py-3 bg-blue-600 text-white font-medium text-sm leading-snug uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full"
+                        data-mdb-ripple="true" data-mdb-ripple-color="light">Register</button>
+
+                    <div
+                        class="flex items-center my-4 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
+                        <p class="text-center font-semibold mx-4 mb-0">OR</p>
+                    </div>
+                </.form>
+                <button
+                    class="inline-block px-7 py-3 bg-blue-600 text-white font-medium text-sm leading-snug uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full"><%= link "Login with MediaVerse", to: Routes.user_session_path(@conn, :mv_login)%></button>
+            </div>
+        </div>
     </div>
-    <% end %>
-    <%= label f, :surname %>
-    <%= text_input f, :surname, required: true %>
-    <%= error_tag f, :surname %>
-
-    <%= label f, :firstname %>
-    <%= text_input f, :firstname, required: true %>
-    <%= error_tag f, :firstname %>
-
-    <%= label f, :display_name %>
-    <%= text_input f, :display_name, required: true %>
-    <%= error_tag f, :display_name %>
-    <%= label f, :username %>
-    <%= text_input f, :username, required: true %>
-    <%= error_tag f, :username %>
-
-    <%= label f, :email %>
-    <%= email_input f, :email, required: true %>
-    <%= error_tag f, :email %>
-
-    <%= label f, :password %>
-    <%= password_input f, :password, required: true %>
-    <%= error_tag f, :password %>
-
-    <%= label f, :password_confirmation %>
-    <%= password_input f, :password_confirmation, required: true %>
-    <%= error_tag f, :password_confirmation %>
-
-    <div>
-        <%= submit "Register" %>
-    </div>
-</.form>
-
-<p>
-    <%= link "Log in" , to: Routes.user_session_path(@conn, :new) %> |
-    <%= link "Forgot your password?" , to: Routes.user_reset_password_path(@conn, :new) %>
-</p>
+</section>

@@ -1,6 +1,5 @@
-<section class="phx-hero">
-    <h1>
-        <%= gettext "Welcome to MediaVerse %{name}!" , name: "Fader" %>
-    </h1>
-    <p>Your Web-Based Product For 360° Storytelling</p>
-</section>
+<div>
+    <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
+</div>
+<img class="flex mx-auto" src={Routes.static_path(@conn, "/images/mv.png" )}>
+<div class="justify-center px-6 py-4"></div>

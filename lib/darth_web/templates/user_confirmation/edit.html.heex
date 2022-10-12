@@ -1,12 +1,18 @@
-<h1>Confirm account</h1>
-
-<.form let={_f} for={:user} action={Routes.user_confirmation_path(@conn, :update, @token)}>
-    <div>
-        <%= submit "Confirm my account" %>
+<div>
+    <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
+</div>
+<.form let={_f} for={:user} action={Routes.user_confirmation_path(@conn, :update, @token)} <div
+    class="max-w-xl mx-auto bg-white shadow-2xl rounded my-8">
+    <div class=" flex flex-col bg-gray-200 pt-8 pb-16">
+        <div class="text-center text-gray-600 mb-6">Confirm Account</div>
+        <div class="w-4/5 mx-auto">
+            <button
+                class="bg-indigo-600 block mx-auto text-white text-sm uppercase rounded shadow-md px-6 py-2">Confirm
+                my account</button>
+        </div>
     </div>
+    <p>
+        <%= link "Register" , to: Routes.user_registration_path(@conn, :new) %> |
+        <%= link "Log in" , to: Routes.user_session_path(@conn, :new) %>
+    </p>
 </.form>
-
-<p>
-    <%= link "Register" , to: Routes.user_registration_path(@conn, :new) %> |
-    <%= link "Log in" , to: Routes.user_session_path(@conn, :new) %>
-</p>

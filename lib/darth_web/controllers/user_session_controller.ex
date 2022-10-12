@@ -49,7 +49,6 @@ defmodule DarthWeb.UserSessionController do
     with %UserModel{} = current_user <- conn.assigns.current_user,
          %UserToken{} <- User.get_user_token_struct(current_user) do
       conn
-      |> put_flash(:info, "Logged in successfully using MediaVerse")
       |> redirect(to: "/")
     else
       _ ->
@@ -73,7 +72,6 @@ defmodule DarthWeb.UserSessionController do
          {:ok, user} <- get_user_struct(mv_user, user_params),
          false <- is_nil(user.mv_node) do
       conn
-      |> put_flash(:info, "Logged in successfully using MediaVerse")
       |> UserAuth.mv_login_user(user, mv_token)
     else
       # Databse error

@@ -1,57 +1,84 @@
-<h1>Settings</h1>
-
-<h3>Change email</h3>
-
-<.form let={f} for={@email_changeset} action={Routes.user_settings_path(@conn, :update)}
-    id="update_email">
-    <%= if @email_changeset.action do %>
-    <div class="alert alert-danger">
-        <p>Oops, something went wrong! Please check the errors below.</p>
-    </div>
-    <% end %>
-
+<div>
+    <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
+</div>
+<.form let={f} for={@email_changeset} action={Routes.user_settings_path(@conn, :update)}<div
+    class="max-w-xl mx-auto bg-white shadow-2xl rounded my-8" id="update_email">
     <%= hidden_input f, :action, name: "action" , value: "update_email" %>
-
-    <%= label f, :email %>
-    <%= email_input f, :email, required: true %>
-    <%= error_tag f, :email %>
-
-    <%= label f, :current_password, for: "current_password_for_email" %>
-    <%= password_input f, :current_password, required: true, name: "current_password" ,
-                                    id: "current_password_for_email" %>
-    <%= error_tag f, :current_password %>
-
-    <div>
-        <%= submit "Change email" %>
+    <div class=" flex flex-col bg-gray-200 pt-8 pb-16">
+        <div class="text-center text-gray-600 mb-6">Change Email</div>
+        <div class="w-4/5 mx-auto">
+            <div class="flex justify-center items-center bg-white rounded shadow-md mb-4">
+                <span class="px-3">
+                    <svg class="fill-current text-gray-500 w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path
+                            d="M18 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4c0-1.1.9-2 2-2h16zm-4.37 9.1L20 16v-2l-5.12-3.9L20 6V4l-10 8L0 4v2l5.12 4.1L0 14v2l6.37-4.9L10 14l3.63-2.9z" />
+                    </svg>
+                </span>
+                <%= email_input f, :email, required: true, type: "email", autocomplete: "email", placeholder: "New Email",  class: "w-full h-12 focus:outline-none" %>
+            </div>
+            <div> <%= error_tag f, :email %> </div>
+            <div class="flex justify-center items-center bg-white rounded shadow-md mb-4">
+                <span class="px-3">
+                    <svg class="fill-current text-gray-500 w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path
+                            d="M4 8V6a6 6 0 1 1 12 0h-3v2h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8c0-1.1.9-2 2-2h1zm5 6.73V17h2v-2.27a2 2 0 1 0-2 0zM7 6v2h6V6a3 3 0 0 0-6 0z" />
+                    </svg>
+                </span>
+                <%= password_input f, :current_password, required: true, type: "password", autocomplete: "password", placeholder: "Current Password",  class: "w-full h-12 focus:outline-none" %>
+            </div>
+            <div> <%= error_tag f, :current_password %> </div>
+            <button
+                class="bg-indigo-600 block mx-auto text-white text-sm uppercase rounded shadow-md px-6 py-2">Change
+                email</button>
+        </div>
     </div>
 </.form>
 
-<h3>Change password</h3>
-
-<.form let={f} for={@password_changeset} action={Routes.user_settings_path(@conn, :update)}
-    id="update_password">
-    <%= if @password_changeset.action do %>
-    <div class="alert alert-danger">
-        <p>Oops, something went wrong! Please check the errors below.</p>
-    </div>
-    <% end %>
+<.form let={f} for={@password_changeset} action={Routes.user_settings_path(@conn, :update)}<div
+    class="max-w-xl mx-auto bg-white shadow-2xl rounded my-8" id="update_password">
 
     <%= hidden_input f, :action, name: "action" , value: "update_password" %>
-
-    <%= label f, :password, "New password" %>
-    <%= password_input f, :password, required: true %>
-    <%= error_tag f, :password %>
-
-    <%= label f, :password_confirmation, "Confirm new password" %>
-    <%= password_input f, :password_confirmation, required: true %>
-    <%= error_tag f, :password_confirmation %>
-
-    <%= label f, :current_password, for: "current_password_for_password" %>
-    <%= password_input f, :current_password, required: true,
-                                                name: "current_password" , id: "current_password_for_password" %>
-    <%= error_tag f, :current_password %>
-
-    <div>
-        <%= submit "Change password" %>
+    <div class=" flex flex-col bg-gray-200 pt-8 pb-16">
+        <div class="text-center text-gray-600 mb-6">Change password</div>
+        <div class="w-4/5 mx-auto">
+            <div class="flex justify-center items-center bg-white rounded shadow-md mb-4">
+                <span class="px-3">
+                    <svg class="fill-current text-gray-500 w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path
+                            d="M4 8V6a6 6 0 1 1 12 0h-3v2h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8c0-1.1.9-2 2-2h1zm5 6.73V17h2v-2.27a2 2 0 1 0-2 0zM7 6v2h6V6a3 3 0 0 0-6 0z" />
+                    </svg>
+                </span>
+                <%= password_input f, :password, required: true, type: "password", autocomplete: "password", placeholder: "Password",  class: "w-full h-12 focus:outline-none" %>
+            </div>
+            <div> <%= error_tag f, :password %> </div>
+            <div class="flex justify-center items-center bg-white rounded shadow-md mb-4">
+                <span class="px-3">
+                    <svg class="fill-current text-gray-500 w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path
+                            d="M4 8V6a6 6 0 1 1 12 0h-3v2h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8c0-1.1.9-2 2-2h1zm5 6.73V17h2v-2.27a2 2 0 1 0-2 0zM7 6v2h6V6a3 3 0 0 0-6 0z" />
+                    </svg>
+                </span>
+                <%= password_input f, :password_confirmation, required: true, type: "password", autocomplete: "password", placeholder: "Password Confirmation",  class: "w-full h-12 focus:outline-none" %>
+            </div>
+            <div> <%= error_tag f, :password_confirmation %> </div>
+            <div class="flex justify-center items-center bg-white rounded shadow-md mb-4">
+                <span class="px-3">
+                    <svg class="fill-current text-gray-500 w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path
+                            d="M4 8V6a6 6 0 1 1 12 0h-3v2h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8c0-1.1.9-2 2-2h1zm5 6.73V17h2v-2.27a2 2 0 1 0-2 0zM7 6v2h6V6a3 3 0 0 0-6 0z" />
+                    </svg>
+                </span>
+                <%= password_input f, :current_password, required: true, type: "password", autocomplete: "password", placeholder: "Current Password",  class: "w-full h-12 focus:outline-none" %>
+            </div>
+            <div> <%= error_tag f, :current_password %> </div>
+            <button
+                class="bg-indigo-600 block mx-auto text-white text-sm uppercase rounded shadow-md px-6 py-2">Change
+                password</button>
+        </div>
     </div>
 </.form>

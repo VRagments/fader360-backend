@@ -38,7 +38,8 @@
                 "(^default\\.nix$)",
                 "(^README.md$)",
                 "(priv/repo/seeds.exs)",
-                "(.*\\.heex$)"
+                "(.*\\.heex$)",
+                "(priv/static/images/)"
             ]
         },
         "spelling": {

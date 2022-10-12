@@ -13,15 +13,6 @@
 </head>
 
 <body>
-    <header>
-        <section class="container">
-            <a href="https://mediaverse-project.eu/" class="phx-logo">
-                <img src={Routes.static_path(@conn, "/images/mv.png" )}
-                    alt="Phoenix Framework Logo" />
-            </a>
-        </section>
-        <%= render "_user_menu.html" , assigns %>
-    </header>
     <%= @inner_content %>
 </body>
 
