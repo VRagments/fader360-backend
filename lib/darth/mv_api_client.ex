@@ -6,10 +6,10 @@ defmodule Darth.MvApiClient do
       {"Content-type", "application/json"}
     ]
 
-    with {:ok, request_body} <- Jason.encode(%{email: email, password: password}),
+    with {:ok, request_body} <- Poison.encode(%{email: email, password: password}),
          {:ok, %{body: body}} <-
            HTTPoison.post(url, request_body, headers) do
-      Jason.decode(body)
+      Poison.decode(body)
     end
   end
 
@@ -17,12 +17,44 @@ defmodule Darth.MvApiClient do
     url = mv_node <> "/user"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
-         {:ok, response} <- Jason.decode(body) do
+         {:ok, response} <- Poison.decode(body) do
       {:ok, response}
     else
       {:ok, %{"message" => message}} -> {:error, message}
       error -> error
     end
+  end
+
+  def fetch_assets(mv_node, mv_token) do
+    url = mv_node <> "/assets"
+
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
+         {:ok, assets} when is_list(assets) <- Poison.decode(body) do
+      {:ok, assets}
+    else
+      {:ok, %{"message" => message}} ->
+        {:error, message}
+
+      error ->
+        error
+    end
+  end
+
+  def show_asset(mv_node, mv_token, key) do
+    url = mv_node <> "/assets/" <> key
+
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)) do
+      Poison.decode(body)
+    end
+  end
+
+  def download_asset(mv_node, mv_token, deeplinkkey) do
+    url = mv_node <> "/deeplink/" <> deeplinkkey <> "/download"
+
+    HTTPoison.get(url, get_headers(mv_token),
+      stream_to: self(),
+      async: :once
+    )
   end
 
   defp get_headers(mv_token) do

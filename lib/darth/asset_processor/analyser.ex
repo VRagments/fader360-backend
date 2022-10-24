@@ -1,4 +1,4 @@
-defmodule Darth.AssetProcessor.Analyzing do
+defmodule Darth.AssetProcessor.Analyser do
   use GenServer
 
   require Logger
@@ -147,7 +147,7 @@ defmodule Darth.AssetProcessor.Analyzing do
         }
       ]
 
-      Jason.encode(data)
+      Poison.encode(data)
     end
   end
 

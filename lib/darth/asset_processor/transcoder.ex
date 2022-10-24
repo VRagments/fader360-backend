@@ -1,4 +1,4 @@
-defmodule Darth.AssetProcessor.Transcoding do
+defmodule Darth.AssetProcessor.Transcoder do
   use GenServer
 
   require Logger
@@ -90,9 +90,9 @@ defmodule Darth.AssetProcessor.Transcoding do
   #
 
   @default_transcoding_scripts %{
-    audio: "./apps/**/transcode_audio.sh",
-    image: "./apps/**/transcode_image.sh",
-    video: "./apps/**/transcode_video.sh"
+    audio: "./priv/transcode_audio.sh",
+    image: "./priv/transcode_image.sh",
+    video: "./priv/transcode_video.sh"
   }
   @video_profiles Application.compile_env(:darth, :transcoding_video_profiles, "720_1")
   defp run_asset(%{media_type: media_type} = asset) do

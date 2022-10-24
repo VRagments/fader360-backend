@@ -51,7 +51,6 @@ defmodule Darth.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
-      {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:sweet_xml, "~> 0.7"},
       {:ex_machina, "~> 2.7", only: [:dev, :ci, :test]},

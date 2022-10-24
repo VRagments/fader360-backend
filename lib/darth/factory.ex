@@ -90,9 +90,9 @@ defmodule Darth.Factory do
   end
 
   defp raw_metadata() do
-    with {:ok, json_a} <- Jason.encode(map_factory()),
-         {:ok, json_p} <- Jason.encode(map_factory(1)),
-         {:ok, json_s} <- Jason.encode(map_factory()),
+    with {:ok, json_a} <- Poison.encode(map_factory()),
+         {:ok, json_p} <- Poison.encode(map_factory(1)),
+         {:ok, json_s} <- Poison.encode(map_factory()),
          do: %{analysis: json_a, plug: json_p, stat: json_s}
   end
 

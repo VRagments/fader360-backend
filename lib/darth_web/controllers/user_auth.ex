@@ -121,7 +121,10 @@ defmodule DarthWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && User.get_user_by_token(user_token, "session")
-    assign(conn, :current_user, user)
+
+    conn
+    |> assign(:current_user, user)
+    |> assign(:user_token, user_token)
   end
 
   def ensure_user_login(conn, _opts) do
@@ -133,7 +136,7 @@ defmodule DarthWeb.UserAuth do
     else
       _ ->
         conn
-        |> Plug.Conn.send_resp(422, Jason.encode!(:unprocessable_entity))
+        |> Plug.Conn.send_resp(422, Poison.encode!(:unprocessable_entity))
         |> halt
     end
   end
@@ -172,6 +175,17 @@ defmodule DarthWeb.UserAuth do
     end
   end
 
+  def redirect_if_user_is_mv_authenticated(conn, _opts) do
+    with %UserStruct{} = current_user <- conn.assigns[:current_user],
+         false <- is_nil(current_user.mv_node) do
+      conn
+      |> redirect(to: signed_in_path(conn))
+      |> halt()
+    else
+      _ -> conn
+    end
+  end
+
   @doc """
   Used for routes that require the user to be authenticated.
 
@@ -186,6 +200,18 @@ defmodule DarthWeb.UserAuth do
       |> maybe_store_return_to()
       |> redirect(to: Routes.user_session_path(conn, :new))
       |> halt()
+    end
+  end
+
+  def required_mv_authenticated_user(conn, _opts) do
+    with %UserStruct{} = current_user <- conn.assigns[:current_user],
+         false <- is_nil(current_user.mv_node) do
+      conn
+    else
+      _ ->
+        conn
+        |> redirect(to: Routes.user_session_path(conn, :mv_login))
+        |> halt()
     end
   end
 

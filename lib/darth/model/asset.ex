@@ -12,6 +12,9 @@ defmodule Darth.Model.Asset do
     field(:static_filename, :string)
     field(:static_path, :string)
     field(:static_url, :string)
+    field(:mv_asset_key, :string)
+    field(:mv_asset_deeplink_key, :string)
+    field(:mv_node, :string)
 
     # TODO convert to enum, ~w(created initialized analyzing_started analyzing_failed
     # analyzing_finished transcoding_started transcoding_failed ready)
@@ -34,7 +37,6 @@ defmodule Darth.Model.Asset do
     # plug - browser uploaded filename and media type - json string
     # stat - file stats on original file - json string
     field(:raw_metadata, :map)
-
     has_many(:asset_leases, AssetLease, on_delete: :delete_all)
 
     has_many(:projects, through: [:asset_leases, :projects])
@@ -58,7 +60,8 @@ defmodule Darth.Model.Asset do
   end
 
   @allowed_fields ~w(name media_type status attributes static_url lowres_image midres_image static_path
-                     data_filename static_filename preview_image raw_metadata squared_image thumbnail_image)a
+                     data_filename static_filename preview_image raw_metadata squared_image
+                     thumbnail_image mv_asset_key mv_asset_deeplink_key mv_node)a
 
   @required_fields ~w(name media_type status)a
 

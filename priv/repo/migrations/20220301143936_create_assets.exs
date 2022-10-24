@@ -6,6 +6,9 @@ defmodule Darth.Repo.Migrations.CreateAssets do
       add(:name, :string, null: false)
       add(:media_type, :string, null: false)
       add(:status, :string, null: false)
+      add(:mv_asset_key, :text)
+      add(:mv_asset_deeplink_key, :text)
+      add(:mv_node, :string)
 
       add(:data_filename, :text)
       add(:static_filename, :text)
@@ -22,5 +25,8 @@ defmodule Darth.Repo.Migrations.CreateAssets do
 
       timestamps()
     end
+
+    create(index("assets", [:mv_asset_key], unique: true))
+    create(index("assets", [:mv_asset_deeplink_key], unique: true))
   end
 end

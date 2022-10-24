@@ -39,7 +39,10 @@
                 "(^README.md$)",
                 "(priv/repo/seeds.exs)",
                 "(.*\\.heex$)",
-                "(priv/static/images/)"
+                "(priv/static/images/)",
+                "(priv/transcode_video.sh)",
+                "(priv/transcode_audio.sh)",
+                "(priv/transcode_image.sh)"
             ]
         },
         "spelling": {

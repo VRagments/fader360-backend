@@ -54,6 +54,7 @@ defmodule Darth.Controller.Asset do
          },
          input_file = "#{new_params["static_path"]}/#{new_params["data_filename"]}",
          {:ok, _} <- write_data_file(new_params["static_path"], input_file, params["data_path"]),
+         delete_temp_downloaded_file(params["data_path"]),
          {:ok, updated_asset} = ok <- update(asset, new_params, false, true),
          :ok <- broadcast("assets", {:asset_analyze_transcode, updated_asset.id}) do
       ok
@@ -275,6 +276,83 @@ defmodule Darth.Controller.Asset do
     end
   end
 
+  def get_asset_with_mv_asset_key(mv_asset_key) do
+    Repo.get_by(Asset, mv_asset_key: mv_asset_key)
+  end
+
+  def create_current_asset_path(asset_filename) do
+    default_asset_path = Application.get_env(:darth, :mv_asset_download_path)
+
+    case File.mkdir_p(default_asset_path) do
+      :ok ->
+        path = Path.join([default_asset_path, asset_filename])
+        {:ok, path}
+
+      {:error, _} ->
+        {:error, "Unable to create the asset path"}
+    end
+  end
+
+  def create_file(mv_asset_filename) do
+    with {:ok, path} <- create_current_asset_path(mv_asset_filename) do
+      File.open(path, [:write, :binary])
+    end
+  end
+
+  def save_file(file, response) do
+    save_file = fn response, file, download_file ->
+      response_id = response.id
+
+      receive do
+        %HTTPoison.AsyncStatus{code: _status_code, id: ^response_id} ->
+          HTTPoison.stream_next(response)
+          download_file.(response, file, download_file)
+
+        %HTTPoison.AsyncHeaders{headers: _headers, id: ^response_id} ->
+          HTTPoison.stream_next(response)
+          download_file.(response, file, download_file)
+
+        %HTTPoison.AsyncChunk{chunk: chunk, id: ^response_id} ->
+          IO.binwrite(file, chunk)
+          HTTPoison.stream_next(response)
+          download_file.(response, file, download_file)
+
+        %HTTPoison.AsyncEnd{id: ^response_id} ->
+          File.close(file)
+      end
+    end
+
+    save_file.(response, file, save_file)
+  end
+
+  def add_asset_to_database(params, mv_asset_file_path) do
+    mv_asset_key = params.mv_asset_key
+
+    case get_asset_with_mv_asset_key(mv_asset_key) do
+      nil ->
+        params = build_asset_params(params, mv_asset_file_path)
+
+        create(params)
+
+      asset_struct = %Asset{} ->
+        check_status(params, mv_asset_file_path, asset_struct)
+    end
+  end
+
+  def get_all_database_entries do
+    Repo.all(Asset)
+  end
+
+  defp delete_temp_downloaded_file(current_asset_path) do
+    case File.rm(current_asset_path) do
+      :ok ->
+        Logger.info("Deleted the temporarily downloaded file")
+
+      {:error, reason} ->
+        Logger.warning("Unable to delete the temporarily downloaded file: #{inspect(reason)}")
+    end
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
@@ -316,7 +394,7 @@ defmodule Darth.Controller.Asset do
     ~s(#{base_url}#{asset.id}/#{name})
   end
 
-  defp encode_file_plug(%{"file" => plug}), do: plug |> Map.delete(:path) |> Jason.encode()
+  defp encode_file_plug(params), do: params |> Map.delete(:path) |> Poison.encode()
 
   defp delete_repo({:ok, asset}) do
     :ok = broadcast("assets", {:asset_deleted, asset})
@@ -402,4 +480,27 @@ defmodule Darth.Controller.Asset do
   end
 
   defp regenerate(asset_id, t, sync), do: regenerate(read(asset_id), t, sync)
+
+  defp check_status(params, mv_asset_file_path, asset_struct) do
+    case asset_struct.status == "ready" do
+      true ->
+        {:ok, asset_struct}
+
+      false ->
+        delete(asset_struct)
+        params = build_asset_params(params, mv_asset_file_path)
+        create(params)
+    end
+  end
+
+  defp build_asset_params(params, mv_asset_file_path) do
+    %{
+      "name" => params.mv_asset_filename,
+      "mv_node" => params.mv_node,
+      "media_type" => params.media_type,
+      "mv_asset_key" => params.mv_asset_key,
+      "mv_asset_deeplink_key" => params.mv_asset_deeplink_key,
+      "data_path" => mv_asset_file_path
+    }
+  end
 end

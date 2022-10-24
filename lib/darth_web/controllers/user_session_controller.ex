@@ -47,6 +47,7 @@ defmodule DarthWeb.UserSessionController do
     changeset = User.change_user_registration(%UserModel{})
 
     with %UserModel{} = current_user <- conn.assigns.current_user,
+         false <- is_nil(current_user.mv_node),
          %UserToken{} <- User.get_user_token_struct(current_user) do
       conn
       |> redirect(to: "/")
@@ -83,14 +84,6 @@ defmodule DarthWeb.UserSessionController do
         |> put_flash(:info, "Provided credentials are for Fader account, login here")
         |> render("new.html", error_message: nil)
 
-      {:error, %Jason.EncodeError{message: message}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
-        error(conn, "Invalid credentials")
-
-      {:error, %Jason.DecodeError{data: data}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(data)}")
-        error(conn, "Invalid URL")
-
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
         error(conn, "Server response error")
@@ -99,6 +92,10 @@ defmodule DarthWeb.UserSessionController do
       {:ok, %{"message" => message}} ->
         Logger.info(inspect(message))
         error(conn, message)
+
+      {:error, reason} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+        error(conn, "Custom error message from MediaVerse: #{inspect(reason)}")
     end
   end
 

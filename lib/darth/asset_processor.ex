@@ -5,8 +5,8 @@ defmodule Darth.AssetProcessor do
 
   alias Darth.AssetFile
   alias Darth.AssetFile.Helpers
-  alias Darth.AssetProcessor.Analyzing
-  alias Darth.AssetProcessor.Transcoding
+  alias Darth.AssetProcessor.Analyser
+  alias Darth.AssetProcessor.Transcoder
   alias Darth.Controller
 
   @convert_wrong_json ~r/: [-]?nan/
@@ -261,7 +261,7 @@ defmodule Darth.AssetProcessor do
 
   defp apply_metadata(asset_id, json_data, asset_status) do
     with sanitized_json = Regex.replace(@convert_wrong_json, json_data, ": 0"),
-         {:ok, metadata} <- Jason.decode(sanitized_json),
+         {:ok, metadata} <- Poison.decode(sanitized_json),
          {:ok, asset} <- Controller.Asset.read(asset_id),
          {:ok, stat} <- stat_original(asset),
          {:ok, attributes} <- determine_attributes(asset.media_type, metadata, stat),
@@ -355,8 +355,8 @@ defmodule Darth.AssetProcessor do
   end
 
   defp stop_job_processor(_, nil), do: :ok
-  defp stop_job_processor(:analyzing, pid), do: Analyzing.cancel(pid)
-  defp stop_job_processor(:transcoding, pid), do: Transcoding.cancel(pid)
+  defp stop_job_processor(:analyzing, pid), do: Analyser.cancel(pid)
+  defp stop_job_processor(:transcoding, pid), do: Transcoder.cancel(pid)
 
   @parallel_analyzers Application.compile_env(:darth, :parallel_analyzers, 4)
   @parallel_transcoders Application.compile_env(:darth, :parallel_transcoders, 2)
@@ -373,8 +373,8 @@ defmodule Darth.AssetProcessor do
     end
   end
 
-  defp start_job_processor(:analyzing, asset_id), do: Analyzing.start_link(asset_id)
-  defp start_job_processor(:transcoding, asset_id), do: Transcoding.start_link(asset_id)
+  defp start_job_processor(:analyzing, asset_id), do: Analyser.start_link(asset_id)
+  defp start_job_processor(:transcoding, asset_id), do: Transcoder.start_link(asset_id)
 
   defp original_path(%{data_filename: data_filename, static_path: static_path}) do
     "#{static_path}/#{data_filename}"
@@ -400,7 +400,7 @@ defmodule Darth.AssetProcessor do
   end
 
   defp determine_raw_metadata(json_data, stat) do
-    with {:ok, json_stat} <- Jason.encode(stat), do: {:ok, %{analysis: json_data, stat: json_stat}}
+    with {:ok, json_stat} <- Poison.encode(stat), do: {:ok, %{analysis: json_data, stat: json_stat}}
   end
 
   defp delete_folder(path) do

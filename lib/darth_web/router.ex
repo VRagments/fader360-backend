@@ -60,8 +60,6 @@ defmodule DarthWeb.Router do
     post "/users/register", UserRegistrationController, :create
     get "/users/login", UserSessionController, :new
     post "/users/login", UserSessionController, :create
-    get "/users/mv-login", UserSessionController, :mv_login
-    post "/users/mv-login", UserSessionController, :mv_login_post
     get "/users/reset-password", UserResetPasswordController, :new
     post "/users/reset-password", UserResetPasswordController, :create
     get "/users/reset-password/:token", UserResetPasswordController, :edit
@@ -74,6 +72,19 @@ defmodule DarthWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
+    resources "/users/assets", AssetController, only: [:index, :show], param: "asset_id"
+  end
+
+  scope "/", DarthWeb do
+    pipe_through [:browser, :redirect_if_user_is_mv_authenticated]
+    get "/users/mv-login", UserSessionController, :mv_login
+    post "/users/mv-login", UserSessionController, :mv_login_post
+  end
+
+  scope "/", DarthWeb do
+    pipe_through [:browser, :required_mv_authenticated_user]
+    get "/users/mv-assets", MvAssetController, :index
+    post "/users/mv-assets/download/:asset_key", MvAssetController, :download_asset
   end
 
   scope "/", DarthWeb do

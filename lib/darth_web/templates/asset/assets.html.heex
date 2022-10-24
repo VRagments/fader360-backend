@@ -1,0 +1,39 @@
+<div>
+    <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
+</div>
+<div class="mt-4 px-4 py-2 max-w-xl mx-auto">
+    <%= if @assets == [] do %>
+    <div class="items-center justify-center">
+        <a href={Routes.mv_asset_path(@conn, :index)} class="text-blue-500 underline">Add from
+            MediaVerse</a>
+        <div class="text-center">
+            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl"> Upload or Add
+                assets from MediaVerse
+            </h1>
+        </div>
+    </div>
+    <% else %>
+    <div class="items-center justify-center">
+        <a href={Routes.mv_asset_path(@conn, :index)} class="text-blue-500 underline">Add from
+            MediaVerse</a>
+        <div class="text-center">
+            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl"> Assets
+            </h1>
+        </div>
+    </div>
+    <ul role="list" class="-my-5 divide-y divide-gray-200">
+        <%= for asset <- @assets do %>
+        <li class="py-4">
+            <div class="flex items-center space-x-4">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-gray-900">
+                        <%= asset.name %></p>
+                    <p class="truncate text-sm text-gray-500"><%= asset.status%>
+                    </p>
+                </div>
+            </div>
+        </li>
+        <% end %>
+    </ul>
+    <% end %>
+</div>
