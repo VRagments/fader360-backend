@@ -73,6 +73,8 @@ defmodule DarthWeb.Router do
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
     resources "/users/assets", AssetController, only: [:index, :show], param: "asset_id"
+    post "/users/asset/upload", AssetController, :upload
+    post "/users/asset/re-transcode/:asset_id", AssetController, :re_transcode_asset
   end
 
   scope "/", DarthWeb do

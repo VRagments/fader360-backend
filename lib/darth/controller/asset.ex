@@ -9,7 +9,7 @@ defmodule Darth.Controller.Asset do
   @svg_media_types ~w(image/svg image/svg+xml)s
 
   use Darth.Controller, include_crud: true
-
+  alias Darth.Controller.AssetLease
   alias Darth.Controller
 
   def model_mod(), do: Darth.Model.Asset
@@ -43,7 +43,7 @@ defmodule Darth.Controller.Asset do
     Asset.changeset(asset, params)
   end
 
-  def create(params) do
+  def create(params, is_mv_asset \\ false) do
     with {:ok, json_plug} <- encode_file_plug(params),
          {:ok, asset} <- params |> new() |> Repo.insert(),
          new_params = %{
@@ -54,7 +54,7 @@ defmodule Darth.Controller.Asset do
          },
          input_file = "#{new_params["static_path"]}/#{new_params["data_filename"]}",
          {:ok, _} <- write_data_file(new_params["static_path"], input_file, params["data_path"]),
-         delete_temp_downloaded_file(params["data_path"]),
+         delete_temp_downloaded_file(params["data_path"], is_mv_asset),
          {:ok, updated_asset} = ok <- update(asset, new_params, false, true),
          :ok <- broadcast("assets", {:asset_analyze_transcode, updated_asset.id}) do
       ok
@@ -327,29 +327,16 @@ defmodule Darth.Controller.Asset do
 
   def add_asset_to_database(params, mv_asset_file_path) do
     mv_asset_key = params.mv_asset_key
+    user = params.current_user
 
     case get_asset_with_mv_asset_key(mv_asset_key) do
       nil ->
         params = build_asset_params(params, mv_asset_file_path)
 
-        create(params)
+        create_asset_with_lease(user, params)
 
       asset_struct = %Asset{} ->
         check_status(params, mv_asset_file_path, asset_struct)
-    end
-  end
-
-  def get_all_database_entries do
-    Repo.all(Asset)
-  end
-
-  defp delete_temp_downloaded_file(current_asset_path) do
-    case File.rm(current_asset_path) do
-      :ok ->
-        Logger.info("Deleted the temporarily downloaded file")
-
-      {:error, reason} ->
-        Logger.warning("Unable to delete the temporarily downloaded file: #{inspect(reason)}")
     end
   end
 
@@ -481,18 +468,6 @@ defmodule Darth.Controller.Asset do
 
   defp regenerate(asset_id, t, sync), do: regenerate(read(asset_id), t, sync)
 
-  defp check_status(params, mv_asset_file_path, asset_struct) do
-    case asset_struct.status == "ready" do
-      true ->
-        {:ok, asset_struct}
-
-      false ->
-        delete(asset_struct)
-        params = build_asset_params(params, mv_asset_file_path)
-        create(params)
-    end
-  end
-
   defp build_asset_params(params, mv_asset_file_path) do
     %{
       "name" => params.mv_asset_filename,
@@ -502,5 +477,39 @@ defmodule Darth.Controller.Asset do
       "mv_asset_deeplink_key" => params.mv_asset_deeplink_key,
       "data_path" => mv_asset_file_path
     }
+  end
+
+  defp delete_temp_downloaded_file(current_asset_path, is_mv_asset) do
+    with true <- is_mv_asset,
+         :ok <- File.rm(current_asset_path) do
+      Logger.info("Deleted the temporarily downloaded file")
+    else
+      false ->
+        Logger.info("Skipped the file deletion as it is not a downloaded MV Asset")
+
+      {:error, reason} ->
+        Logger.warning("Unable to delete the temporarily downloaded file: #{inspect(reason)}")
+    end
+  end
+
+  defp create_asset_with_lease(user, params) do
+    with {:ok, asset_struct} <- create(params, true),
+         {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user) do
+      {:ok, asset_struct}
+    else
+      {:error, reason} -> Logger.error("Unable to add MediaVerse asset to the databse: #{reason}")
+    end
+  end
+
+  defp check_status(params, mv_asset_file_path, asset_struct) do
+    case asset_struct.status == "ready" do
+      true ->
+        {:ok, asset_struct}
+
+      false ->
+        delete(asset_struct)
+        params = build_asset_params(params, mv_asset_file_path)
+        create(params, true)
+    end
   end
 end

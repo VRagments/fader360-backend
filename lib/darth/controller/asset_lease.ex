@@ -479,7 +479,7 @@ defmodule Darth.Controller.AssetLease do
 
   defp owner_subquery do
     AssetLease
-    |> where([al], al.license == "owner")
+    |> where([al], al.license == :owner)
     |> join(:inner, [al], u in assoc(al, :users))
     |> select([al, u], %{asset_id: al.asset_id, owner_username: u.username})
   end

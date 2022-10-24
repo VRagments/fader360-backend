@@ -20,7 +20,7 @@ defmodule DarthWeb.Endpoint do
     at: "/",
     from: :darth,
     gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
+    only: ~w(assets media fonts images favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -41,7 +41,8 @@ defmodule DarthWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Phoenix.json_library()
+    json_decoder: Phoenix.json_library(),
+    length: 25_000_000
 
   plug Plug.MethodOverride
   plug Plug.Head

@@ -35,7 +35,8 @@ defmodule DarthWeb.MvAssetController do
            mv_asset_deeplink_key: Map.get(asset, "deepLinkKey"),
            mv_node: mv_node,
            mv_token: mv_token,
-           mv_asset_filename: Map.get(asset, "originalFilename")
+           mv_asset_filename: Map.get(asset, "originalFilename"),
+           current_user: conn.assigns.current_user
          },
          :ok <- Downloader.add_download_params(download_params) do
       conn
