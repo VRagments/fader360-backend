@@ -8,6 +8,7 @@ defmodule Darth.Model.UserToken do
 
   schema "users_tokens" do
     field :token, :binary
+    field :mv_token, :binary, virtual: true
     field :context, :string
     field :sent_to, :string
     belongs_to :user, User
@@ -32,8 +33,9 @@ defmodule Darth.Model.UserToken do
     {token, %UserToken{token: token, context: context, user_id: user.id}}
   end
 
-  def build_token(user, token, context) do
-    {token, %UserToken{token: token, context: context, user_id: user.id}}
+  def build_token(user, mv_token, context) do
+    token = :crypto.strong_rand_bytes(@rand_size)
+    {token, %UserToken{mv_token: mv_token, token: token, context: context, user_id: user.id}}
   end
 
   def verify_token_query(token, context) do

@@ -7,7 +7,7 @@ defmodule DarthWeb.MvAssetController do
 
   def index(conn, _params) do
     mv_node = conn.assigns.current_user.mv_node
-    mv_token = conn.assigns.user_token
+    mv_token = conn.assigns.mv_token
 
     with {:ok, assets} <- MvApiClient.fetch_assets(mv_node, mv_token) do
       conn
@@ -25,7 +25,7 @@ defmodule DarthWeb.MvAssetController do
 
   def download_asset(conn, params) do
     mv_node = conn.assigns.current_user.mv_node
-    mv_token = conn.assigns.user_token
+    mv_token = conn.assigns.mv_token
     mv_asset_key = Map.get(params, "asset_key")
 
     with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),

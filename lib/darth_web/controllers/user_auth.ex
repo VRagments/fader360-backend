@@ -33,6 +33,7 @@ defmodule DarthWeb.UserAuth do
         conn
         |> renew_session()
         |> put_session(:user_token, token)
+        |> put_session(:mv_token, nil)
         |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
         |> maybe_write_remember_me_cookie(token, params)
         |> redirect(to: user_return_to || signed_in_path(conn))
@@ -45,8 +46,8 @@ defmodule DarthWeb.UserAuth do
     end
   end
 
-  def mv_login_user(conn, user, token, params \\ %{}) do
-    token = User.generate_user_token(user, token, "session")
+  def mv_login_user(conn, user, mv_token, params \\ %{}) do
+    token = User.generate_user_token(user, mv_token, "session")
     user_return_to = get_session(conn, :user_return_to)
 
     case User.record_login(user) do
@@ -54,6 +55,7 @@ defmodule DarthWeb.UserAuth do
         conn
         |> renew_session()
         |> put_session(:user_token, token)
+        |> put_session(:mv_token, mv_token)
         |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
         |> maybe_write_remember_me_cookie(token, params)
         |> redirect(to: user_return_to || signed_in_path(conn))
@@ -119,12 +121,13 @@ defmodule DarthWeb.UserAuth do
   and remember me token.
   """
   def fetch_current_user(conn, _opts) do
-    {user_token, conn} = ensure_user_token(conn)
+    {user_token, mv_token, conn} = ensure_user_token(conn)
     user = user_token && User.get_user_by_token(user_token, "session")
 
     conn
     |> assign(:current_user, user)
     |> assign(:user_token, user_token)
+    |> assign(:mv_token, mv_token)
   end
 
   def ensure_user_login(conn, _opts) do
@@ -150,14 +153,15 @@ defmodule DarthWeb.UserAuth do
 
   defp ensure_user_token(conn) do
     if user_token = get_session(conn, :user_token) do
-      {user_token, conn}
+      mv_token = get_session(conn, :mv_token)
+      {user_token, mv_token, conn}
     else
       conn = fetch_cookies(conn, signed: [Application.fetch_env!(:darth, :remember_me_cookie)])
 
       if user_token = conn.cookies[Application.fetch_env!(:darth, :remember_me_cookie)] do
-        {user_token, put_session(conn, :user_token, user_token)}
+        {user_token, put_session(conn, :user_token, user_token), put_session(conn, :mv_token, nil)}
       else
-        {nil, conn}
+        {nil, nil, conn}
       end
     end
   end
