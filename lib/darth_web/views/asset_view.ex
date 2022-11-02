@@ -28,7 +28,7 @@ defmodule DarthWeb.AssetView do
 
   def is_video_file(media_type) do
     case Asset.normalized_media_type(media_type) do
-      :audio -> true
+      :video -> true
       _ -> false
     end
   end
