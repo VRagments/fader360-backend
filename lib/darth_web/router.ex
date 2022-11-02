@@ -75,6 +75,7 @@ defmodule DarthWeb.Router do
     resources "/users/assets", AssetController, only: [:index, :show], param: "asset_id"
     post "/users/asset/upload", AssetController, :upload
     post "/users/asset/re-transcode/:asset_id", AssetController, :re_transcode_asset
+    post "/users/asset/delete/:asset_id", AssetController, :delete_asset
   end
 
   scope "/", DarthWeb do

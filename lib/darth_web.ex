@@ -43,6 +43,7 @@ defmodule DarthWeb do
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
+      import Phoenix.Component
     end
   end
 
@@ -78,6 +79,7 @@ defmodule DarthWeb do
       import Plug.Conn
       import Phoenix.Controller
       import Phoenix.LiveView.Router
+      import Phoenix.Component
     end
   end
 

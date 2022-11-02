@@ -8,20 +8,35 @@ defmodule DarthWeb.AssetController do
   def index(conn, params) do
     user = conn.assigns.current_user
 
-    with %{entries: asset_leases} <- AssetLease.query_by_user(user.id, params) do
+    with %{entries: asset_leases} <- AssetLease.query_by_user(user.id, params, false) do
       conn
       |> render("assets.html", asset_leases: asset_leases)
     else
       {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error("Custom error message from MediaVerse: Database error while fetching assets")
+        Logger.error("Custom error message from MediaVerse: Database error while fetching assets: #{query_error}")
         error_fetch_assets(conn, query_error)
+    end
+  end
+
+  def show(conn, %{"asset_id" => asset_id}) do
+    case Asset.read(asset_id) do
+      {:ok, asset} ->
+        asset_leases = AssetLease.current_leases(asset)
+
+        conn
+        |> render("asset_detail.html", asset: asset, asset_leases: asset_leases)
+
+      {:error, :not_found} ->
+        conn
+        |> put_flash(:error, "Unable to fetch asset details")
+        |> redirect(to: Routes.asset_path(conn, :index))
     end
   end
 
   def upload(conn, params) do
     with %{} = upload <- Map.get(params, "upload"),
          %{} = media <- Map.get(upload, "media"),
-         true <- Enum.member?(["image/jpeg", "image/png", "video/mp4"], media.content_type),
+         true <- not is_nil(Asset.normalized_media_type(media.content_type)),
          params = %{
            "name" => media.filename,
            "media_type" => media.content_type,
@@ -61,6 +76,27 @@ defmodule DarthWeb.AssetController do
       error ->
         conn
         |> put_flash(:error, "Unable to start asset Re-transcoding: #{error}")
+        |> redirect(to: Routes.asset_path(conn, :index))
+    end
+  end
+
+  def delete_asset(conn, %{"asset_id" => asset_id}) do
+    current_asset_folder = Application.get_env(:darth, :asset_static_base_path) <> asset_id
+
+    with :ok <- Asset.delete(asset_id),
+         {:ok, _} <- File.rm_rf(current_asset_folder) do
+      conn
+      |> put_flash(:info, "Asset deleted successfully")
+      |> redirect(to: Routes.asset_path(conn, :index))
+    else
+      {:error, _, _} ->
+        conn
+        |> put_flash(:error, "Asset cannot be deleted")
+        |> redirect(to: Routes.asset_path(conn, :index))
+
+      {:error, _} ->
+        conn
+        |> put_flash(:error, "Asset not found")
         |> redirect(to: Routes.asset_path(conn, :index))
     end
   end
