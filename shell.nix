@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { }, ... }:
 let
   linuxPkgs = with pkgs; lib.optional stdenv.isLinux (
-    inotifyTools
+    inotify-tools
   );
   macosPkgs = with pkgs; lib.optional stdenv.isDarwin (
     with darwin.apple_sdk.frameworks; [
@@ -19,6 +19,11 @@ mkShell {
     ## node
     nodejs-16_x
     (yarn.override { nodejs = nodejs-16_x; })
+    ## ffmpeg
+    ffmpeg
+    ## tools
+    bc
+    imagemagick
     # custom pkg groups
     linuxPkgs
     macosPkgs
