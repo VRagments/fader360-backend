@@ -1,3 +1,4 @@
+        <!-- https://tailwindui.com/components/application-ui/lists/grid-lists#component-d6b6c178a9f460d37c542870139e940e -->
         <section>
             <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
         </section>
@@ -13,7 +14,7 @@
             </div>
             <% end %>
             <div class="items-center justify-center">
-                <%= form_for @conn, "/users/asset/upload", [as: :upload, multipart: true], fn f -> %>
+                <%= form_for @conn, Routes.asset_path(@conn, :upload), [as: :upload, multipart: true], fn f -> %>
                 <%= file_input f, :media, accept: "audio/*, video/*, image/*", class: "block w-full text-lg text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400", id: "large_size" %>
                 <div
                     class="my-4 before:flex-1 before:border-t before:border-white-300 before:mt-0.5 after:flex-1 after:border-t after:border-white-300 after:mt-0.5">
@@ -49,7 +50,7 @@
                             <a href={Routes.asset_path(@conn, :show, asset_lease.asset.id)}>
                                 <%= if is_audio_file(asset_lease.asset.media_type) do%>
                                 <img alt="gallery" class="block aspect-square w-full rounded-lg"
-                                    src={Routes.static_path(@conn, "/images/audio_thumbnail_image.png"
+                                    src={Routes.static_path(@conn, "/images/audio_thumbnail_image.svg"
                                     )}>
                                 <% else %>
                                 <img alt="gallery" class="block aspect-square w-full rounded-lg"
@@ -58,7 +59,7 @@
                             </a>
                             <% else %>
                             <img alt="gallery" class="block aspect-square w-full rounded-lg"
-                                src={Routes.static_path(@conn, "/images/DefaultFileImage.jpeg" )}>
+                                src={Routes.static_path(@conn, "/images/DefaultFileImage.svg" )}>
                             <% end %>
                             <div class="px-6 py-4">
                                 <div class="font-bold text-xl mb-2 w-full truncate">

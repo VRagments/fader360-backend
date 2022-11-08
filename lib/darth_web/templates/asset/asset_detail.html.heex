@@ -1,3 +1,4 @@
+        <!-- https://tailwindui.com/components/marketing/sections/content-sections#component-f6c39bd93fbb747d288f373cdbc039e3 -->
         <section>
             <%= render(DarthWeb.LayoutView, "_user_menu.html", assigns) %>
         </section>
@@ -27,17 +28,19 @@
                         class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:max-w-none lg:px-0 lg:py-20">
                         <div class="relative overflow-hidden rounded-2xl shadow-xl">
                             <%=if is_audio_file(@asset.media_type) do %>
-                            <audio class="w-full object-cover" src={@asset.static_url} width="100%"
-                                controls="">
-                            </audio>
-                            <% end %>
-                            <%=if is_image_file(@asset.media_type) do %>
-                            <img class="w-full object-cover" src={@asset.static_url} alt="">
+                            <img class="w-full object-cover"
+                                src={Routes.static_path(@conn, "/images/audio_thumbnail_image.svg"
+                                )} alt="">
+                            <audio id="media" class="w-full object-cover" width="100%"
+                                controls></audio>
                             <% end %>
                             <%=if is_video_file(@asset.media_type) do %>
-                            <video class="w-full object-cover" width="100%" controls>
-                                <source src={@asset.static_url} type={@asset.media_type}>
-                            </video>
+                            <video id="media" class="w-full object-cover" controls></video>
+                            <%end %>
+                            <div id="static_url" data-static_url={@asset.static_url}>
+                            </div>
+                            <%=if is_image_file(@asset.media_type) do %>
+                            <img class="w-full object-cover" src={@asset.static_url} alt="">
                             <% end %>
                         </div>
                     </div>
@@ -59,10 +62,14 @@
                         <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
                             <%= unless is_audio_file(@asset.media_type) do %>
                             <div class="border-t-2 border-gray-100 pt-6">
-                                <dt class="text-base font-medium text-gray-500">Dimensions</dt>
+                                <dt class="text-base font-medium text-gray-500">Width</dt>
                                 <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                                    <%=get_width(@asset.attributes)%> X
-                                    <%=get_height(@asset.attributes)%></dd>
+                                    <%=get_width(@asset.attributes)%> px</dd>
+                            </div>
+                            <div class="border-t-2 border-gray-100 pt-6">
+                                <dt class="text-base font-medium text-gray-500">Height</dt>
+                                <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                                    <%=get_height(@asset.attributes)%> px</dd>
                             </div>
                             <% end %>
 
