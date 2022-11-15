@@ -1,0 +1,37 @@
+<div class="items-center justify-center">
+    <div class="text-center">
+        <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">MediaVerse
+            Assets
+        </h1>
+    </div>
+</div>
+<div class="mt-4 px-4 py-2 max-w-xl mx-auto">
+    <ul role="list" class="-my-5 divide-y divide-gray-200">
+        <%= for mv_asset <- @mv_assets do %>
+        <li class="py-4">
+            <div class="flex items-center space-x-4">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-gray-900">
+                        <%= Map.get(mv_asset, "originalFilename")%></p>
+                    <p class="truncate text-sm text-gray-500">
+                        <%= Map.get(mv_asset, "contentType")%>
+                    </p>
+                </div>
+                <%= if MvAssetView.asset_already_added?(Map.get(mv_asset, "key")) do %>
+                <div>
+                    <a
+                        class="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50">Added</a>
+                </div>
+                <% else %>
+                <div>
+                    <button
+                        class="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50"
+                        phx-click="add_mv_asset" phx-value-ref={Map.get(mv_asset, "key"
+                        )}>Add</button>
+                </div>
+                <% end %>
+            </div>
+        </li>
+        <% end %>
+    </ul>
+</div>

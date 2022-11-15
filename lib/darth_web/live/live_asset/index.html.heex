@@ -1,0 +1,112 @@
+<section class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto">
+    <%= if User.is_mediaverse_account?(@current_user) do %>
+    <a href={Routes.live_path(@socket, DarthWeb.LiveMvAsset.Index)}
+        class="text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add
+        from
+        MediaVerse</a>
+    <div
+        class="flex items-center my-4 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
+        <p class="text-center font-semibold mx-4 mb-0">OR</p>
+    </div>
+    <% end %>
+    <div class="items-center justify-center">
+        <form id="upload-form"
+            class="block text-lg text-gray-900 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none"
+            , id="small_size" , phx-submit="save" phx-change="validate">
+            <.live_file_input upload={@uploads.media} />
+            <button type="submit"
+                class="text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                data-mdb-ripple="true" data-mdb-ripple-color="light">Upload</button>
+        </form>
+    </div>
+</section>
+<section class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
+
+    <%# render each avatar entry %>
+    <%= for entry <- @uploads.media.entries do %>
+    <article class="upload-entry">
+        <%# entry.progress will update automatically for in-flight entries %>
+        <progress value={entry.progress} max="100"> <%= entry.progress %>% </progress>
+
+        <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+        <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
+            aria-label="cancel">&times;</button>
+
+        <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
+        <%= for err <- upload_errors(@uploads.media, entry) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
+
+    </article>
+    <% end %>
+
+    <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
+    <%= for err <- upload_errors(@uploads.media) do %>
+    <p class="alert alert-danger"><%= error_to_string(err) %></p>
+    <% end %>
+
+</section>
+
+<section class="overflow-hidden text-gray-700 ">
+    <%= if @asset_leases == [] do %>
+    <div class="items-center justify-center">
+        <div class="text-center">
+            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl"> Add
+                Assets
+            </h1>
+        </div>
+    </div>
+    <% else %>
+    <div class="items-center justify-center">
+        <div class="text-center">
+            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">
+                Assets
+            </h1>
+        </div>
+    </div>
+    <div class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <div class="flex flex-wrap -m-1 md:-m-2">
+            <%= for asset_lease <- @asset_leases do %>
+            <div class="flex flex-wrap w-1/3">
+                <div class="w-full p-1 md:p-2">
+                    <%= if AssetView.is_asset_status_ready?(asset_lease.asset.status) do %>
+                    <a href={Routes.live_path(@socket, DarthWeb.LiveAsset.Detail,
+                        asset_lease.asset.id)}>
+                        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do%>
+                        <img alt="gallery" class="block aspect-square w-full rounded-lg"
+                            src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}>
+                        <% else %>
+                        <img alt="gallery" class="block aspect-square w-full rounded-lg"
+                            src={asset_lease.asset.thumbnail_image}>
+                        <% end %>
+                    </a>
+                    <% else %>
+                    <img alt="gallery" class="block aspect-square w-full rounded-lg"
+                        src={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}>
+                    <% end %>
+                    <div class="px-6 py-4">
+                        <div class="font-bold text-xl mb-2 w-full truncate">
+                            <%= asset_lease.asset.name %> </div>
+                        <%= asset_lease.asset.status %>
+                    </div>
+                    <%= if AssetView.is_asset_status_ready?(asset_lease.asset.status) do %>
+                    <div class="px-6 pt-4 pb-2">
+                        <button
+                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                            phx-click="re_transcode"
+                            phx-value-ref={asset_lease.asset.id}>Re-Transcode</button>
+                    </div>
+                    <% else %>
+                    <div class="px-6 pt-4 pb-2">
+                        <button
+                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                            phx-click="delete" phx-value-ref={asset_lease.asset.id}>Delete</button>
+                    </div>
+                    <% end %>
+                </div>
+            </div>
+            <% end %>
+        </div>
+    </div>
+    <% end %>
+</section>

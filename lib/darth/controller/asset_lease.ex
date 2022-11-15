@@ -58,10 +58,21 @@ defmodule Darth.Controller.AssetLease do
   end
 
   def create_for_user(%Asset{id: asset_id}, %User{} = user) do
-    asset_id
-    |> new()
-    |> Ecto.Changeset.put_assoc(:users, [user])
-    |> Repo.insert()
+    asset_lease_tuple =
+      asset_id
+      |> new()
+      |> Ecto.Changeset.put_assoc(:users, [user])
+      |> Repo.insert()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:asset_lease_created, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
   end
 
   def has_project?(%AssetLease{} = lease, %Project{} = project) do

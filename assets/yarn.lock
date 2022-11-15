@@ -804,6 +804,21 @@ path-type@^4.0.0:
   resolved "https://registry.npmjs.org/path-type/-/path-type-4.0.0.tgz"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
+phoenix@^1.7.0-rc.0:
+  version "1.7.0-rc.0"
+  resolved "https://registry.yarnpkg.com/phoenix/-/phoenix-1.7.0-rc.0.tgz#d01e0e56757e7591982892399ddb585e881c7c1e"
+  integrity sha512-wckxpqoGqSKGlH2vQoJpVYF9+4guA9/uvL1EPza4d+Mi0ZXiGqsLV4n1rbzngMp/5aBmPTyqM3u+yeujzD6jDg==
+
+phoenix_html@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/phoenix_html/-/phoenix_html-3.2.0.tgz#4a30e5c331a72abababa1f3b81a9fe2c0e5a43d7"
+  integrity sha512-zv7PIZk0MPkF0ax8n465Q6w86+sGAy5cTem6KcbkUbdgxGc0y3WZmzkM2bSlYdSGbLEZfjXxos1G72xXsha6xA==
+
+phoenix_live_view@^0.18.3:
+  version "0.18.3"
+  resolved "https://registry.yarnpkg.com/phoenix_live_view/-/phoenix_live_view-0.18.3.tgz#ac435eb05d482d9beab73757072b3a23e393453f"
+  integrity sha512-Hh/XpQ7W/2Tidnk04Lzf5d3VGFJBj9FnkhqhcHNbSz36s5FyohDNOJermLyqdSegEuHJCQLRCfLrpxzBdXKJKg==
+
 picomatch@^2.3.1:
   version "2.3.1"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-2.3.1.tgz"

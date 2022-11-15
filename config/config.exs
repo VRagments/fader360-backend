@@ -63,7 +63,8 @@ config :tailwind,
 
 # App configurations
 config :darth,
-  default_mv_node: "https://dashboard.mediaverse.atc.gr/dam"
+  default_mv_node: "https://dashboard.mediaverse.atc.gr/dam",
+  upload_file_size: 80_000_000
 
 config :darth,
   reset_password_validity_in_days: 1,

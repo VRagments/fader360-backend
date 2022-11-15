@@ -37,3 +37,4 @@ priv/static/swagger.json
 tmp/
 priv/static/media/
 .DS_Store
+priv/static/uploads

@@ -91,11 +91,17 @@ defmodule Darth.Controller.Asset do
     update(asset, params, publish, allow_empty_update)
   end
 
-  def delete(%Asset{} = a), do: a |> Asset.delete_changeset() |> Repo.delete() |> delete_repo()
-  def delete(nil), do: {:error, :not_found}
-  def delete(id), do: Asset |> Repo.get(id) |> delete
+  def delete(%Asset{} = a) do
+    a |> Asset.delete_changeset() |> Repo.delete() |> delete_repo()
+  end
 
-  def update_status(id, status), do: update(id, %{status: status}, false)
+  def delete(nil), do: {:error, :not_found}
+
+  def delete(id) do
+    Asset |> Repo.get(id) |> delete
+  end
+
+  def update_status(id, status), do: update(id, %{status: status}, true)
 
   @doc """
   Changes the current license of an asset. Existing leases will be disabled, and a new lease created.
@@ -337,6 +343,27 @@ defmodule Darth.Controller.Asset do
 
       asset_struct = %Asset{} ->
         check_status(params, mv_asset_file_path, asset_struct)
+    end
+  end
+
+  def is_audio_asset?(media_type) do
+    case normalized_media_type(media_type) do
+      :audio -> true
+      _ -> false
+    end
+  end
+
+  def is_video_asset?(media_type) do
+    case normalized_media_type(media_type) do
+      :video -> true
+      _ -> false
+    end
+  end
+
+  def is_image_asset?(media_type) do
+    case normalized_media_type(media_type) do
+      :image -> true
+      _ -> false
     end
   end
 

@@ -56,6 +56,14 @@ defmodule DarthWeb do
     end
   end
 
+  def live_navbar_view do
+    quote do
+      use Phoenix.LiveView, layout: {DarthWeb.LayoutView, "_user_menu.html"}
+
+      unquote(view_helpers())
+    end
+  end
+
   def live_component do
     quote do
       use Phoenix.LiveComponent

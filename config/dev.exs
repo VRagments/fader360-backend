@@ -64,7 +64,7 @@ config :darth, DarthWeb.Endpoint,
       ~r"lib/darth_web/templates/.*(eex)$"
     ]
   ],
-  reloadable_compilers: [:phoenix_swagger]
+  reloadable_compilers: Mix.compilers() ++ [:phoenix_swagger]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

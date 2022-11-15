@@ -68,14 +68,12 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :require_authenticated_user]
-    get "/", PageController, :index
+    live "/", LivePage.Page
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
-    resources "/users/assets", AssetController, only: [:index, :show], param: "asset_id"
-    post "/users/asset/upload", AssetController, :upload
-    post "/users/asset/re-transcode/:asset_id", AssetController, :re_transcode_asset
-    post "/users/asset/delete/:asset_id", AssetController, :delete_asset
+    live "/users/assets", LiveAsset.Index
+    live "/users/assets/:asset_id", LiveAsset.Detail
   end
 
   scope "/", DarthWeb do
@@ -86,8 +84,7 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :required_mv_authenticated_user]
-    get "/users/mv-assets", MvAssetController, :index
-    post "/users/mv-assets/download/:asset_key", MvAssetController, :download_asset
+    live "/users/mv-assets", LiveMvAsset.Index
   end
 
   scope "/", DarthWeb do

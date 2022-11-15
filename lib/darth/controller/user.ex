@@ -456,6 +456,8 @@ defmodule Darth.Controller.User do
     end
   end
 
+  def is_mediaverse_account?(user), do: not is_nil(user.mv_node)
+
   #
   # INTERNAL FUNCTIONS
   #

@@ -1,0 +1,91 @@
+<div class="relative py-16 sm:py-24">
+    <div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+        <div class="relative sm:py-16 lg:py-0">
+            <div aria-hidden="true"
+                class="hidden sm:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-screen">
+                <div
+                    class="absolute inset-y-0 right-1/2 w-full rounded-r-3xl bg-gray-50 lg:right-72">
+                </div>
+                <svg class="absolute top-8 left-1/2 -ml-3 lg:-right-8 lg:left-auto lg:top-12"
+                    width="404" height="392" fill="none" viewBox="0 0 404 392">
+                    <defs>
+                        <pattern id="02f20b47-fd69-4224-a62a-4c9de5c763f7" x="0" y="0" width="20"
+                            height="20" patternUnits="userSpaceOnUse">
+                            <rect x="0" y="0" width="4" height="4" class="text-gray-200"
+                                fill="currentColor" />
+                        </pattern>
+                    </defs>
+                    <rect width="404" height="392"
+                        fill="url(#02f20b47-fd69-4224-a62a-4c9de5c763f7)" />
+                </svg>
+            </div>
+            <div
+                class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:max-w-none lg:px-0 lg:py-20">
+                <div class="relative overflow-hidden rounded-2xl shadow-xl">
+                    <%=if Asset.is_audio_asset?(@asset.media_type) do %>
+                    <img class="w-full object-cover"
+                        src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+                        alt="">
+                    <audio id="media" class="w-full object-cover" width="100%" controls></audio>
+                    <% end %>
+                    <%=if Asset.is_video_asset?(@asset.media_type) do %>
+                    <video id="media" class="w-full object-cover" controls></video>
+                    <%end %>
+                    <div id="static_url" data-static_url={@asset.static_url}>
+                    </div>
+                    <%=if Asset.is_image_asset?(@asset.media_type) do %>
+                    <img class="w-full object-cover" src={@asset.static_url} alt="">
+                    <% end %>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+            <!-- Content area -->
+            <div class="pt-12 sm:pt-16 lg:pt-20">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl truncate">
+                    <%=@asset.name%></h2>
+                <div class="mt-6 text-gray-500">
+                    <p class="text-base leading-7"><%=@asset.media_type%></p>
+                </div>
+            </div>
+
+            <!-- Stats section -->
+            <div class="mt-10">
+                <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                    <%= unless Asset.is_audio_asset?(@asset.media_type) do %>
+                    <div class="border-t-2 border-gray-100 pt-6">
+                        <dt class="text-base font-medium text-gray-500">Width</dt>
+                        <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                            <%=AssetView.get_width(@asset.attributes)%> px</dd>
+                    </div>
+                    <div class="border-t-2 border-gray-100 pt-6">
+                        <dt class="text-base font-medium text-gray-500">Height</dt>
+                        <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                            <%=AssetView.get_height(@asset.attributes)%> px</dd>
+                    </div>
+                    <% end %>
+
+                    <div class="border-t-2 border-gray-100 pt-6">
+                        <dt class="text-base font-medium text-gray-500">Size</dt>
+                        <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                            <%=AssetView.get_file_size(@asset.attributes)%> MB</dd>
+                    </div>
+                    <%= unless Asset.is_image_asset?(@asset.media_type) do %>
+                    <div class="border-t-2 border-gray-100 pt-6">
+                        <dt class="text-base font-medium text-gray-500">Duration</dt>
+                        <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                            <%=AssetView.get_duration(@asset.attributes)%> Sec</dd>
+                    </div>
+                    <%end%>
+
+                    <div class="border-t-2 border-gray-100 pt-6">
+                        <dt class="text-base font-medium text-gray-500">Status</dt>
+                        <dd class="text-3xl font-bold tracking-tight text-gray-900">
+                            <%=@asset.status%></dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
