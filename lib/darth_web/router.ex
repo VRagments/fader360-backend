@@ -73,7 +73,7 @@ defmodule DarthWeb.Router do
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
     live "/users/assets", LiveAsset.Index
-    live "/users/assets/:asset_id", LiveAsset.Detail
+    live "/users/assets/:asset_lease_id", LiveAsset.Detail
   end
 
   scope "/", DarthWeb do

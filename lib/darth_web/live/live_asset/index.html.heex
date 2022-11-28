@@ -71,7 +71,7 @@
                 <div class="w-full p-1 md:p-2">
                     <%= if AssetView.is_asset_status_ready?(asset_lease.asset.status) do %>
                     <a href={Routes.live_path(@socket, DarthWeb.LiveAsset.Detail,
-                        asset_lease.asset.id)}>
+                        asset_lease.id)}>
                         <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do%>
                         <img alt="gallery" class="block aspect-square w-full rounded-lg"
                             src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}>

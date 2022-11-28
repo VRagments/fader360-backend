@@ -4,16 +4,18 @@ defmodule DarthWeb.LiveAsset.Detail do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.User
   alias Darth.Controller.Asset
+  alias Darth.Controller.AssetLease
   alias DarthWeb.AssetView
 
   @impl Phoenix.LiveView
-  def mount(%{"asset_id" => asset_id}, %{"user_token" => user_token}, socket) do
+  def mount(%{"asset_lease_id" => asset_lease_id}, %{"user_token" => user_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
-         {:ok, asset} <- Asset.read(asset_id),
+         {:ok, asset_lease} <- AssetLease.read(asset_lease_id, true),
+         true <- AssetLease.has_user?(asset_lease, user.id),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets") do
       {:ok,
        socket
-       |> assign(current_user: user, asset: asset)}
+       |> assign(current_user: user, asset: asset_lease.asset)}
     else
       {:error, :not_found} ->
         Logger.error("Error message: Asset not found")
@@ -21,6 +23,16 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Asset not found")
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+
+        {:ok, socket}
+
+      false ->
+        Logger.error("Error message: Current user don't have access to this Asset")
+
+        socket =
+          socket
+          |> put_flash(:error, "Current user don't have access to this Asset")
           |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:ok, socket}
