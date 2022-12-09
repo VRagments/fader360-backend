@@ -9,7 +9,6 @@ defmodule Darth.Factory do
   def project_factory do
     %Project{
       data: map_factory(),
-      last_updated_at: DateTime.utc_now(),
       name: Faker.Team.name(),
       primary_asset_lease_id: nil,
       user: build(:user),

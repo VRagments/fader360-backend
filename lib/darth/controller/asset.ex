@@ -367,6 +367,14 @@ defmodule Darth.Controller.Asset do
     end
   end
 
+  def is_asset_status_ready?(asset_status), do: asset_status == "ready"
+
+  def get_sorted_asset_lease_list(asset_leases_map) do
+    asset_leases_map
+    |> Map.values()
+    |> Enum.sort_by(& &1.inserted_at)
+  end
+
   #
   # INTERNAL FUNCTIONS
   #

@@ -104,10 +104,21 @@ defmodule Darth.Controller.AssetLease do
       |> Map.get(:projects)
       |> Enum.filter(&(&1.id != project.id))
 
-    lease
-    |> AssetLease.changeset()
-    |> Ecto.Changeset.put_assoc(:projects, new_projects)
-    |> Repo.update()
+    asset_lease_tuple =
+      lease
+      |> AssetLease.changeset()
+      |> Ecto.Changeset.put_assoc(:projects, new_projects)
+      |> Repo.update()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:unassigned_project, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
   end
 
   def remove_user_projects(%AssetLease{} = lease, %User{} = user) do
@@ -457,16 +468,33 @@ defmodule Darth.Controller.AssetLease do
     where(query, [al], al.valid_since < ^now and (is_nil(al.valid_until) or al.valid_until > ^now))
   end
 
+  def is_part_of_project?(asset_lease, project) do
+    Enum.any?(asset_lease.projects, fn proj -> proj.id == project.id end)
+  end
+
+  def is_primary_asset_lease?(project, asset_lease), do: project.primary_asset_lease_id == asset_lease.id
+
   #
   # INTERNAL FUNCTIONS
   #
   defp add_project(%AssetLease{} = lease, %Project{} = project) do
     lease = Repo.preload(lease, :projects)
 
-    lease
-    |> AssetLease.changeset()
-    |> Ecto.Changeset.put_assoc(:projects, [project | Map.get(lease, :projects)])
-    |> Repo.update()
+    asset_lease_tuple =
+      lease
+      |> AssetLease.changeset()
+      |> Ecto.Changeset.put_assoc(:projects, [project | Map.get(lease, :projects)])
+      |> Repo.update()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:assigned_project, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
   end
 
   defp add_user(%AssetLease{} = lease, %User{} = user) do

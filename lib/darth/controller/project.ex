@@ -6,7 +6,7 @@ defmodule Darth.Controller.Project do
   alias Darth.Controller
 
   def model_mod, do: Darth.Model.Project
-  def default_query_sort_by, do: "last_updated_at"
+  def default_query_sort_by, do: "updated_at"
 
   def default_select_fields do
     ~w(
@@ -21,7 +21,6 @@ defmodule Darth.Controller.Project do
       custom_icon_video
       custom_logo
       custom_player_settings
-      last_updated_at
       name
       primary_asset_lease_id
       updated_at
@@ -57,15 +56,14 @@ defmodule Darth.Controller.Project do
 
     params = Map.put_new(params, "visibility", :private)
 
-    project = %Project{
-      last_updated_at: DateTime.utc_now()
-    }
-
-    Project.changeset(project, params)
+    Project.changeset(%Project{}, params)
   end
 
   def create(params) do
-    with {:ok, p} <- params |> new() |> Repo.insert(), do: read(p.id)
+    with {:ok, p} <- params |> new() |> Repo.insert(),
+         :ok <- broadcast("projects", {:project_created, p}) do
+      read(p.id)
+    end
   end
 
   def update({:error, _} = err, _), do: err
@@ -75,7 +73,8 @@ defmodule Darth.Controller.Project do
     cset = Project.changeset(project, params)
 
     case Repo.update(cset) do
-      {:ok, _} = ok ->
+      {:ok, project} = ok ->
+        broadcast("projects", {:project_updated, project})
         ok
 
       err ->
@@ -125,11 +124,16 @@ defmodule Darth.Controller.Project do
     query(params, custom_query)
   end
 
+  def has_primary_asset_lease?(project), do: not is_nil(project.primary_asset_lease_id)
+
   #
   # INTERNAL FUNCTIONS
   #
 
-  defp delete_repo({:ok, _}), do: :ok
+  defp delete_repo({:ok, project}) do
+    broadcast("projects", {:project_deleted, project})
+  end
+
   defp delete_repo(err), do: err
 
   defp copy_primary_asset_lease(_project, nil), do: :ok

@@ -16,7 +16,6 @@ defmodule Darth.Repo.Migrations.CreateProjects do
 
       add(:author, :string)
       add(:data, :map)
-      add(:last_updated_at, :utc_datetime)
 
       add(:primary_asset_lease_id, references(:asset_leases, on_delete: :nilify_all))
 

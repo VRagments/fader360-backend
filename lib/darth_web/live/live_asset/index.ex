@@ -1,7 +1,6 @@
 defmodule DarthWeb.LiveAsset.Index do
   use DarthWeb, :live_navbar_view
   require Logger
-  alias DarthWeb.AssetView
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Model.User, as: UserStruct
@@ -11,12 +10,14 @@ defmodule DarthWeb.LiveAsset.Index do
   def mount(params, %{"user_token" => user_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          %{entries: asset_leases} <- AssetLease.query_by_user(user.id, params, false),
+         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
+         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map),
          upload_file_size = Application.fetch_env!(:darth, :upload_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases") do
       {:ok,
        socket
-       |> assign(current_user: user, asset_leases: asset_leases)
+       |> assign(current_user: user, asset_leases_map: asset_leases_map, asset_leases_list: asset_leases_list)
        |> assign(:uploaded_files, [])
        |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
     else
@@ -46,18 +47,22 @@ defmodule DarthWeb.LiveAsset.Index do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
-    asset_leases =
-      Enum.map(socket.assigns.asset_leases, fn elem ->
-        if Map.get(elem.asset, :id) == asset.id do
-          Map.put(elem, :asset, asset)
-        else
-          elem
-        end
-      end)
+    asset_leases_map = socket.assigns.asset_leases_map
 
-    {:noreply,
-     socket
-     |> assign(asset_leases: asset_leases)}
+    asset_lease_tuple = asset_leases_map |> Enum.find(fn {_, value} -> asset.id == value.asset.id end)
+
+    socket =
+      if is_nil(asset_lease_tuple) do
+        socket
+      else
+        {_, asset_lease} = asset_lease_tuple
+        updated_asset_lease = Map.put(asset_lease, :asset, asset)
+        updated_asset_leases_map = Map.put(asset_leases_map, updated_asset_lease.id, updated_asset_lease)
+        asset_leases_list = Asset.get_sorted_asset_lease_list(updated_asset_leases_map)
+        socket |> assign(asset_leases_list: asset_leases_list, asset_leases_map: updated_asset_leases_map)
+      end
+
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -195,11 +200,12 @@ defmodule DarthWeb.LiveAsset.Index do
   end
 
   defp get_updated_socket(socket) do
-    with %UserStruct{} = user <- socket.assigns.current_user,
-         %{entries: asset_leases} <- AssetLease.query_by_user(user.id, %{}, false) do
+    with %{entries: asset_leases} <- AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false),
+         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
+         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map) do
       {:noreply,
        socket
-       |> assign(asset_leases: asset_leases)}
+       |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
     else
       {:error, query_error = %Ecto.QueryError{}} ->
         Logger.error(

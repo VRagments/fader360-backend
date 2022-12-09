@@ -57,25 +57,25 @@
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Width</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=AssetView.get_width(@asset.attributes)%> px</dd>
+                            <%=get_width(@asset.attributes)%> px</dd>
                     </div>
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Height</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=AssetView.get_height(@asset.attributes)%> px</dd>
+                            <%=get_height(@asset.attributes)%> px</dd>
                     </div>
                     <% end %>
 
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Size</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=AssetView.get_file_size(@asset.attributes)%> MB</dd>
+                            <%=get_file_size(@asset.attributes)%> MB</dd>
                     </div>
                     <%= unless Asset.is_image_asset?(@asset.media_type) do %>
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Duration</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=AssetView.get_duration(@asset.attributes)%> Sec</dd>
+                            <%=get_duration(@asset.attributes)%> Sec</dd>
                     </div>
                     <%end%>
 

@@ -3,7 +3,8 @@ defmodule DarthWeb.LiveMvAsset.Index do
   require Logger
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.User
-  alias DarthWeb.MvAssetView
+  alias Darth.Controller.Asset
+  alias Darth.Model.Asset, as: Assetstruct
   alias Darth.{MvApiClient, AssetProcessor.Downloader}
 
   @impl Phoenix.LiveView
@@ -119,6 +120,13 @@ defmodule DarthWeb.LiveMvAsset.Index do
           |> redirect(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:noreply, socket}
+    end
+  end
+
+  defp asset_already_added?(mv_asset_key) do
+    case Asset.get_asset_with_mv_asset_key(mv_asset_key) do
+      %Assetstruct{} = asset_struct -> asset_struct.status == "ready"
+      _ -> false
     end
   end
 end

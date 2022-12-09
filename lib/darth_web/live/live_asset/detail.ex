@@ -5,7 +5,6 @@ defmodule DarthWeb.LiveAsset.Detail do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
-  alias DarthWeb.AssetView
 
   @impl Phoenix.LiveView
   def mount(%{"asset_lease_id" => asset_lease_id}, %{"user_token" => user_token}, socket) do
@@ -51,32 +50,61 @@ defmodule DarthWeb.LiveAsset.Detail do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
-    case socket.assigns.asset.id == asset.id do
-      true ->
-        {:noreply, socket |> assign(asset: asset)}
+    socket =
+      if socket.assigns.asset.id == asset.id do
+        assign(socket, asset: asset)
+      else
+        socket
+      end
 
-      false ->
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_info({:asset_deleted, asset}, socket) do
-    case socket.assigns.asset.id == asset.id do
-      true ->
-        socket =
-          socket
-          |> put_flash(:info, "Asset deleted successfully")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+    socket =
+      if socket.assigns.asset.id == asset.id do
+        socket
+        |> put_flash(:info, "Asset deleted successfully")
+        |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+      else
+        socket
+      end
 
-        {:noreply, socket}
-
-      false ->
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   def handle_info(_, socket) do
     {:noreply, socket}
+  end
+
+  def get_width(attributes) do
+    Map.get(attributes, "width")
+  end
+
+  def get_height(attributes) do
+    Map.get(attributes, "height")
+  end
+
+  def get_file_size(attributes) do
+    size = Map.get(attributes, "file_size")
+
+    (size * 0.000001)
+    |> Float.round(2)
+    |> inspect
+  end
+
+  def get_duration(attributes) do
+    duration = Map.get(attributes, "duration")
+
+    case duration > 0 do
+      true ->
+        duration
+        |> Float.round(2)
+        |> inspect
+
+      false ->
+        duration
+    end
   end
 end

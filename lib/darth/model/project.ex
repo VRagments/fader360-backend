@@ -3,7 +3,6 @@ defmodule Darth.Model.Project do
 
   use Darth.Model
 
-  alias Darth.{Feature}
   alias Darth.Model.{AssetLease, ProjectCategory, User}
 
   schema "projects" do
@@ -11,8 +10,6 @@ defmodule Darth.Model.Project do
     field(:author, :string)
     field(:data, :map)
     field(:visibility, Ecto.Enum, values: [:private, :link_share, :discoverable])
-
-    field(:last_updated_at, :utc_datetime)
 
     belongs_to(:user, User)
     belongs_to(:primary_asset_lease, AssetLease)
@@ -64,7 +61,7 @@ defmodule Darth.Model.Project do
     )
   end
 
-  @allowed_fields ~w(author name visibility user_id data primary_asset_lease_id last_updated_at)a
+  @allowed_fields ~w(author name visibility user_id data primary_asset_lease_id)a
 
   @required_fields ~w(name visibility user_id)a
 
@@ -82,36 +79,5 @@ defmodule Darth.Model.Project do
     |> validate_required(@required_fields)
     |> assoc_constraint(:user)
     |> assoc_constraint(:primary_asset_lease)
-    |> validate_visibility(model.visibility)
-  end
-
-  @private_visibilities ["private", :private]
-  @public_visibilities ["link_share", :link_share, "discoverable", :discoverable]
-  defp validate_visibility(cset, old_vis) do
-    validate_change(cset, :visibility, fn _, _ ->
-      current_vis = cset.data.visibility
-      new_vis = get_field(cset, :visibility)
-      user_id = get_field(cset, :user_id)
-
-      cond do
-        new_vis == current_vis ->
-          []
-
-        new_vis in @public_visibilities and old_vis in @public_visibilities ->
-          []
-
-        new_vis in @private_visibilities and old_vis in @private_visibilities ->
-          []
-
-        new_vis in @private_visibilities and not Feature.enabled?(user_id, "nr_private_projects") ->
-          [{:visibility, "Maximum number of private stories exceeded"}]
-
-        new_vis in @public_visibilities and not Feature.enabled?(user_id, "nr_public_projects") ->
-          [{:visibility, "Maximum number of public stories exceeded"}]
-
-        true ->
-          []
-      end
-    end)
   end
 end

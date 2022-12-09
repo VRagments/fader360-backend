@@ -74,6 +74,8 @@ defmodule DarthWeb.Router do
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
     live "/users/assets", LiveAsset.Index
     live "/users/assets/:asset_lease_id", LiveAsset.Detail
+    live "/users/projects", LiveProject.Index
+    live "/users/projects/:project_id", LiveProject.Detail
   end
 
   scope "/", DarthWeb do
