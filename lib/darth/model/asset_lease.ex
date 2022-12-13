@@ -37,7 +37,22 @@ defmodule Darth.Model.AssetLease do
 
   def changeset(model, params \\ %{}), do: common_changeset(model, params)
 
-  def delete_changeset(model), do: model |> common_changeset(%{}) |> Map.put(:action, :delete)
+  def delete_changeset(model) do
+    model
+    |> changeset()
+    |> foreign_key_constraint(:projects_asset_leases,
+      name: :projects_asset_leases_asset_lease_id_fkey,
+      message: "Asset cannot be deleted as it is being used in projects"
+    )
+    |> foreign_key_constraint(:projects,
+      name: :projects_primary_asset_lease_id_fkey,
+      message: "Asset cannot be deleted as it is used as a primary asset in project"
+    )
+    |> foreign_key_constraint(:users_asset_leases,
+      name: :users_asset_leases_asset_lease_id_fkey,
+      message: "Asset cannot be deleted as it is being used by other user"
+    )
+  end
 
   def data_changed?(_model) do
     # TODO: make proper change check

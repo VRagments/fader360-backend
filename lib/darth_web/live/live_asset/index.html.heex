@@ -88,20 +88,15 @@
                             <%= asset_lease.asset.name %> </div>
                         <%= asset_lease.asset.status %>
                     </div>
-                    <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
                     <div class="px-6 pt-4 pb-2">
                         <button
                             class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
                             phx-click="re_transcode"
                             phx-value-ref={asset_lease.asset.id}>Re-Transcode</button>
-                    </div>
-                    <% else %>
-                    <div class="px-6 pt-4 pb-2">
                         <button
                             class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="delete" phx-value-ref={asset_lease.asset.id}>Delete</button>
+                            phx-click="delete" phx-value-ref={asset_lease.id}>Delete</button>
                     </div>
-                    <% end %>
                 </div>
             </div>
             <% end %>

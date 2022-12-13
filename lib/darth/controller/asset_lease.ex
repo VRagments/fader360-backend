@@ -134,19 +134,41 @@ defmodule Darth.Controller.AssetLease do
       |> Map.get(:projects)
       |> Enum.filter(&(&1.id not in project_ids))
 
-    lease
-    |> AssetLease.changeset()
-    |> Ecto.Changeset.put_assoc(:projects, new_projects)
-    |> Repo.update()
+    asset_lease_tuple =
+      lease
+      |> AssetLease.changeset()
+      |> Ecto.Changeset.put_assoc(:projects, new_projects)
+      |> Repo.update()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:asset_lease_updated, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
   end
 
   def remove_user(%AssetLease{} = lease, %User{} = user) do
     lease = Repo.preload(lease, :users)
 
-    lease
-    |> AssetLease.changeset()
-    |> Ecto.Changeset.put_assoc(:users, Map.get(lease, :users) -- [user])
-    |> Repo.update()
+    asset_lease_tuple =
+      lease
+      |> AssetLease.changeset()
+      |> Ecto.Changeset.put_assoc(:users, Map.get(lease, :users) -- [user])
+      |> Repo.update()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:asset_lease_updated, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
   end
 
   def has_user?(%AssetLease{} = lease, %User{} = user) do
@@ -497,7 +519,7 @@ defmodule Darth.Controller.AssetLease do
     asset_lease_tuple
   end
 
-  defp add_user(%AssetLease{} = lease, %User{} = user) do
+  def add_user(%AssetLease{} = lease, %User{} = user) do
     lease = Repo.preload(lease, :users)
 
     lease

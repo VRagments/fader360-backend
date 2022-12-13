@@ -17,7 +17,7 @@ defmodule DarthWeb.LiveProject.Index do
        |> assign(current_user: user)}
     else
       {:error, reason} ->
-        Logger.error("Database Error message: #{inspect(reason)}")
+        Logger.error("Error while reading user information: #{inspect(reason)}")
 
         socket =
           socket

@@ -10,8 +10,18 @@ defmodule DarthWeb.LivePage.Page do
        socket
        |> assign(current_user: user)}
     else
-      _ ->
-        Logger.error("Error message from MediaVerse: User not found")
+      {:error, reason} ->
+        Logger.error("Error while reading user information: #{inspect(reason)}")
+
+        socket =
+          socket
+          |> put_flash(:error, "User not found")
+          |> redirect(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+
+        {:ok, socket}
+
+      nil ->
+        Logger.error("Error message: User not found in database")
 
         socket =
           socket

@@ -18,7 +18,7 @@ defmodule DarthWeb.LiveProject.Detail do
        |> assign(current_user: user)}
     else
       {:error, reason} ->
-        Logger.error("Database Error message: #{inspect(reason)}")
+        Logger.error("Error while reading user information: #{inspect(reason)}")
 
         socket =
           socket
@@ -249,13 +249,15 @@ defmodule DarthWeb.LiveProject.Detail do
   end
 
   defp get_updated_socket(socket) do
-    with %{entries: asset_leases} <- AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false),
-         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
-         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map) do
-      {:noreply,
-       socket
-       |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
-    else
+    case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
+      %{entries: asset_leases} ->
+        asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+        asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+
+        {:noreply,
+         socket
+         |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
+
       {:error, query_error = %Ecto.QueryError{}} ->
         Logger.error(
           "Error message from MediaVerse: Database error while fetching asset via asset leases: #{inspect(query_error)}"

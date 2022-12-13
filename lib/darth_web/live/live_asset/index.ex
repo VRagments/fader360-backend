@@ -7,34 +7,29 @@ defmodule DarthWeb.LiveAsset.Index do
   alias Darth.Controller.AssetLease
 
   @impl Phoenix.LiveView
-  def mount(params, %{"user_token" => user_token}, socket) do
+  def mount(_params, %{"user_token" => user_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
-         %{entries: asset_leases} <- AssetLease.query_by_user(user.id, params, false),
-         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
-         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map),
          upload_file_size = Application.fetch_env!(:darth, :upload_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases") do
       {:ok,
        socket
-       |> assign(current_user: user, asset_leases_map: asset_leases_map, asset_leases_list: asset_leases_list)
+       |> assign(current_user: user)
        |> assign(:uploaded_files, [])
        |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
     else
-      {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error(
-          "Error message from MediaVerse: Database error while fetching asset via asset leases: #{query_error}"
-        )
+      {:error, reason} ->
+        Logger.error("Error while reading user information: #{inspect(reason)}")
 
         socket =
           socket
-          |> put_flash(:error, "Unable to fetch assets")
+          |> put_flash(:error, "User not found")
           |> redirect(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:ok, socket}
 
-      _ ->
-        Logger.error("Error message from MediaVerse: User not found while fetching assests")
+      nil ->
+        Logger.error("Error message: User not found in database")
 
         socket =
           socket
@@ -46,9 +41,41 @@ defmodule DarthWeb.LiveAsset.Index do
   end
 
   @impl Phoenix.LiveView
+  def handle_params(params, _url, socket) do
+    case AssetLease.query_by_user(socket.assigns.current_user.id, params, false) do
+      %{entries: asset_leases} ->
+        asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+        asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+
+        {:noreply,
+         socket
+         |> assign(asset_leases_map: asset_leases_map, asset_leases_list: asset_leases_list)}
+
+      {:error, query_error = %Ecto.QueryError{}} ->
+        Logger.error("Error message: Database error while fetching asset via asset leases: #{query_error}")
+
+        socket =
+          socket
+          |> put_flash(:error, "Unable to fetch assets")
+          |> redirect(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+
+        {:noreply, socket}
+
+      err ->
+        Logger.error("Error message: Database error while fetching asset via asset leases: #{err}")
+
+        socket =
+          socket
+          |> put_flash(:error, "Unable to fetch assets")
+          |> redirect(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+
+        {:noreply, socket}
+    end
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
     asset_leases_map = socket.assigns.asset_leases_map
-
     asset_lease_tuple = asset_leases_map |> Enum.find(fn {_, value} -> asset.id == value.asset.id end)
 
     socket =
@@ -71,7 +98,16 @@ defmodule DarthWeb.LiveAsset.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_info({:asset_deleted, _asset}, socket) do
+  def handle_info({:asset_lease_updated, asset_lease}, socket) do
+    asset_leases_map = socket.assigns.asset_leases_map
+    updated_asset_leases_map = Map.put(asset_leases_map, asset_lease.id, asset_lease)
+    asset_leases_list = Asset.get_sorted_asset_lease_list(updated_asset_leases_map)
+
+    {:noreply, socket |> assign(asset_leases_list: asset_leases_list, asset_leases_map: updated_asset_leases_map)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:asset_lease_deleted, _asset_lease}, socket) do
     get_updated_socket(socket)
   end
 
@@ -169,10 +205,12 @@ defmodule DarthWeb.LiveAsset.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("delete", %{"ref" => asset_id}, socket) do
-    current_asset_folder = Application.get_env(:darth, :asset_static_base_path) <> asset_id
-
-    with :ok <- Asset.delete(asset_id),
+  def handle_event("delete", %{"ref" => asset_lease_id}, socket) do
+    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+         {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
+         :ok <- AssetLease.maybe_delete(asset_lease),
+         :ok <- Asset.delete(asset_lease.asset),
+         current_asset_folder = Application.get_env(:darth, :asset_static_base_path) <> asset_lease.asset.id,
          {:ok, _} <- File.rm_rf(current_asset_folder) do
       socket =
         socket
@@ -181,36 +219,53 @@ defmodule DarthWeb.LiveAsset.Index do
 
       {:noreply, socket}
     else
-      {:error, _, _} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {reason_atom, _} = List.first(changeset.errors)
+
+        delete_message = handle_asset_lease_deletion(reason_atom, socket.assigns.current_user, asset_lease_id)
+        Logger.error("Error message while deleting asset_lease: #{inspect(delete_message)}")
+
         socket =
           socket
-          |> put_flash(:error, "Asset cannot be deleted")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> put_flash(:error, delete_message)
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:noreply, socket}
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error("Error message while deleting asset_lease: #{inspect(reason)}")
+
         socket =
           socket
-          |> put_flash(:error, "Asset not found")
+          |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
           |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+
+        {:noreply, socket}
+
+      {:error, _, _} ->
+        Logger.error("Error while removing the file")
+
+        socket =
+          socket
+          |> put_flash(:error, "Error while deleting the asset")
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:noreply, socket}
     end
   end
 
   defp get_updated_socket(socket) do
-    with %{entries: asset_leases} <- AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false),
-         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
-         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map) do
-      {:noreply,
-       socket
-       |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
-    else
+    case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
+      %{entries: asset_leases} ->
+        asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+        asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+
+        {:noreply,
+         socket
+         |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
+
       {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error(
-          "Error message from MediaVerse: Database error while fetching asset via asset leases: #{query_error}"
-        )
+        Logger.error("Error message: Database error while fetching asset via asset leases: #{query_error}")
 
         socket =
           socket
@@ -220,7 +275,7 @@ defmodule DarthWeb.LiveAsset.Index do
         {:noreply, socket}
 
       _ ->
-        Logger.error("Error message from MediaVerse: User not found while fetching assests")
+        Logger.error("Error message: User not found while fetching assests")
 
         socket =
           socket
@@ -238,6 +293,58 @@ defmodule DarthWeb.LiveAsset.Index do
 
       _ ->
         nil
+    end
+  end
+
+  defp handle_asset_lease_deletion(:projects_asset_leases, user, asset_lease_id) do
+    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
+      "Asset cannot be deleted as it is being used in projects"
+    else
+      {:error, reason} ->
+        "Error while deleting the asset: #{inspect(reason)}"
+
+      nil ->
+        "Asset not found"
+    end
+  end
+
+  defp handle_asset_lease_deletion(:user_asset_leases, user, asset_lease_id) do
+    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
+      "Asset cannot be deleted as it is being used by other user"
+    else
+      {:error, reason} ->
+        "Error while deleting the asset: #{inspect(reason)}"
+
+      nil ->
+        "Asset not found"
+    end
+  end
+
+  defp handle_asset_lease_deletion(:projects, user, asset_lease_id) do
+    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
+      "Asset cannot be deleted as it is used as a primary asset in project"
+    else
+      {:error, reason} ->
+        "Error while deleting the asset: #{inspect(reason)}"
+
+      nil ->
+        "Asset not found"
+    end
+  end
+
+  defp handle_asset_lease_deletion(error, user, asset_lease_id) do
+    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
+      "Error while deleting the asset: #{inspect(error)}"
+    else
+      {:error, reason} ->
+        "Error while deleting the asset: #{inspect(reason)}"
+
+      nil ->
+        "Asset not found"
     end
   end
 

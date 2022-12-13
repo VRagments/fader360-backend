@@ -10,7 +10,7 @@ defmodule Darth.Repo.Migrations.CreateAssetLeases do
       add(:license, :asset_lease_license, null: false)
       add(:valid_since, :utc_datetime, null: false)
 
-      add(:asset_id, references(:assets, on_delete: :delete_all), null: false)
+      add(:asset_id, references(:assets), null: false)
 
       add(:valid_until, :utc_datetime)
 

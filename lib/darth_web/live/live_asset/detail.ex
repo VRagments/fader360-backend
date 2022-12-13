@@ -16,8 +16,8 @@ defmodule DarthWeb.LiveAsset.Detail do
        socket
        |> assign(current_user: user, asset: asset_lease.asset)}
     else
-      {:error, :not_found} ->
-        Logger.error("Error message: Asset not found")
+      {:error, reason} ->
+        Logger.error("Error while reading user information: #{inspect(reason)}")
 
         socket =
           socket

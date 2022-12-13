@@ -1,37 +1,74 @@
-<div class="items-center justify-center">
-    <div class="text-center">
-        <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">MediaVerse
-            Assets
-        </h1>
+<section class="flex flex-col mt-4 px-4 py-2 max-w-6xl mx-auto">
+    <div class="items-center justify-center">
+        <div class="text-center">
+            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">MediaVerse
+                Assets
+            </h1>
+        </div>
     </div>
-</div>
-<div class="mt-4 px-4 py-2 max-w-xl mx-auto">
-    <ul role="list" class="-my-5 divide-y divide-gray-200">
+
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <%= for mv_asset <- @mv_assets do %>
-        <li class="py-4">
-            <div class="flex items-center space-x-4">
-                <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-medium text-gray-900">
-                        <%= Map.get(mv_asset, "originalFilename")%></p>
-                    <p class="truncate text-sm text-gray-500">
-                        <%= Map.get(mv_asset, "contentType")%>
-                    </p>
+        <li
+            class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white border border-gray-200 shadow-md">
+            <div class="flex w-full items-center justify-between space-x-6 p-6">
+                <div class="flex-1 truncate">
+                    <div class="flex items-center space-x-3">
+                        <h3 class="truncate text-sm font-medium text-gray-900">
+                            <%= Map.get(mv_asset, "originalFilename")%></h3>
+                    </div>
+                    <p class="mt-1 truncate text-sm text-gray-500">
+                        <%= Map.get(mv_asset, "contentType")%></p>
+                    <p class="mt-1 truncate text-sm text-gray-500">
+                        <%= Map.get(mv_asset, "licenseInfo")%></p>
                 </div>
-                <%= if asset_already_added?(Map.get(mv_asset, "key")) do %>
-                <div>
-                    <a
-                        class="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50">Added</a>
+            </div>
+            <div>
+                <div class="-mt-px flex divide-x divide-gray-200">
+                    <div class="flex w-0 flex-1">
+                        <div
+                            class="relative -mr-px inline-flex w-0 flex-1 items-center justify-center rounded-bl-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500">
+                            <!-- Heroicon name: mini/envelope -->
+                            <%= if asset_already_added?(Map.get(mv_asset, "key")) do %>
+                            <div>
+                                <button class="ml-3" phx-click="remove_mv_asset"
+                                    phx-value-ref={Map.get(mv_asset, "key" )}>Remove</button>
+                            </div>
+                            <% else %>
+                            <div>
+                                <button class="ml-3" phx-click="add_mv_asset"
+                                    phx-value-ref={Map.get(mv_asset, "key" )}>Add</button>
+                            </div>
+                            <% end %>
+                        </div>
+                    </div>
+                    <div class="-ml-px flex w-0 flex-1">
+                        <%=if Asset.is_audio_asset?(Map.get(mv_asset, "contentType")) do %>
+                        <a href={Enum.join(["https://dashboard.mediaverse.atc.gr/app/audio/",
+                            Map.get(mv_asset, "key" )])} target="_blank"
+                            class="relative inline-flex w-0 flex-1 items-center justify-center rounded-br-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500">
+                            <span class="ml-3">View in MediaVerse</span>
+                        </a>
+                        <% end %>
+                        <%=if Asset.is_video_asset?(Map.get(mv_asset, "contentType")) do %>
+                        <a href={Enum.join(["https://dashboard.mediaverse.atc.gr/app/video/",
+                            Map.get(mv_asset, "key" )])} target="_blank"
+                            class="relative inline-flex w-0 flex-1 items-center justify-center rounded-br-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500">
+                            <span class="ml-3">View in MediaVerse</span>
+                        </a>
+                        <%end %>
+                        <%=if Asset.is_image_asset?(Map.get(mv_asset, "contentType")) do %>
+                        <a href={Enum.join(["https://dashboard.mediaverse.atc.gr/app/image/",
+                            Map.get(mv_asset, "key" )])} target="_blank"
+                            class="relative inline-flex w-0 flex-1 items-center justify-center rounded-br-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500">
+                            <span class="ml-3">View in MediaVerse</span>
+                        </a>
+                        <% end %>
+                    </div>
                 </div>
-                <% else %>
-                <div>
-                    <button
-                        class="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50"
-                        phx-click="add_mv_asset" phx-value-ref={Map.get(mv_asset, "key"
-                        )}>Add</button>
-                </div>
-                <% end %>
             </div>
         </li>
+
         <% end %>
     </ul>
-</div>
+</section>
