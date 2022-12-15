@@ -94,7 +94,7 @@ defmodule DarthWeb.LiveAsset.Index do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_lease_created, _asset_lease}, socket) do
-    get_updated_socket(socket)
+    get_updated_asset_list(socket)
   end
 
   @impl Phoenix.LiveView
@@ -108,7 +108,7 @@ defmodule DarthWeb.LiveAsset.Index do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_lease_deleted, _asset_lease}, socket) do
-    get_updated_socket(socket)
+    get_updated_asset_list(socket)
   end
 
   def handle_info(_, socket) do
@@ -148,7 +148,7 @@ defmodule DarthWeb.LiveAsset.Index do
          :ok <- File.rm(uploaded_file_path) do
       socket =
         socket
-        |> put_flash(:info, "Uploaded Successfully!!!")
+        |> put_flash(:info, "Uploaded Successfully")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
       {:noreply, socket}
@@ -254,7 +254,7 @@ defmodule DarthWeb.LiveAsset.Index do
     end
   end
 
-  defp get_updated_socket(socket) do
+  defp get_updated_asset_list(socket) do
     case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
       %{entries: asset_leases} ->
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)

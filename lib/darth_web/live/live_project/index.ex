@@ -40,12 +40,12 @@ defmodule DarthWeb.LiveProject.Index do
 
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
-    query = from(p in ProjectStruct, where: p.user_id == ^socket.assigns.current_user.id)
+    query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id)
 
     case Project.query(params, query, true) do
       %{entries: user_projects} ->
         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end)
-        user_projects_list = get_sorted_user_project_list(user_projects_map)
+        user_projects_list = Project.get_sorted_user_project_list(user_projects_map)
 
         socket =
           socket
@@ -80,7 +80,7 @@ defmodule DarthWeb.LiveProject.Index do
       {:ok, %ProjectStruct{}} ->
         socket =
           socket
-          |> put_flash(:info, "Project created successfully!!!")
+          |> put_flash(:info, "Project created successfully")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
         {:noreply, socket}
@@ -90,7 +90,7 @@ defmodule DarthWeb.LiveProject.Index do
 
         socket =
           socket
-          |> put_flash(:info, "Project creation failed!!!")
+          |> put_flash(:info, "Project creation failed")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
         {:noreply, socket}
@@ -103,7 +103,7 @@ defmodule DarthWeb.LiveProject.Index do
       :ok ->
         socket =
           socket
-          |> put_flash(:info, "Project deleted successfully!!!")
+          |> put_flash(:info, "Project deleted successfully")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
         {:noreply, socket}
@@ -111,7 +111,7 @@ defmodule DarthWeb.LiveProject.Index do
       _ ->
         socket =
           socket
-          |> put_flash(:info, "Unable to delete project!!!")
+          |> put_flash(:info, "Unable to delete project")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
         {:noreply, socket}
@@ -120,23 +120,23 @@ defmodule DarthWeb.LiveProject.Index do
 
   @impl Phoenix.LiveView
   def handle_info({:project_created, _project}, socket) do
-    get_updated_socket(socket)
+    get_updated_project_list(socket)
   end
 
   @impl Phoenix.LiveView
   def handle_info({:project_deleted, _project}, socket) do
-    get_updated_socket(socket)
+    get_updated_project_list(socket)
   end
 
   @impl Phoenix.LiveView
   def handle_info({:project_updated, project}, socket) do
     user_projects_map = Map.put(socket.assigns.user_projects_map, project.id, project)
-    user_projects_list = get_sorted_user_project_list(user_projects_map)
+    user_projects_list = Project.get_sorted_user_project_list(user_projects_map)
 
     socket =
       socket
       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
-      |> put_flash(:info, "Project updated!!!")
+      |> put_flash(:info, "Project updated")
       |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
     {:noreply, socket}
@@ -147,11 +147,11 @@ defmodule DarthWeb.LiveProject.Index do
     {:noreply, socket}
   end
 
-  defp get_updated_socket(socket) do
-    with query = from(p in ProjectStruct, where: p.user_id == ^socket.assigns.current_user.id),
+  defp get_updated_project_list(socket) do
+    with query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
          %{entries: user_projects} <- Project.query(%{}, query, true),
          user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
-         user_projects_list = get_sorted_user_project_list(user_projects_map) do
+         user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
       {:noreply,
        socket
        |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)}
@@ -171,16 +171,10 @@ defmodule DarthWeb.LiveProject.Index do
 
         socket =
           socket
-          |> put_flash(:error, "User not found")
+          |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
 
         {:noreply, socket}
     end
-  end
-
-  defp get_sorted_user_project_list(user_projects_map) do
-    user_projects_map
-    |> Map.values()
-    |> Enum.sort_by(& &1.inserted_at)
   end
 end

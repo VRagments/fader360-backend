@@ -22,19 +22,19 @@
             <div
                 class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:max-w-none lg:px-0 lg:py-20">
                 <div class="relative overflow-hidden rounded-2xl shadow-xl">
-                    <%=if Asset.is_audio_asset?(@asset.media_type) do %>
+                    <%=if Asset.is_audio_asset?(@asset_lease.asset.media_type) do %>
                     <img class="w-full object-cover"
                         src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
                         alt="">
                     <audio id="media" class="w-full object-cover" width="100%" controls></audio>
                     <% end %>
-                    <%=if Asset.is_video_asset?(@asset.media_type) do %>
+                    <%=if Asset.is_video_asset?(@asset_lease.asset.media_type) do %>
                     <video id="media" class="w-full object-cover" controls></video>
                     <%end %>
-                    <div id="static_url" data-static_url={@asset.static_url}>
+                    <div id="static_url" data-static_url={@asset_lease.asset.static_url}>
                     </div>
-                    <%=if Asset.is_image_asset?(@asset.media_type) do %>
-                    <img class="w-full object-cover" src={@asset.static_url} alt="">
+                    <%=if Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
+                    <img class="w-full object-cover" src={@asset_lease.asset.static_url} alt="">
                     <% end %>
                 </div>
             </div>
@@ -44,47 +44,160 @@
             <!-- Content area -->
             <div class="pt-12 sm:pt-16 lg:pt-20">
                 <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl truncate">
-                    <%=@asset.name%></h2>
+                    <%=@asset_lease.asset.name%></h2>
                 <div class="mt-6 text-gray-500">
-                    <p class="text-base leading-7"><%=@asset.media_type%></p>
+                    <p class="text-base leading-7"><%=@asset_lease.asset.media_type%></p>
                 </div>
             </div>
 
             <!-- Stats section -->
             <div class="mt-10">
                 <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
-                    <%= unless Asset.is_audio_asset?(@asset.media_type) do %>
+                    <%= unless Asset.is_audio_asset?(@asset_lease.asset.media_type) do %>
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Width</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=get_width(@asset.attributes)%> px</dd>
+                            <%=get_width(@asset_lease.asset.attributes)%> px</dd>
                     </div>
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Height</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=get_height(@asset.attributes)%> px</dd>
+                            <%=get_height(@asset_lease.asset.attributes)%> px</dd>
                     </div>
                     <% end %>
 
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Size</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=get_file_size(@asset.attributes)%> MB</dd>
+                            <%=get_file_size(@asset_lease.asset.attributes)%> MB</dd>
                     </div>
-                    <%= unless Asset.is_image_asset?(@asset.media_type) do %>
+                    <%= unless Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Duration</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=get_duration(@asset.attributes)%> Sec</dd>
+                            <%=get_duration(@asset_lease.asset.attributes)%> Sec</dd>
                     </div>
                     <%end%>
 
                     <div class="border-t-2 border-gray-100 pt-6">
                         <dt class="text-base font-medium text-gray-500">Status</dt>
                         <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                            <%=@asset.status%></dd>
+                            <%=@asset_lease.asset.status%></dd>
                     </div>
                 </dl>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white">
+        <div class="items-center justify-center">
+            <div class="text-center">
+                <h2 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">
+                    Added Projects
+                </h2>
+            </div>
+        </div>
+        <div class="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+            <div
+                class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+                <%= for user_project <- @user_projects_list do %>
+                <%= if AssetLease.is_part_of_project?(@asset_lease, user_project) do %>
+                <div>
+                    <div
+                        class="min-h-80 aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
+                        <%= if Project.has_primary_asset_lease?(user_project) do %>
+                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+                            alt="">
+                        <% else %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={user_project.primary_asset.thumbnail_image} alt="">
+                        <% end %>
+                        <% else %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+                            alt="">
+                        <% end %>
+                    </div>
+                    <div>
+                        <h3 class="text-sm text-gray-500">
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                <%= user_project.name%></p>
+                        </h3>
+                        <p class="truncate text-sm text-gray-500">
+                            <%= user_project.author%></p>
+                    </div>
+                    <div class="w-1/2 flex justify-end">
+                        <div>
+                            <button
+                                class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                                phx-click="unassign_project" phx-value-ref={user_project.id}><svg
+                                    xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                    preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 12.998H5v-2h14z" />
+                                </svg></button>
+                        </div>
+                    </div>
+                </div>
+                <% end %>
+                <% end %>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white">
+        <div class="items-center justify-center">
+            <div class="text-center">
+                <h2 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">
+                    Available Projects
+                </h2>
+            </div>
+        </div>
+        <div class="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+            <div
+                class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+                <%= for user_project <- @user_projects_list do %>
+                <%=unless AssetLease.is_part_of_project?(@asset_lease, user_project) do%>
+                <div>
+                    <div
+                        class="min-h-80 aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
+                        <%= if Project.has_primary_asset_lease?(user_project) do %>
+                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+                            alt="">
+                        <% else %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={user_project.primary_asset.thumbnail_image} alt="">
+                        <% end %>
+                        <% else %>
+                        <img class="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                            src={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+                            alt="">
+                        <% end %>
+                    </div>
+                    <div>
+                        <h3 class="text-sm text-gray-700">
+                            <p class="truncate text-sm font-medium text-gray-900">
+                                <%= user_project.name%></p>
+                        </h3>
+                        <p class="truncate text-sm text-gray-500">
+                            <%= user_project.author%></p>
+                    </div>
+                    <div class="w-1/2 flex justify-end">
+                        <div>
+                            <button
+                                class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                                phx-click="assign_project" phx-value-ref={user_project.id}><svg
+                                    xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                    preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                    <path fill="currentColor"
+                                        d="M19 12.998h-6v6h-2v-6H5v-2h6v-6h2v6h6z" />
+                                </svg></button>
+                        </div>
+                    </div>
+                </div>
+                <% end %>
+                <% end %>
             </div>
         </div>
     </div>

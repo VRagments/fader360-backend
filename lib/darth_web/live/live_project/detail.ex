@@ -112,11 +112,11 @@ defmodule DarthWeb.LiveProject.Detail do
     with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
          {:ok, asset_lease} <-
            AssetLease.unassign_project(asset_lease, socket.assigns.current_user, socket.assigns.project),
-         {:ok, socket} <- unassign_primary_asset_lease(socket, asset_lease) do
+         {:ok, project} <- Project.unassign_primary_asset_lease(socket.assigns.project, asset_lease) do
       socket =
         socket
-        |> put_flash(:info, "Project unassigned to asset")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, socket.assigns.project.id))
+        |> put_flash(:info, "Asset removed from project")
+        |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, project.id))
 
       {:noreply, socket}
     else
@@ -125,7 +125,7 @@ defmodule DarthWeb.LiveProject.Detail do
 
         socket =
           socket
-          |> put_flash(:error, "Unable to unassign project to the asset")
+          |> put_flash(:error, "Unable to remove asset from the project")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, socket.assigns.project.id))
 
         {:noreply, socket}
@@ -139,7 +139,7 @@ defmodule DarthWeb.LiveProject.Detail do
       socket =
         socket
         |> assign(project: project)
-        |> put_flash(:info, "Primary asset updated!!!")
+        |> put_flash(:info, "Project primary asset updated")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, project.id))
 
       {:noreply, socket}
@@ -177,7 +177,7 @@ defmodule DarthWeb.LiveProject.Detail do
     socket =
       if socket.assigns.project.id == project.id do
         socket
-        |> put_flash(:info, "Project deleted successfully!!!")
+        |> put_flash(:info, "Project deleted successfully")
         |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
       else
         socket
@@ -191,7 +191,7 @@ defmodule DarthWeb.LiveProject.Detail do
     socket =
       if socket.assigns.project.id == project.id do
         socket
-        |> put_flash(:info, "Project updated!!!")
+        |> put_flash(:info, "Project updated")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, project.id))
       else
         socket
@@ -222,12 +222,12 @@ defmodule DarthWeb.LiveProject.Detail do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_lease_created, _asset_lease}, socket) do
-    get_updated_socket(socket)
+    get_updated_asset_list(socket)
   end
 
   @impl Phoenix.LiveView
   def handle_info({:asset_deleted, _asset}, socket) do
-    get_updated_socket(socket)
+    get_updated_asset_list(socket)
   end
 
   @impl Phoenix.LiveView
@@ -235,20 +235,7 @@ defmodule DarthWeb.LiveProject.Detail do
     {:noreply, socket}
   end
 
-  defp unassign_primary_asset_lease(socket, asset_lease) do
-    with true <- socket.assigns.project.primary_asset_lease_id == asset_lease.id,
-         {:ok, _project} <- Project.update(socket.assigns.project, %{primary_asset_lease_id: nil}) do
-      {:ok, socket}
-    else
-      false ->
-        {:ok, socket}
-
-      _ ->
-        {:error, "unable to update the primary asset"}
-    end
-  end
-
-  defp get_updated_socket(socket) do
+  defp get_updated_asset_list(socket) do
     case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
       %{entries: asset_leases} ->
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)

@@ -126,6 +126,25 @@ defmodule Darth.Controller.Project do
 
   def has_primary_asset_lease?(project), do: not is_nil(project.primary_asset_lease_id)
 
+  def unassign_primary_asset_lease(project, asset_lease) do
+    with true <- project.primary_asset_lease_id == asset_lease.id,
+         {:ok, project} <- update(project, %{primary_asset_lease_id: nil}) do
+      {:ok, project}
+    else
+      false ->
+        {:ok, project}
+
+      _ ->
+        {:error, "unable to update the primary asset"}
+    end
+  end
+
+  def get_sorted_user_project_list(user_projects_map) do
+    user_projects_map
+    |> Map.values()
+    |> Enum.sort_by(& &1.inserted_at)
+  end
+
   #
   # INTERNAL FUNCTIONS
   #

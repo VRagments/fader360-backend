@@ -42,9 +42,10 @@ defmodule DarthWeb.LiveMvAsset.Index do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
 
-    with {:ok, assets} <- MvApiClient.fetch_assets(mv_node, mv_token) do
-      {:noreply, socket |> assign(mv_assets: assets)}
-    else
+    case MvApiClient.fetch_assets(mv_node, mv_token) do
+      {:ok, assets} ->
+        {:noreply, socket |> assign(mv_assets: assets)}
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
 
