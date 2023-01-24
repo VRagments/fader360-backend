@@ -28,6 +28,14 @@ defmodule DarthWeb do
       alias DarthWeb.Router.Helpers, as: Routes
 
       action_fallback(FallbackController)
+
+      defp read_media_file_data(%{"file" => file} = params) do
+        params
+        |> Map.put("data_path", file.path)
+        |> Map.put("media_type", file.content_type)
+      end
+
+      defp read_media_file_data(params), do: params
     end
   end
 
@@ -44,6 +52,17 @@ defmodule DarthWeb do
       # Include shared imports and aliases for views
       unquote(view_helpers())
       import Phoenix.Component
+      def build_body(base, _schema, _model, []), do: base
+
+      def build_body(_base, schema, model, attrs) do
+        Enum.reduce(attrs, %{}, fn a, acc ->
+          if a != :id and a not in schema.virtual_attributes() and Map.has_key?(model, :asset) do
+            Map.put(acc, a, Map.get(model.asset, a))
+          else
+            Map.put(acc, a, Map.get(model, a))
+          end
+        end)
+      end
     end
   end
 

@@ -209,9 +209,7 @@ defmodule DarthWeb.LiveAsset.Index do
     with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
          {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
          :ok <- AssetLease.maybe_delete(asset_lease),
-         :ok <- Asset.delete(asset_lease.asset),
-         current_asset_folder = Application.get_env(:darth, :asset_static_base_path) <> asset_lease.asset.id,
-         {:ok, _} <- File.rm_rf(current_asset_folder) do
+         :ok <- Asset.delete(asset_lease.asset) do
       socket =
         socket
         |> put_flash(:info, "Asset deleted successfully")
@@ -239,16 +237,6 @@ defmodule DarthWeb.LiveAsset.Index do
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
           |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
-
-        {:noreply, socket}
-
-      {:error, _, _} ->
-        Logger.error("Error while removing the file")
-
-        socket =
-          socket
-          |> put_flash(:error, "Error while deleting the asset")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
 
         {:noreply, socket}
     end

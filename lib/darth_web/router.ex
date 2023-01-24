@@ -47,6 +47,18 @@ defmodule DarthWeb.Router do
     post "/refresh", ApiAuthController, :refresh
   end
 
+  scope "/api", DarthWeb do
+    pipe_through [:api_auth]
+
+    resources("/assets", ApiAssetController, only: [:index, :show, :create, :update, :delete]) do
+      put("/license", ApiAssetController, :change_license)
+      put("/users", ApiAssetController, :assign_user)
+      delete("/users", ApiAssetController, :remove_user)
+      put("/projects", ApiAssetController, :assign_project)
+      delete("/projects", ApiAssetController, :remove_project)
+    end
+  end
+
   if Application.compile_env(:darth, :env, :dev) in ~w(dev)a do
     forward "/swagger", PhoenixSwagger.Plug.SwaggerUI, otp_app: :darth, swagger_file: "swagger.json"
   end
@@ -109,7 +121,7 @@ defmodule DarthWeb.Router do
       securityDefinitions: %{
         Bearer: %{
           type: "apiKey",
-          name: "Authorization",
+          name: "authorization",
           in: "header"
         }
       }
