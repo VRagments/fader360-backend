@@ -5,14 +5,14 @@ defmodule DarthWeb.LiveMvAsset.Index do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
-  alias Darth.Model.Asset, as: Assetstruct
-  alias Darth.{MvApiClient, AssetProcessor.Downloader}
+  alias Darth.{MvApiClient, AssetProcessor.Downloader, AssetProcessor.PreviewDownloader}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
-         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases") do
+         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases"),
+         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_previews") do
       {:ok, socket |> assign(current_user: user, mv_token: mv_token)}
     else
       {:error, reason} ->
@@ -41,10 +41,12 @@ defmodule DarthWeb.LiveMvAsset.Index do
   def handle_params(_params, _url, socket) do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
+    asset_preview_static_url = Application.get_env(:darth, :asset_preview_static_url)
 
     case MvApiClient.fetch_assets(mv_node, mv_token) do
       {:ok, assets} ->
-        {:noreply, socket |> assign(mv_assets: assets)}
+        add_to_preview_downloader(assets, mv_node, mv_token)
+        {:noreply, socket |> assign(mv_assets: assets, asset_preview_static_url: asset_preview_static_url)}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
@@ -79,6 +81,15 @@ defmodule DarthWeb.LiveMvAsset.Index do
 
   @impl Phoenix.LiveView
   def handle_info({:asset_deleted, _asset}, socket) do
+    socket =
+      socket
+      |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:asset_preview_downloaded, _}, socket) do
     socket =
       socket
       |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
@@ -184,13 +195,6 @@ defmodule DarthWeb.LiveMvAsset.Index do
     end
   end
 
-  defp asset_already_added?(mv_asset_key) do
-    case Asset.get_asset_with_mv_asset_key(mv_asset_key) do
-      %Assetstruct{} = asset_struct -> asset_struct.status == "ready"
-      _ -> false
-    end
-  end
-
   defp handle_asset_lease_deletion(:projects_asset_leases, user, mv_asset_key) do
     with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
          {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
@@ -244,6 +248,29 @@ defmodule DarthWeb.LiveMvAsset.Index do
 
       nil ->
         "Asset not found"
+    end
+  end
+
+  def add_to_preview_downloader(assets, mv_node, mv_token) do
+    for asset <- assets do
+      filename = Map.get(asset, "originalFilename")
+      asset_previewlink_key = Map.get(asset, "previewLinkKey")
+
+      file_path =
+        Path.join([Application.get_env(:darth, :mv_asset_preview_download_path), asset_previewlink_key, filename])
+
+      if File.exists?(file_path) do
+        :ok
+      else
+        download_params = %{
+          mv_asset_previewlink_key: asset_previewlink_key,
+          mv_node: mv_node,
+          mv_token: mv_token,
+          mv_asset_filename: filename
+        }
+
+        PreviewDownloader.add_preview_download_params(download_params)
+      end
     end
   end
 end

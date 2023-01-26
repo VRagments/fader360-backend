@@ -14,7 +14,9 @@ config :darth,
   asset_static_sub_path: "media",
   uploads_base_url: "http://localhost:45000/files/",
   uploads_base_path: "./priv/static/uploads",
-  mv_asset_download_path: Path.join(Path.dirname(__DIR__), "tmp")
+  mv_asset_download_path: Path.join(Path.dirname(__DIR__), "tmp"),
+  mv_asset_preview_download_path: "./priv/static/preview_download/",
+  asset_preview_static_url: "http://localhost:45000/preview_download/"
 
 config :darth, Darth.Repo,
   migration_primary_key: [name: :id, type: :uuid],

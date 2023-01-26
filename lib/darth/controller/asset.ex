@@ -11,6 +11,7 @@ defmodule Darth.Controller.Asset do
   use Darth.Controller, include_crud: true
   alias Darth.Controller.AssetLease
   alias Darth.Controller
+  alias Darth.Model.Asset, as: Assetstruct
 
   def model_mod(), do: Darth.Model.Asset
   def default_query_sort_by(), do: "updated_at"
@@ -299,8 +300,28 @@ defmodule Darth.Controller.Asset do
     end
   end
 
+  def create_preview_asset_path(asset_filename, asset_previewlinkkey) do
+    default_preview_asset_folder =
+      Path.join(Application.get_env(:darth, :mv_asset_preview_download_path), asset_previewlinkkey)
+
+    case File.mkdir_p(default_preview_asset_folder) do
+      :ok ->
+        path = Path.join([default_preview_asset_folder, asset_filename])
+        {:ok, path}
+
+      {:error, _} ->
+        {:error, "Unable to create the asset path"}
+    end
+  end
+
   def create_file(mv_asset_filename) do
     with {:ok, path} <- create_current_asset_path(mv_asset_filename) do
+      File.open(path, [:write, :binary])
+    end
+  end
+
+  def create_preview_file(mv_asset_filename, asset_previewlinkkey) do
+    with {:ok, path} <- create_preview_asset_path(mv_asset_filename, asset_previewlinkkey) do
       File.open(path, [:write, :binary])
     end
   end
@@ -373,6 +394,13 @@ defmodule Darth.Controller.Asset do
     asset_leases_map
     |> Map.values()
     |> Enum.sort_by(& &1.inserted_at)
+  end
+
+  def asset_already_added?(mv_asset_key) do
+    case get_asset_with_mv_asset_key(mv_asset_key) do
+      %Assetstruct{} = asset_struct -> asset_struct.status == "ready"
+      _ -> false
+    end
   end
 
   #

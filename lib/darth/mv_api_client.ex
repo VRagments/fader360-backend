@@ -50,11 +50,12 @@ defmodule Darth.MvApiClient do
 
   def download_asset(mv_node, mv_token, deeplinkkey) do
     url = mv_node <> "/deeplink/" <> deeplinkkey <> "/download"
+    HTTPoison.get(url, get_headers(mv_token), stream_to: self(), async: :once)
+  end
 
-    HTTPoison.get(url, get_headers(mv_token),
-      stream_to: self(),
-      async: :once
-    )
+  def download_preview_asset(mv_node, mv_token, previewlinkkey) do
+    url = mv_node <> "/previewlink/" <> previewlinkkey <> "/download"
+    HTTPoison.get(url, get_headers(mv_token), stream_to: self(), async: :once)
   end
 
   defp get_headers(mv_token) do

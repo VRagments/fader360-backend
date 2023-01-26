@@ -20,7 +20,7 @@ defmodule DarthWeb.Endpoint do
     at: "/",
     from: :darth,
     gzip: false,
-    only: ~w(assets media fonts images favicon.ico robots.txt)
+    only: ~w(assets media fonts images preview_download favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
