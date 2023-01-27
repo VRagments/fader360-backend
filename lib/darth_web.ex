@@ -63,6 +63,12 @@ defmodule DarthWeb do
           end
         end)
       end
+
+      def render_date(nil), do: nil
+
+      def render_date(date) do
+        Calendar.strftime(date, "%Y %m %d")
+      end
     end
   end
 

@@ -50,6 +50,10 @@ defmodule DarthWeb.Router do
   scope "/api", DarthWeb do
     pipe_through [:api_auth]
 
+    resources "/projects", ApiProjectController, only: [:index, :show, :create, :update, :delete] do
+      resources "/assets", ApiProjectAssetController, only: [:index, :show, :create]
+    end
+
     resources("/assets", ApiAssetController, only: [:index, :show, :create, :update, :delete]) do
       put("/license", ApiAssetController, :change_license)
       put("/users", ApiAssetController, :assign_user)
@@ -57,6 +61,27 @@ defmodule DarthWeb.Router do
       put("/projects", ApiAssetController, :assign_project)
       delete("/projects", ApiAssetController, :remove_project)
     end
+  end
+
+  scope "/api/public", DarthWeb do
+    pipe_through([:api])
+
+    resources "/projects", ApiPublicProjectController, only: [:index, :show] do
+      get("/recommendations", ApiPublicProjectController, :recommendations)
+      resources("/assets", ApiPublicProjectAssetController, only: [:index, :show])
+    end
+
+    resources("/assets", ApiPublicAssetController, only: [:index, :show])
+  end
+
+  scope "/api/public/optimized", DarthWeb do
+    pipe_through([:api])
+    resources("/assets", ApiPublicOptimizedProjectAssetsController, only: [:index])
+  end
+
+  scope "/api/oembed", DarthWeb do
+    pipe_through([:api])
+    get("/", ApiOembedController, :show)
   end
 
   if Application.compile_env(:darth, :env, :dev) in ~w(dev)a do
