@@ -1,5 +1,12 @@
 .POSIX:
 
+MIX_ENV ?= dev
+VERSION ?= $(shell  grep -r version mix.exs | cut -d'"' -f2)
+NEW_DARTH__ADMIN_HTTP_PORT ?= 15000
+DOCKER_IMAGE ?= new_darth
+DOCKER_TAG ?= $(shell date +%Y%m%d).${VERSION}-${MIX_ENV}
+DOCKER_LOCAL_IMAGE ?= "${DOCKER_IMAGE}:${DOCKER_TAG}"
+
 all: help
 
 .PHONY: deps
@@ -15,7 +22,6 @@ init: | deps init-web-assets
 init: ## initialize configurations and dependencies
 	mix ua_inspector.download --force
 	mix compile
-
 
 .PHONY: refresh-db
 refresh-db: ## re-initialize database
@@ -78,3 +84,38 @@ clean : ## delete build artifacts
 .PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: docker-tag
+docker-tag: ## tag local docker image
+	test -n "$(DOCKER_LOCAL_IMAGE)"  # $$DOCKER_LOCAL_IMAGE
+	docker tag ${DOCKER_LOCAL_IMAGE} ${DOCKER_REPO_URL}/${DOCKER_PROJECT}/${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
+
+.PHONY: docker-build
+docker-build: ## build docker based image for distribution
+	rsync --verbose --human-readable --progress --archive --compress --delete \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
+	MIX_ENV=${MIX_ENV} \
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
+	DOCKER_TAG=${DOCKER_TAG} \
+	VERSION=${VERSION} \
+	docker-compose build \darth
+
+.PHONY: docker-dev
+docker-dev: ## run local docker container in interactive iex mode
+	rsync --verbose --human-readable --progress --archive --compress --delete \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
+	MIX_ENV=${MIX_ENV} \
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
+	DOCKER_TAG=${DOCKER_TAG} \
+	VERSION=${VERSION} \
+	docker-compose run --service-ports darth_dev
+
+.PHONY: docker-refresh-db
+docker-refresh-db: ## run local docker container to refresh database
+	rsync --verbose --human-readable --progress --archive --compress --delete \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
+	MIX_ENV=${MIX_ENV} \
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
+	DOCKER_TAG=${DOCKER_TAG} \
+	VERSION=${VERSION} \
+	docker-compose up darth_refresh_db

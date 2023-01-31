@@ -39,3 +39,6 @@ priv/static/media/
 .DS_Store
 priv/static/uploads
 priv/static/preview_download/
+docker/work/
+docker/media/
+docker/preview_download/

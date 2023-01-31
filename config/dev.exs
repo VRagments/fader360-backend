@@ -2,10 +2,7 @@ import Config
 
 # Configure your database
 config :darth, Darth.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "darth_dev",
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost/darth_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
@@ -18,8 +15,7 @@ config :darth, Darth.Repo,
 config :darth, DarthWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  url: [host: "localhost", port: 45000, scheme: "http"],
-  http: [ip: {127, 0, 0, 1}, port: 45000],
+  http: [port: 45000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
