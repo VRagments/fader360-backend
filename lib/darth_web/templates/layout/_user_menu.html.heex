@@ -1,6 +1,6 @@
 <div>
     <nav class="bg-white shadow">
-        <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div class="mx-auto lg:px-32">
             <div class="relative flex h-16 justify-between">
                 <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 </div>
@@ -14,11 +14,11 @@
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                         <!-- Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-                        <a href={Routes.live_path(@socket, DarthWeb.LiveAsset.Index)}
+                        <a href={Routes.live_path(@socket, DarthWeb.AssetLive.Index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             Assets
                         </a>
-                        <a href={Routes.live_path(@socket, DarthWeb.LiveProject.Index)}
+                        <a href={Routes.live_path(@socket, DarthWeb.ProjectLive.Index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Projects</a>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-defmodule DarthWeb.LiveAsset.Detail do
+defmodule DarthWeb.AssetLive.Show do
   use DarthWeb, :live_navbar_view
   require Logger
   import Ecto.Query
@@ -23,7 +23,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Asset not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:ok, socket}
 
@@ -33,7 +33,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:ok, socket}
     end
@@ -61,7 +61,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this Asset")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -73,7 +73,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Error while fetching projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -83,7 +83,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Error while fetching asset and projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -93,7 +93,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Asset not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
 
         {:noreply, socket}
     end
@@ -109,7 +109,7 @@ defmodule DarthWeb.LiveAsset.Detail do
           socket =
             socket
             |> put_flash(:info, "Asset added to project")
-            |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, socket.assigns.asset_lease.id))
+            |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, socket.assigns.asset_lease.id))
 
           socket
 
@@ -119,7 +119,7 @@ defmodule DarthWeb.LiveAsset.Detail do
           socket =
             socket
             |> put_flash(:error, "Unable add asset to project")
-            |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Detail, socket.assigns.project.id))
+            |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, socket.assigns.project.id))
 
           socket
       end
@@ -138,7 +138,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:info, "Asset removed from project")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, asset_lease.id))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, asset_lease.id))
 
         socket
       else
@@ -148,7 +148,7 @@ defmodule DarthWeb.LiveAsset.Detail do
           socket =
             socket
             |> put_flash(:error, "Unable to remove asset from project")
-            |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, socket.assigns.asset_lease.id))
+            |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, socket.assigns.asset_lease.id))
 
           socket
       end
@@ -178,7 +178,7 @@ defmodule DarthWeb.LiveAsset.Detail do
       if socket.assigns.asset_lease.asset.id == asset.id do
         socket
         |> put_flash(:info, "Asset deleted successfully")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveAsset.Index))
+        |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
       else
         socket
       end
@@ -230,7 +230,7 @@ defmodule DarthWeb.LiveAsset.Detail do
     socket =
       socket
       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
-      |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, socket.assigns.asset_lease.id))
+      |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, socket.assigns.asset_lease.id))
 
     {:noreply, socket}
   end
@@ -284,7 +284,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, socket.assigns.asset_lease.id))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, socket.assigns.asset_lease.id))
 
         {:noreply, socket}
 
@@ -294,7 +294,7 @@ defmodule DarthWeb.LiveAsset.Detail do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveAsset.Detail, socket.assigns.asset_lease.id))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Show, socket.assigns.asset_lease.id))
 
         {:noreply, socket}
     end

@@ -1,4 +1,4 @@
-defmodule DarthWeb.LiveProject.Index do
+defmodule DarthWeb.ProjectLive.Index do
   use DarthWeb, :live_navbar_view
   require Logger
   import Ecto.Query
@@ -22,7 +22,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
 
@@ -32,7 +32,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
     end
@@ -50,7 +50,6 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> assign(
-            changeset: ProjectStruct.changeset(%ProjectStruct{}),
             user_projects_list: user_projects_list,
             user_projects_map: user_projects_map
           )
@@ -63,35 +62,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
-
-        {:noreply, socket}
-    end
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("save", %{"project" => params}, socket) do
-    params =
-      params
-      |> Map.put("user_id", socket.assigns.current_user.id)
-      |> Map.put("author", socket.assigns.current_user.display_name)
-
-    case Project.create(params) do
-      {:ok, %ProjectStruct{}} ->
-        socket =
-          socket
-          |> put_flash(:info, "Project created successfully")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
-
-        {:noreply, socket}
-
-      {:error, reason} ->
-        Logger.error("Project creation failed: #{inspect(reason)}")
-
-        socket =
-          socket
-          |> put_flash(:info, "Project creation failed")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -104,7 +75,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:info, "Project deleted successfully")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -112,7 +83,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:info, "Unable to delete project")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -137,7 +108,7 @@ defmodule DarthWeb.LiveProject.Index do
       socket
       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
       |> put_flash(:info, "Project updated")
-      |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+      |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
     {:noreply, socket}
   end
@@ -162,7 +133,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -172,7 +143,7 @@ defmodule DarthWeb.LiveProject.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveProject.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
 
         {:noreply, socket}
     end

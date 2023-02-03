@@ -93,6 +93,10 @@ defmodule DarthWeb.UserSessionController do
         Logger.info(inspect(message))
         error(conn, message)
 
+      {:error, reason, _} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+        error(conn, "Custom error message from MediaVerse: #{inspect(reason)}")
+
       {:error, reason} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
         error(conn, "Custom error message from MediaVerse: #{inspect(reason)}")

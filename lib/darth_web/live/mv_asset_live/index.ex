@@ -1,4 +1,4 @@
-defmodule DarthWeb.LiveMvAsset.Index do
+defmodule DarthWeb.MvAssetLive.Index do
   use DarthWeb, :live_navbar_view
   require Logger
   alias Darth.Model.User, as: UserStruct
@@ -21,7 +21,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
 
@@ -31,7 +31,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
     end
@@ -54,7 +54,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, inspect(reason))
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
 
@@ -64,7 +64,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, inspect(err))
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
     end
@@ -74,7 +74,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
   def handle_info({:asset_updated, _asset}, socket) do
     socket =
       socket
-      |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+      |> push_navigate(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
     {:noreply, socket}
   end
@@ -83,7 +83,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
   def handle_info({:asset_deleted, _asset}, socket) do
     socket =
       socket
-      |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+      |> push_navigate(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
     {:noreply, socket}
   end
@@ -92,7 +92,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
   def handle_info({:asset_preview_downloaded, _}, socket) do
     socket =
       socket
-      |> push_navigate(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+      |> push_navigate(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
     {:noreply, socket}
   end
@@ -120,7 +120,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
       socket =
         socket
         |> put_flash(:info, "Downloading MediaVerse Asset")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+        |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
       {:noreply, socket}
     else
@@ -130,7 +130,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, message)
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
 
@@ -140,7 +140,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, "Server response error")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
 
@@ -150,7 +150,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, inspect(reason))
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
     end
@@ -166,7 +166,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
       socket =
         socket
         |> put_flash(:info, "Asset removed successfully")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+        |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
       {:noreply, socket}
     else
@@ -179,7 +179,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, delete_message)
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
 
@@ -189,7 +189,7 @@ defmodule DarthWeb.LiveMvAsset.Index do
         socket =
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.LiveMvAsset.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
 
         {:noreply, socket}
     end

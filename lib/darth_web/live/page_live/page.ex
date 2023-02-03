@@ -1,4 +1,4 @@
-defmodule DarthWeb.LivePage.Page do
+defmodule DarthWeb.PageLive.Page do
   use DarthWeb, :live_navbar_view
   require Logger
   alias Darth.Model.User, as: UserStruct
@@ -16,7 +16,7 @@ defmodule DarthWeb.LivePage.Page do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
 
@@ -26,7 +26,7 @@ defmodule DarthWeb.LivePage.Page do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.LivePage.Page))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
 
         {:ok, socket}
     end
