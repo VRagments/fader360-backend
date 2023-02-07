@@ -7,19 +7,24 @@
                 <div
                     class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                     <div class="flex flex-shrink-0 items-center px-4">
-                        <%= link to: "/" do %>
-                        <img src={Routes.static_path(@socket, "/images/Fader_Color_20180326-182538.svg"
-                            )} class="h-8 w-auto" , alt="Your Company" />
-                        <% end %>
+                        <.link href="/">
+                            <img src={Routes.static_path(@socket, "/images/Fader_Color_20180326-182538.svg"
+                                )} class="h-8 w-auto" , alt="Your Company" />
+                        </.link>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                         <!-- Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-                        <a href={Routes.live_path(@socket, DarthWeb.AssetLive.Index)}
+                        <.link navigate={Routes.live_path(@socket, DarthWeb.AssetLive.Index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             Assets
-                        </a>
-                        <a href={Routes.live_path(@socket, DarthWeb.ProjectLive.Index)}
-                            class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Projects</a>
+                        </.link>
+                        <.link navigate={Routes.live_path(@socket, DarthWeb.MvAssetLive.Index)}
+                            class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                            MediaVerse Assets
+                        </.link>
+                        <.link navigate={Routes.live_path(@socket, DarthWeb.ProjectLive.Index)}
+                            class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                            Projects</.link>
                     </div>
                 </div>
                 <div
@@ -48,12 +53,16 @@
                             aria-labelledby="user-menu-button" tabindex="-1">
                             <!-- Active: "bg-gray-100", Not Active: "" -->
                             <%= if @current_user do %>
-                            <a class="block px-4 py-2 text-sm text-gray-700" role="menuitem"
-                                tabindex="-1" id="user-menu-item-0"><%=@current_user.email%></a>
+                            <div class="block px-4 py-2 text-sm text-gray-700" role="menuitem"
+                                tabindex="-1" id="user-menu-item-0"><%=@current_user.email%></div>
                             <%= if is_nil(@current_user.mv_node) do %>
-                            <%= link "Settings" , to: Routes.user_settings_path(@socket, :edit), class: "block px-4 py-2 text-sm text-gray-700", role: "menuitem", tabindex: "-1", id: "user-menu-item-1" %>
+                            <.link href={Routes.user_settings_path(@socket, :edit)}
+                                class="block px-4 py-2 text-sm text-gray-700" role="menuitem"
+                                tabindex="-1" id="user-menu-item-1"> Settings </.link>
                             <% end %>
-                            <%= link "Logout" , to: Routes.user_session_path(@socket, :delete), method: :delete, class: "block px-4 py-2 text-sm text-gray-700", role: "menuitem", tabindex: "-1", id: "user-menu-item-2" %>
+                            <.link href={Routes.user_session_path(@socket, :delete)} method="delete"
+                                class="block px-4 py-2 text-sm text-gray-700" role="menuitem"
+                                tabindex="-1" id="user-menu-item-1"> Logout </.link>
                             <% end %>
                         </div>
                     </div>

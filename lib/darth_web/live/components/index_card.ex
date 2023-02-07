@@ -23,7 +23,7 @@ defmodule DarthWeb.Components.IndexCard do
       <div class="flex flex-1 flex-col p-8">
       <.link navigate={@show_path}>
         <img class="mx-auto h-64 w-64" src={@image_source} alt="">
-        <h3 class="mt-6 text-sm font-medium text-gray-900"><%=@title%></h3>
+        <h3 class="mt-6 text-sm font-medium text-gray-900 truncate"><%=@title%></h3>
         <dl class="mt-1 flex flex-grow flex-col justify-between">
           <dt class="sr-only">Title</dt>
           <dd class="text-sm text-gray-500"><%=@subtitle%></dd>
