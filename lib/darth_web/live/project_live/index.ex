@@ -7,6 +7,7 @@ defmodule DarthWeb.ProjectLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.Project
+  alias DarthWeb.Components.IndexCard
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -69,7 +70,7 @@ defmodule DarthWeb.ProjectLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("delete_project", %{"ref" => project_id}, socket) do
+  def handle_event("delete", %{"ref" => project_id}, socket) do
     case Project.delete(project_id) do
       :ok ->
         socket =
