@@ -27,5 +27,8 @@ mkShell {
     # custom pkg groups
     linuxPkgs
     macosPkgs
+
+    # used for communicating with the managed Docker repository on Google Cloud Platform
+    google-cloud-sdk
   ];
 }
