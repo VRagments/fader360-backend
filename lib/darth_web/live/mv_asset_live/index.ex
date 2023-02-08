@@ -6,6 +6,7 @@ defmodule DarthWeb.MvAssetLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
   alias Darth.{MvApiClient, AssetProcessor.Downloader, AssetProcessor.PreviewDownloader}
+  alias DarthWeb.Components.IndexCard
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
@@ -103,57 +104,23 @@ defmodule DarthWeb.MvAssetLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("add_mv_asset", %{"ref" => mv_asset_key}, socket) do
-    mv_node = socket.assigns.current_user.mv_node
-    mv_token = socket.assigns.mv_token
+    add_to_fader(socket, mv_asset_key)
+  end
 
-    with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
-         download_params = %{
-           media_type: Map.get(asset, "contentType"),
-           mv_asset_key: Map.get(asset, "key"),
-           mv_asset_deeplink_key: Map.get(asset, "deepLinkKey"),
-           mv_node: mv_node,
-           mv_token: mv_token,
-           mv_asset_filename: Map.get(asset, "originalFilename"),
-           current_user: socket.assigns.current_user
-         },
-         :ok <- Downloader.add_download_params(download_params) do
-      socket =
-        socket
-        |> put_flash(:info, "Downloading MediaVerse Asset")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
+  @impl Phoenix.LiveView
+  def handle_event("add_all_mv_assets", _, socket) do
+    mv_assets = socket.assigns.mv_assets
 
-      {:noreply, socket}
-    else
-      {:ok, %{"message" => message}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
+    for mv_asset <- mv_assets do
+      mv_asset_key = Map.get(mv_asset, "key")
 
-        socket =
-          socket
-          |> put_flash(:error, message)
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-        {:noreply, socket}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-
-        socket =
-          socket
-          |> put_flash(:error, "Server response error")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-        {:noreply, socket}
-
-      {:error, reason} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-
-        socket =
-          socket
-          |> put_flash(:error, inspect(reason))
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-        {:noreply, socket}
+      case Asset.read_by(%{mv_asset_key: mv_asset_key}) do
+        {:ok, _} -> :ok
+        {:error, _} -> add_to_fader(socket, mv_asset_key)
+      end
     end
+
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -251,7 +218,7 @@ defmodule DarthWeb.MvAssetLive.Index do
     end
   end
 
-  def add_to_preview_downloader(assets, mv_node, mv_token) do
+  defp add_to_preview_downloader(assets, mv_node, mv_token) do
     for asset <- assets do
       filename = Map.get(asset, "originalFilename")
       asset_previewlink_key = Map.get(asset, "previewLinkKey")
@@ -271,6 +238,60 @@ defmodule DarthWeb.MvAssetLive.Index do
 
         PreviewDownloader.add_preview_download_params(download_params)
       end
+    end
+  end
+
+  defp add_to_fader(socket, mv_asset_key) do
+    mv_node = socket.assigns.current_user.mv_node
+    mv_token = socket.assigns.mv_token
+
+    with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
+         download_params = %{
+           media_type: Map.get(asset, "contentType"),
+           mv_asset_key: Map.get(asset, "key"),
+           mv_asset_deeplink_key: Map.get(asset, "deepLinkKey"),
+           mv_node: mv_node,
+           mv_token: mv_token,
+           mv_asset_filename: Map.get(asset, "originalFilename"),
+           current_user: socket.assigns.current_user
+         },
+         :ok <- Downloader.add_download_params(download_params) do
+      socket =
+        socket
+        |> put_flash(:info, "Downloading MediaVerse Asset")
+        |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
+
+      {:noreply, socket}
+    else
+      {:ok, %{"message" => message}} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
+
+        socket =
+          socket
+          |> put_flash(:error, message)
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
+
+        {:noreply, socket}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
+        socket =
+          socket
+          |> put_flash(:error, "Server response error")
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
+
+        {:noreply, socket}
+
+      {:error, reason} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
+        socket =
+          socket
+          |> put_flash(:error, inspect(reason))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
+
+        {:noreply, socket}
     end
   end
 end

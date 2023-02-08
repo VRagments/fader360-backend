@@ -1,57 +1,74 @@
-<section class="overflow-hidden text-gray-700 ">
-    <div class="items-center justify-center">
-        <div class="text-center">
-            <h1 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">MediaVerse
-                Assets
-            </h1>
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <div class="md:flex md:items-center md:justify-between">
+        <div class="min-w-0 flex-1">
+            <h2
+                class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
+                MediaVerse Assets</h2>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <button type="button" phx-click="add_all_mv_assets"
+                class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <!-- Heroicon name: mini/envelope -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="w-5 h-5">
+                    <path
+                        d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                </svg>
+                Add all assets to Fader
+            </button>
         </div>
     </div>
-    <div class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-        <div class="flex flex-wrap -m-1 md:-m-2">
-            <%= for mv_asset <- @mv_assets do %>
-            <div class="flex flex-wrap w-1/3">
-                <div class="w-full p-1 md:p-2">
-                    <%= if File.exists?(Path.join([Application.get_env(:darth, :mv_asset_preview_download_path),
-                        Map.get(mv_asset, "previewLinkKey"), Map.get(mv_asset, "originalFilename")]))do %>
-                    <%= if Asset.is_audio_asset?(Map.get(mv_asset, "contentType")) do%>
-                    <img alt="gallery" class="block aspect-square w-full rounded-lg"
-                        src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}>
-                    <audio class="w-full object-cover" src={Path.join([@asset_preview_static_url,
-                        Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename"
-                        )])} width="100%" controls></audio>
-                    <% else %>
-                    <img alt="gallery" class="block aspect-square w-full rounded-lg"
-                        src={Path.join([@asset_preview_static_url,
-                        Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename"
-                        )])}>
-                    <% end %>
-                    <% else %>
-                    <img alt="gallery" class="block aspect-square w-full rounded-lg"
-                        src={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}>
-                    <% end %>
-                    <div class="px-6 py-4">
-                        <div class="font-bold text-xl mb-2 w-full truncate">
-                            <%= Map.get(mv_asset, "originalFilename") %> </div>
-                        <div><%= Map.get(mv_asset, "contentType") %></div>
-                        by <b><%= Map.get(mv_asset, "createdBy")%></b>
-                    </div>
-                    <div class="px-6 pt-4 pb-2">
-                        <%= if Asset.asset_already_added?(Map.get(mv_asset, "key")) do %>
-                        <button
-                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="remove_mv_asset" phx-value-ref={Map.get(mv_asset, "key"
-                            )}>Remove from
-                            Fader</button>
-                        <%else%>
-                        <button
-                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="add_mv_asset" phx-value-ref={Map.get(mv_asset, "key" )}>Add
-                            to Fader</button>
-                        <%end%>
-                    </div>
-                </div>
-            </div>
+</section>
+
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <%= for mv_asset <- @mv_assets do %>
+        <%= if not Asset.asset_already_added?(Map.get(mv_asset, "key")) do %>
+        <%= if File.exists?(Path.join([Application.get_env(:darth, :mv_asset_preview_download_path),Map.get(mv_asset, "previewLinkKey"), Map.get(mv_asset, "originalFilename")]))do %>
+        <%= if Asset.is_audio_asset?(Map.get(mv_asset, "contentType")) do%>
+        <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
+            visibility={Map.get(mv_asset, "contentType" )} subtitle={Map.get(mv_asset, "createdBy"
+            )} button_one_label="View" button_two_label="Add to Fader"
+            image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+            button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(mv_asset, "key" )}
+            button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
+            Map.get(mv_asset, "key")} button_one_action="view"
+            audio_source={Path.join([@asset_preview_static_url,
+            Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])} />
             <% end %>
-        </div>
-    </div>
+            <%= if Asset.is_video_asset?(Map.get(mv_asset, "contentType")) do%>
+            <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
+                visibility={Map.get(mv_asset, "contentType" )}
+                subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
+                button_two_label="Add to Fader" image_source={Path.join([@asset_preview_static_url,
+                Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])}
+                button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(mv_asset, "key"
+                )} button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/video/"
+                )<>
+                Map.get(mv_asset, "key")} button_one_action="view" />
+                <% end %>
+                <%= if Asset.is_image_asset?(Map.get(mv_asset, "contentType")) do%>
+                <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
+                    visibility={Map.get(mv_asset, "contentType" )}
+                    subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
+                    button_two_label="Add to Fader"
+                    image_source={Path.join([@asset_preview_static_url,
+                    Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])}
+                    button_two_action="add_mv_asset"
+                    button_two_phx_value_ref={Map.get(mv_asset, "key" )}
+                    button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/image/"
+                    )<>Map.get(mv_asset, "key")} button_one_action="view" />
+                    <% end %>
+                    <% else %>
+                    <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
+                        visibility={Map.get(mv_asset, "contentType" )}
+                        subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
+                        button_two_label="Add to Fader"
+                        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+                        button_one_action="view" button_two_action="add_mv_asset"
+                        button_two_phx_value_ref={Map.get(mv_asset, "key" )} />
+                    <% end %>
+                    <% end %>
+                    <% end %>
+    </ul>
 </section>
