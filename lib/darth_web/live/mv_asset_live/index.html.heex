@@ -26,49 +26,21 @@
         <%= if not Asset.asset_already_added?(Map.get(mv_asset, "key")) do %>
         <%= if File.exists?(Path.join([Application.get_env(:darth, :mv_asset_preview_download_path),Map.get(mv_asset, "previewLinkKey"), Map.get(mv_asset, "originalFilename")]))do %>
         <%= if Asset.is_audio_asset?(Map.get(mv_asset, "contentType")) do%>
-        <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
-            visibility={Map.get(mv_asset, "contentType" )} subtitle={Map.get(mv_asset, "createdBy"
-            )} button_one_label="View" button_two_label="Add to Fader"
-            image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-            button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(mv_asset, "key" )}
-            button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
-            Map.get(mv_asset, "key")} button_one_action="view"
-            audio_source={Path.join([@asset_preview_static_url,
-            Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])} />
-            <% end %>
-            <%= if Asset.is_video_asset?(Map.get(mv_asset, "contentType")) do%>
-            <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
-                visibility={Map.get(mv_asset, "contentType" )}
-                subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
-                button_two_label="Add to Fader" image_source={Path.join([@asset_preview_static_url,
-                Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])}
-                button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(mv_asset, "key"
-                )} button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/video/"
-                )<>
-                Map.get(mv_asset, "key")} button_one_action="view" />
-                <% end %>
-                <%= if Asset.is_image_asset?(Map.get(mv_asset, "contentType")) do%>
-                <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
-                    visibility={Map.get(mv_asset, "contentType" )}
-                    subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
-                    button_two_label="Add to Fader"
-                    image_source={Path.join([@asset_preview_static_url,
-                    Map.get(mv_asset, "previewLinkKey" ), Map.get(mv_asset, "originalFilename" )])}
-                    button_two_action="add_mv_asset"
-                    button_two_phx_value_ref={Map.get(mv_asset, "key" )}
-                    button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/image/"
-                    )<>Map.get(mv_asset, "key")} button_one_action="view" />
-                    <% end %>
-                    <% else %>
-                    <IndexCard.render title={Map.get(mv_asset, "originalFilename" )}
-                        visibility={Map.get(mv_asset, "contentType" )}
-                        subtitle={Map.get(mv_asset, "createdBy" )} button_one_label="View"
-                        button_two_label="Add to Fader"
-                        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-                        button_one_action="view" button_two_action="add_mv_asset"
-                        button_two_phx_value_ref={Map.get(mv_asset, "key" )} />
-                    <% end %>
-                    <% end %>
-                    <% end %>
+        <.render_audio_card mv_asset={mv_asset} socket={@socket} current_user={@current_user}
+            asset_preview_static_url={@asset_preview_static_url} />
+        <% end %>
+        <%= if Asset.is_video_asset?(Map.get(mv_asset, "contentType")) do%>
+        <.render_video_card mv_asset={mv_asset} socket={@socket} current_user={@current_user}
+            asset_preview_static_url={@asset_preview_static_url} />
+        <% end %>
+        <%= if Asset.is_image_asset?(Map.get(mv_asset, "contentType")) do%>
+        <.render_image_card mv_asset={mv_asset} socket={@socket} current_user={@current_user}
+            asset_preview_static_url={@asset_preview_static_url} />
+        <% end %>
+        <% else %>
+        <.render_default_card mv_asset={mv_asset} socket={@socket} />
+        <% end %>
+        <% end %>
+        <% end %>
     </ul>
 </section>

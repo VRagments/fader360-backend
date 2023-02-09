@@ -43,29 +43,12 @@
         <%= for asset_lease <- @asset_leases_list do %>
         <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
         <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do%>
-        <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
-            asset_lease.id)} title={asset_lease.asset.name} visibility={asset_lease.asset.status}
-            subtitle={asset_lease.asset.media_type} button_one_label="Re-Transcode"
-            button_two_label="Delete"
-            image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-            button_one_action="re_transcode" button_one_phx_value_ref={asset_lease.asset.id}
-            button_two_action="delete" button_two_phx_value_ref={asset_lease.id} />
+        <.render_audio_card asset_lease={asset_lease} socket={@socket} />
         <% else %>
-        <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
-            asset_lease.id)} title={asset_lease.asset.name} visibility={asset_lease.asset.status}
-            subtitle={asset_lease.asset.media_type} button_one_label="Re-Transcode"
-            button_two_label="Delete" image_source={asset_lease.asset.thumbnail_image}
-            button_one_action="re_transcode" button_one_phx_value_ref={asset_lease.asset.id}
-            button_two_action="delete" button_two_phx_value_ref={asset_lease.id} />
+        <.render_image_card asset_lease={asset_lease} socket={@socket} />
         <% end %>
         <% else %>
-        <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
-            asset_lease.id)} title={asset_lease.asset.name} visibility={asset_lease.asset.status}
-            subtitle={asset_lease.asset.media_type} button_one_label="Re-Transcode"
-            button_two_label="Delete"
-            image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-            button_one_action="re_transcode" button_one_phx_value_ref={asset_lease.asset.id}
-            button_two_action="delete" button_two_phx_value_ref={asset_lease.id} />
+        <.render_default_card asset_lease={asset_lease} socket={@socket} />
         <% end %>
         <% end %>
     </ul>

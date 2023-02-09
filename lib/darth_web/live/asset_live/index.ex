@@ -337,6 +337,39 @@ defmodule DarthWeb.AssetLive.Index do
     end
   end
 
+  defp render_audio_card(assigns) do
+    ~H"""
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
+      button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_image_card(assigns) do
+    ~H"""
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
+      button_two_label="Delete" image_source={@asset_lease.asset.thumbnail_image}
+      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_default_card(assigns) do
+    ~H"""
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
+      button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
   defp error_to_string(:too_large), do: "Too large"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
