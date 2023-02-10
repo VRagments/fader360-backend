@@ -31,8 +31,8 @@
                     <%=if Asset.is_video_asset?(@asset_lease.asset.media_type) do %>
                     <video id="media" class="w-full object-cover" controls></video>
                     <%end %>
-                    <div id="static_url" data-static_url={@asset_lease.asset.static_url}>
-                    </div>
+                    <div phx-mounted={JS.dispatch("media_load", detail:
+                        @asset_lease.asset.static_url)}></div>
                     <%=if Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
                     <img class="w-full object-cover" src={@asset_lease.asset.static_url} alt="">
                     <% end %>

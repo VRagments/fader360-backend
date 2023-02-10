@@ -1,10 +1,9 @@
 import Hls from 'hls.js';
 
-function media_hls_player() {
+function media_hls_player(static_url) {
     if (Hls.isSupported()) {
         var media = document.getElementById('media');
         if (media !== null) {
-            var static_url = document.getElementById('static_url').dataset.static_url;
             var hls = new Hls();
             hls.attachMedia(media);
             hls.loadSource(static_url);
@@ -13,4 +12,4 @@ function media_hls_player() {
     }
 }
 
-media_hls_player();
+export { media_hls_player };

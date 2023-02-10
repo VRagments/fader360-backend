@@ -22,7 +22,7 @@ defmodule DarthWeb.Components.IndexCard do
     <li
         class="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center shadow-xl">
       <div class="flex flex-1 flex-col p-8">
-      <.link href={@show_path}>
+      <.link navigate={@show_path}>
         <img class="mx-auto h-64 w-64" src={@image_source} alt="">
         <%= if not is_nil(@audio_source) do %>
         <audio class="w-full" src={@audio_source} width="100%" controls></audio>
