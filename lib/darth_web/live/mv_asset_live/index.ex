@@ -4,9 +4,9 @@ defmodule DarthWeb.MvAssetLive.Index do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.User
   alias Darth.Controller.Asset
-  alias Darth.Controller.AssetLease
   alias Darth.{MvApiClient, AssetProcessor.Downloader, AssetProcessor.PreviewDownloader}
   alias DarthWeb.Components.IndexCard
+  alias DarthWeb.Components.Header
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
@@ -121,101 +121,6 @@ defmodule DarthWeb.MvAssetLive.Index do
     end
 
     {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("remove_mv_asset", %{"ref" => mv_asset_key}, socket) do
-    with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
-         {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
-         :ok <- AssetLease.maybe_delete(asset_lease),
-         :ok <- Asset.delete(asset) do
-      socket =
-        socket
-        |> put_flash(:info, "Asset removed successfully")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-      {:noreply, socket}
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {reason_atom, _} = List.first(changeset.errors)
-
-        delete_message = handle_asset_lease_deletion(reason_atom, socket.assigns.current_user, mv_asset_key)
-        Logger.error("Error message while deleting asset_lease: #{inspect(delete_message)}")
-
-        socket =
-          socket
-          |> put_flash(:error, delete_message)
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-        {:noreply, socket}
-
-      {:error, reason} ->
-        Logger.error("Error message while deleting asset_lease: #{inspect(reason)}")
-
-        socket =
-          socket
-          |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.MvAssetLive.Index))
-
-        {:noreply, socket}
-    end
-  end
-
-  defp handle_asset_lease_deletion(:projects_asset_leases, user, mv_asset_key) do
-    with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
-         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
-      "Asset cannot be deleted as it is being used in projects"
-    else
-      {:error, reason} ->
-        "Error while deleting the asset: #{inspect(reason)}"
-
-      nil ->
-        "Asset not found"
-    end
-  end
-
-  defp handle_asset_lease_deletion(:user_asset_leases, user, mv_asset_key) do
-    with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
-         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
-      "Asset cannot be deleted as it is being used by other user"
-    else
-      {:error, reason} ->
-        "Error while deleting the asset: #{inspect(reason)}"
-
-      nil ->
-        "Asset not found"
-    end
-  end
-
-  defp handle_asset_lease_deletion(:projects, user, mv_asset_key) do
-    with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
-         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
-      "Asset cannot be deleted as it is used as a primary asset in project"
-    else
-      {:error, reason} ->
-        "Error while deleting the asset: #{inspect(reason)}"
-
-      nil ->
-        "Asset not found"
-    end
-  end
-
-  defp handle_asset_lease_deletion(error, user, mv_asset_key) do
-    with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset.id}),
-         {:ok, _asset_lease} <- AssetLease.add_user(asset_lease, user) do
-      "Error while deleting the asset: #{inspect(error)}"
-    else
-      {:error, reason} ->
-        "Error while deleting the asset: #{inspect(reason)}"
-
-      nil ->
-        "Asset not found"
-    end
   end
 
   defp add_to_preview_downloader(assets, mv_node, mv_token) do

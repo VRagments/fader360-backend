@@ -1,24 +1,5 @@
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-            <h2
-                class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
-                MediaVerse Assets</h2>
-        </div>
-        <div class="mt-4 flex md:mt-0 md:ml-4">
-            <button type="button" phx-click="add_all_mv_assets"
-                class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                <!-- Heroicon name: mini/envelope -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    class="w-5 h-5">
-                    <path
-                        d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                </svg>
-                Add all assets to Fader
-            </button>
-        </div>
-    </div>
-</section>
+<Header.render heading="MediaVerse Assets" button_label="Add all Assets to Fader"
+    button_action="add_all_mv_assets" />
 
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

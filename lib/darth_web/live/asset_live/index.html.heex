@@ -1,42 +1,24 @@
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-            <h2
-                class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
-                Assets</h2>
-        </div>
-        <div class="mt-4 flex md:mt-0 md:ml-4">
-            <form id="upload-form"
-                class="block text-lg text-gray-900 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none"
-                , id="small_size" , phx-submit="save" phx-change="validate">
-                <.live_file_input upload={@uploads.media} />
-                <button type="submit"
-                    class="text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                    data-mdb-ripple="true" data-mdb-ripple-color="light">Upload</button>
-            </form>
-        </div>
-    </div>
-    <div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
-        <%# render each avatar entry %>
-        <%= for entry <- @uploads.media.entries do %>
-        <article class="upload-entry">
-            <%# entry.progress will update automatically for in-flight entries %>
-            <progress value={entry.progress} max="100"> <%= entry.progress %>% </progress>
-            <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
-            <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
-                aria-label="cancel">&times;</button>
-            <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
-            <%= for err <- upload_errors(@uploads.media, entry) do %>
-            <p class="alert alert-danger"><%= error_to_string(err) %></p>
-            <% end %>
-        </article>
-        <% end %>
-        <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
-        <%= for err <- upload_errors(@uploads.media) do %>
+<Header.render heading="Assets" button_action="upload" uploads={@uploads} />
+<div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
+    <%# render each avatar entry %>
+    <%= for entry <- @uploads.media.entries do %>
+    <article class="upload-entry">
+        <%# entry.progress will update automatically for in-flight entries %>
+        <progress value={entry.progress} max="100"> <%= entry.progress %>% </progress>
+        <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+        <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
+            aria-label="cancel">&times;</button>
+        <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
+        <%= for err <- upload_errors(@uploads.media, entry) do %>
         <p class="alert alert-danger"><%= error_to_string(err) %></p>
         <% end %>
-    </div>
-</section>
+    </article>
+    <% end %>
+    <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
+    <%= for err <- upload_errors(@uploads.media) do %>
+    <p class="alert alert-danger"><%= error_to_string(err) %></p>
+    <% end %>
+</div>
 
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

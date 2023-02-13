@@ -6,6 +6,7 @@ defmodule DarthWeb.AssetLive.Index do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.AssetLease
   alias DarthWeb.Components.IndexCard
+  alias DarthWeb.Components.Header
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do

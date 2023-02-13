@@ -6,6 +6,7 @@ defmodule DarthWeb.ProjectLive.Show do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
+  alias DarthWeb.Components.Header
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do

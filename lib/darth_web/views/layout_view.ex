@@ -1,6 +1,7 @@
 defmodule DarthWeb.LayoutView do
   use DarthWeb, :view
   alias Phoenix.LiveView.JS
+  alias Darth.Controller.User
 
   # Phoenix LiveDashboard is available only in development by default,
   # so we instruct Elixir to not warn if the dashboard route is missing.
