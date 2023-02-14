@@ -24,7 +24,7 @@ config :darth, Darth.Repo,
 
 # Configures the endpoint
 config :darth, DarthWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "localhost", port: "45000"],
   render_errors: [view: DarthWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Darth.PubSub,
   live_view: [signing_salt: "iMX9wAB3"]
