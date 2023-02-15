@@ -1,67 +1,17 @@
 <Header.render heading={@project.name} button_label="Edit"
     button_link={Routes.project_form_path(@socket, :edit, @project.id)}
     button_action="edit_project" />
+<%= if Project.has_primary_asset_lease?(@project) do %>
+<%= if Asset.is_audio_asset?(@project.primary_asset.media_type) do %>
+<.render_project_with_audio_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<% else %>
+<.render_project_with_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<% end %>
+<% else %>
+<.render_project_with_no_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<% end %>
 
-<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
-    <div class="relative sm:py-16 lg:py-0">
-        <div aria-hidden="true"
-            class="hidden sm:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-screen">
-            <div class="absolute inset-y-0 right-1/2 w-full rounded-r-3xl bg-gray-50 lg:right-72">
-            </div>
-            <svg class="absolute top-8 left-1/2 -ml-3 lg:-right-8 lg:left-auto lg:top-12"
-                width="404" height="392" fill="none" viewBox="0 0 404 392">
-                <defs>
-                    <pattern id="02f20b47-fd69-4224-a62a-4c9de5c763f7" x="0" y="0" width="20"
-                        height="20" patternUnits="userSpaceOnUse">
-                        <rect x="0" y="0" width="4" height="4" class="text-gray-200"
-                            fill="currentColor" />
-                    </pattern>
-                </defs>
-                <rect width="404" height="392" fill="url(#02f20b47-fd69-4224-a62a-4c9de5c763f7)" />
-            </svg>
-        </div>
-        <div
-            class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:max-w-none lg:px-0 lg:py-20">
-            <div class="relative overflow-hidden rounded-2xl shadow-xl">
-                <%= if Project.has_primary_asset_lease?(@project) do %>
-                <%= if Asset.is_audio_asset?(@project.primary_asset.media_type) do %>
-                <img class="w-full object-cover"
-                    src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )} alt="">
-                <% else %>
-                <img class="w-full object-cover" src={@project.primary_asset.thumbnail_image}
-                    alt="">
-                <% end %>
-                <% else %>
-                <img class="w-full object-cover"
-                    src={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )} alt="">
-                <% end %>
-            </div>
-        </div>
-    </div>
 
-    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
-        <!-- Stats section -->
-        <div class="mt-10">
-            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
-                <div class="border-t-2 border-gray-100 pt-6">
-                    <dt class="text-base font-medium text-gray-500">Author</dt>
-                    <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                        <%=@project.author%></dd>
-                </div>
-                <div class="border-t-2 border-gray-100 pt-6">
-                    <dt class="text-base font-medium text-gray-500">Visibility</dt>
-                    <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                        <%=@project.visibility%></dd>
-                </div>
-                <div class="border-t-2 border-gray-100 pt-6">
-                    <dt class="text-base font-medium text-gray-500">Created on</dt>
-                    <dd class="text-3xl font-bold tracking-tight text-gray-900">
-                        <%= NaiveDateTime.to_date(@project.updated_at)%></dd>
-                </div>
-            </dl>
-        </div>
-    </div>
-</div>
 <div class="bg-white">
     <div class="items-center justify-center">
         <div class="text-center">

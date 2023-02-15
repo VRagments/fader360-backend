@@ -6,7 +6,9 @@ defmodule DarthWeb.ProjectLive.Show do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
+  alias Darth.Model.Project, as: ProjectStruct
   alias DarthWeb.Components.Header
+  alias DarthWeb.Components.Show
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -48,7 +50,13 @@ defmodule DarthWeb.ProjectLive.Show do
          asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map),
          true <- project.user_id == socket.assigns.current_user.id do
       {:noreply,
-       socket |> assign(project: project, asset_leases_map: asset_leases_map, asset_leases_list: asset_leases_list)}
+       socket
+       |> assign(
+         project: project,
+         asset_leases_map: asset_leases_map,
+         asset_leases_list: asset_leases_list,
+         changeset: ProjectStruct.changeset(project)
+       )}
     else
       {:error, reason} ->
         Logger.error("Error message: Database error while fetching user project: #{inspect(reason)}")
@@ -158,6 +166,17 @@ defmodule DarthWeb.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("update_visibility", %{"project" => project_params}, socket) do
+    case Project.update(socket.assigns.project, project_params) do
+      {:ok, _updated_project} ->
+        {:noreply, socket}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:assigned_project, asset_lease}, socket) do
     asset_leases_map = Map.put(socket.assigns.asset_leases_map, asset_lease.id, asset_lease)
     asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
@@ -192,7 +211,7 @@ defmodule DarthWeb.ProjectLive.Show do
     socket =
       if socket.assigns.project.id == project.id do
         socket
-        |> put_flash(:info, "Project updated")
+        |> put_flash(:info, "Project visibility updated")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, project.id))
       else
         socket
@@ -268,5 +287,29 @@ defmodule DarthWeb.ProjectLive.Show do
 
         {:noreply, socket}
     end
+  end
+
+  defp render_project_with_audio_primary_asset(assigns) do
+    ~H"""
+    <Show.render type="project" author={@project.author} visibility={@project.visibility}
+      updated_at={NaiveDateTime.to_date(@project.updated_at)}
+      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )} changeset={@changeset} />
+    """
+  end
+
+  defp render_project_with_primary_asset(assigns) do
+    ~H"""
+    <Show.render type="project" author={@project.author} visibility={@project.visibility}
+      updated_at={NaiveDateTime.to_date(@project.updated_at)}
+      source={@project.primary_asset.thumbnail_image} changeset={@changeset}/>
+    """
+  end
+
+  defp render_project_with_no_primary_asset(assigns) do
+    ~H"""
+    <Show.render type="project" author={@project.author} visibility={@project.visibility}
+      updated_at={NaiveDateTime.to_date(@project.updated_at)}
+      source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )} changeset={@changeset}/>
+    """
   end
 end

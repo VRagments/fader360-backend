@@ -8,8 +8,8 @@ defmodule DarthWeb.AssetLive.Show do
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
   alias Darth.Controller.Project
-  alias Phoenix.LiveView.JS
   alias DarthWeb.Components.Header
+  alias DarthWeb.Components.Show
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -241,15 +241,15 @@ defmodule DarthWeb.AssetLive.Show do
     {:noreply, socket}
   end
 
-  def get_width(attributes) do
+  defp get_width(attributes) do
     Map.get(attributes, "width")
   end
 
-  def get_height(attributes) do
+  defp get_height(attributes) do
     Map.get(attributes, "height")
   end
 
-  def get_file_size(attributes) do
+  defp get_file_size(attributes) do
     size = Map.get(attributes, "file_size")
 
     (size * 0.000001)
@@ -257,7 +257,7 @@ defmodule DarthWeb.AssetLive.Show do
     |> inspect
   end
 
-  def get_duration(attributes) do
+  defp get_duration(attributes) do
     duration = Map.get(attributes, "duration")
 
     case duration > 0 do
@@ -300,5 +300,37 @@ defmodule DarthWeb.AssetLive.Show do
 
         {:noreply, socket}
     end
+  end
+
+  defp render_audio_asset_detail(assigns) do
+    ~H"""
+    <Show.render type="audio_asset"
+      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      data_source={@asset_lease.asset.static_url}
+      file_size={get_file_size(@asset_lease.asset.attributes)}
+      duration={get_duration(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
+      media_type={@asset_lease.asset.media_type} />
+    """
+  end
+
+  defp render_video_asset_detail(assigns) do
+    ~H"""
+    <Show.render type="video_asset" data_source={@asset_lease.asset.static_url}
+      width={get_width(@asset_lease.asset.attributes)}
+      height={get_height(@asset_lease.asset.attributes)}
+      file_size={get_file_size(@asset_lease.asset.attributes)}
+      duration={get_duration(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
+      media_type={@asset_lease.asset.media_type} />
+    """
+  end
+
+  defp render_image_asset_detail(assigns) do
+    ~H"""
+    <Show.render type="image_asset" source={@asset_lease.asset.static_url}
+      width={get_width(@asset_lease.asset.attributes)}
+      height={get_height(@asset_lease.asset.attributes)}
+      file_size={get_file_size(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
+      media_type={@asset_lease.asset.media_type} />
+    """
   end
 end

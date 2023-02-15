@@ -26,7 +26,8 @@ defmodule Darth.MvApiClient do
   end
 
   def fetch_assets(mv_node, mv_token) do
-    url = mv_node <> "/assets"
+    number_of_mv_assets_to_fetch = Application.get_env(:darth, :number_of_mv_assets_to_fetch)
+    url = mv_node <> "/assets?per_page=" <> number_of_mv_assets_to_fetch
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
          {:ok, assets} when is_list(assets) <- Poison.decode(body) do
