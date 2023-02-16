@@ -10,6 +10,7 @@ defmodule DarthWeb.AssetLive.Show do
   alias Darth.Controller.Project
   alias DarthWeb.Components.Header
   alias DarthWeb.Components.Show
+  alias DarthWeb.Components.ShowCard
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -102,7 +103,7 @@ defmodule DarthWeb.AssetLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("assign_project", %{"ref" => user_project_id}, socket) do
+  def handle_event("assign", %{"ref" => user_project_id}, socket) do
     user_project = Map.get(socket.assigns.user_projects_map, user_project_id)
 
     socket =
@@ -130,7 +131,7 @@ defmodule DarthWeb.AssetLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("unassign_project", %{"ref" => user_project_id}, socket) do
+  def handle_event("unassign", %{"ref" => user_project_id}, socket) do
     user_project = Map.get(socket.assigns.user_projects_map, user_project_id)
 
     socket =
@@ -331,6 +332,64 @@ defmodule DarthWeb.AssetLive.Show do
       height={get_height(@asset_lease.asset.attributes)}
       file_size={get_file_size(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
       media_type={@asset_lease.asset.media_type} />
+    """
+  end
+
+  defp render_added_audio_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="unassign" button_one_label="Remove from Project"
+      button_one_phx_value_ref={@user_project.id} />
+    """
+  end
+
+  defp render_added_image_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={@user_project.primary_asset.thumbnail_image} button_one_action="unassign"
+      button_one_label="Remove from Project" button_one_phx_value_ref={@user_project.id} />
+    """
+  end
+
+  defp render_added_default_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+      button_one_action="unassign" button_one_label="Remove from Project"
+      button_one_phx_value_ref={@user_project.id} />
+    """
+  end
+
+  defp render_available_audio_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="assign" button_one_label="Add to Project"
+      button_one_phx_value_ref={@user_project.id} />
+    """
+  end
+
+  defp render_available_image_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={@user_project.primary_asset.thumbnail_image} button_one_action="assign"
+      button_one_label="Add to Project" button_one_phx_value_ref={@user_project.id} />
+    """
+  end
+
+  defp render_available_default_project_card(assigns) do
+    ~H"""
+    <ShowCard.render title={@user_project.name} subtitle={@user_project.visibility}
+      show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show, @user_project.id)}
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+      button_one_action="assign" button_one_label="Add to Project"
+      button_one_phx_value_ref={@user_project.id} />
     """
   end
 end

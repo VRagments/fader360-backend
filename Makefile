@@ -98,7 +98,7 @@ docker-build: ## build docker based image for distribution
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
-	docker-compose build \darth
+	docker compose build \darth
 
 .PHONY: docker-dev
 docker-dev: ## run local docker container in interactive iex mode
@@ -108,7 +108,7 @@ docker-dev: ## run local docker container in interactive iex mode
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
-	docker-compose run --service-ports darth_dev
+	docker compose run --service-ports darth_dev
 
 .PHONY: docker-refresh-db
 docker-refresh-db: ## run local docker container to refresh database
@@ -118,4 +118,4 @@ docker-refresh-db: ## run local docker container to refresh database
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
-	docker-compose up darth_refresh_db
+	docker compose up darth_refresh_db

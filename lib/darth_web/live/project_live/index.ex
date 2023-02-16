@@ -9,6 +9,7 @@ defmodule DarthWeb.ProjectLive.Index do
   alias Darth.Controller.Project
   alias DarthWeb.Components.IndexCard
   alias DarthWeb.Components.Header
+  alias DarthWeb.Components.Pagination
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -45,13 +46,15 @@ defmodule DarthWeb.ProjectLive.Index do
     query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id)
 
     case Project.query(params, query, true) do
-      %{entries: user_projects} ->
+      %{query_page: current_page, total_pages: total_pages, entries: user_projects} ->
         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end)
         user_projects_list = Project.get_sorted_user_project_list(user_projects_map)
 
         socket =
           socket
           |> assign(
+            current_page: current_page,
+            total_pages: total_pages,
             user_projects_list: user_projects_list,
             user_projects_map: user_projects_map
           )

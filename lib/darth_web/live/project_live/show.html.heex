@@ -3,127 +3,56 @@
     button_action="edit_project" />
 <%= if Project.has_primary_asset_lease?(@project) do %>
 <%= if Asset.is_audio_asset?(@project.primary_asset.media_type) do %>
-<.render_project_with_audio_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<.render_project_with_audio_primary_asset socket={@socket} project={@project}
+    changeset={@changeset} />
 <% else %>
-<.render_project_with_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<.render_project_with_primary_asset socket={@socket} project={@project} changeset={@changeset} />
 <% end %>
 <% else %>
-<.render_project_with_no_primary_asset socket={@socket} project={@project} changeset={@changeset}/>
+<.render_project_with_no_primary_asset socket={@socket} project={@project} changeset={@changeset} />
 <% end %>
 
 
-<div class="bg-white">
-    <div class="items-center justify-center">
-        <div class="text-center">
-            <h2 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">
-                Added Assets
-            </h2>
-        </div>
-    </div>
-    <div class="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-        <div
-            class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            <%= for asset_lease <- @asset_leases_list do %>
-            <%= if AssetLease.is_part_of_project?(asset_lease, @project) do %>
-            <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
-            <div>
-                <div
-                    class="min-h-80 aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
-                    <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
-                    <img src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-                        alt="" class="h-full w-full object-cover object-center lg:h-full lg:w-full">
-                    <% else %>
-                    <img src={asset_lease.asset.thumbnail_image} alt=""
-                        class="h-full w-full object-cover object-center lg:h-full lg:w-full">
-                    <% end %>
-                </div>
-                <div>
-                    <h3 class="text-sm text-gray-500">
-                        <p class="text-sm font-medium text-gray-900 truncate">
-                            <%= asset_lease.asset.name%></p>
-                    </h3>
-                    <p class="text-sm text-gray-500 truncate">
-                        <%= asset_lease.asset.media_type%></p>
-                </div>
-                <div class="w-1/2 flex justify-end">
-                    <div>
-                        <button
-                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="unassign_project" phx-value-ref={asset_lease.id}><svg
-                                xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M19 12.998H5v-2h14z" />
-                            </svg></button>
-                    </div>
-                    <%= unless AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
-                    <div>
-                        <button
-                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="make_primary_asset_lease" phx-value-ref={asset_lease.id}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                                <path fill="currentColor"
-                                    d="m22 9.24l-7.19-.62L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21L12 17.27L18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27l1-4.28l-3.32-2.88l4.38-.38L12 6.1l1.71 4.04l4.38.38l-3.32 2.88l1 4.28L12 15.4z" />
-                            </svg></button>
-                    </div>
-                    <% end %>
-                </div>
-            </div>
-            <% end %>
-            <% end %>
-            <% end %>
-        </div>
-    </div>
-</div>
-<div class="bg-white">
-    <div class="items-center justify-center">
-        <div class="text-center">
-            <h2 class="mt-4 px-4 py-2 text-black text-2xl font-semibold md:text-3xl">
-                Available Assets
-            </h2>
-        </div>
-    </div>
-    <div class="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-        <div
-            class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            <%= for asset_lease <- @asset_leases_list do %>
-            <%=unless AssetLease.is_part_of_project?(asset_lease, @project) do%>
-            <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
-            <div>
-                <div
-                    class="min-h-80 aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
-                    <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
-                    <img src={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-                        alt="" class="h-full w-full object-cover object-center lg:h-full lg:w-full">
-                    <% else %>
-                    <img src={asset_lease.asset.thumbnail_image} alt=""
-                        class="h-full w-full object-cover object-center lg:h-full lg:w-full">
-                    <% end %>
-                </div>
-                <div>
-                    <h3 class="text-sm text-gray-700">
-                        <p class="truncate text-sm font-medium text-gray-900">
-                            <%= asset_lease.asset.name%></p>
-                    </h3>
-                    <p class="truncate text-sm text-gray-500">
-                        <%= asset_lease.asset.media_type%></p>
-                </div>
-                <div class="w-1/2 flex justify-end">
-                    <div>
-                        <button
-                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                            phx-click="assign_project" phx-value-ref={asset_lease.id}><svg
-                                xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                                <path fill="currentColor"
-                                    d="M19 12.998h-6v6h-2v-6H5v-2h6v-6h2v6h6z" />
-                            </svg></button>
-                    </div>
-                </div>
-            </div>
-            <% end %>
-            <% end %>
-            <% end %>
-        </div>
-    </div>
-</div>
+<Header.render heading="Added Assets" />
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list"
+        class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+        <%= for asset_lease <- @asset_leases_list do %>
+        <%= if AssetLease.is_part_of_project?(asset_lease, @project) do %>
+        <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
+        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
+        <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
+        <.render_added_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+        <% else %>
+        <.render_added_audio_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
+        <% end %>
+        <% else %>
+        <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
+        <.render_added_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+        <% else %>
+        <.render_added_asset_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
+        <% end %>
+        <% end %>
+        <% end %>
+        <% end %>
+        <% end %>
+    </ul>
+</section>
+
+<Header.render heading="Available Assets" />
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list"
+        class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+        <%= for asset_lease <- @asset_leases_list do %>
+        <%=unless AssetLease.is_part_of_project?(asset_lease, @project) do%>
+        <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
+        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
+        <.render_available_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+        <% else %>
+        <.render_available_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+        <% end %>
+        <% end %>
+        <% end %>
+        <% end %>
+    </ul>
+</section>

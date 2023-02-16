@@ -9,6 +9,7 @@ defmodule DarthWeb.ProjectLive.Show do
   alias Darth.Model.Project, as: ProjectStruct
   alias DarthWeb.Components.Header
   alias DarthWeb.Components.Show
+  alias DarthWeb.Components.ShowCard
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -93,7 +94,7 @@ defmodule DarthWeb.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("assign_project", %{"ref" => asset_lease_id}, socket) do
+  def handle_event("assign", %{"ref" => asset_lease_id}, socket) do
     with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
          {:ok, _asset_lease} <-
            AssetLease.assign_project(asset_lease, socket.assigns.current_user, socket.assigns.project) do
@@ -117,7 +118,7 @@ defmodule DarthWeb.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("unassign_project", %{"ref" => asset_lease_id}, socket) do
+  def handle_event("unassign", %{"ref" => asset_lease_id}, socket) do
     with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
          {:ok, asset_lease} <-
            AssetLease.unassign_project(asset_lease, socket.assigns.current_user, socket.assigns.project),
@@ -142,7 +143,7 @@ defmodule DarthWeb.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("make_primary_asset_lease", %{"ref" => asset_lease_id}, socket) do
+  def handle_event("make_primary", %{"ref" => asset_lease_id}, socket) do
     with {:ok, project} <- Project.update(socket.assigns.project, %{primary_asset_lease_id: asset_lease_id}),
          {:ok, project} <- Project.read(project.id) do
       socket =
@@ -211,7 +212,7 @@ defmodule DarthWeb.ProjectLive.Show do
     socket =
       if socket.assigns.project.id == project.id do
         socket
-        |> put_flash(:info, "Project visibility updated")
+        |> put_flash(:info, "Project updated")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, project.id))
       else
         socket
@@ -310,6 +311,66 @@ defmodule DarthWeb.ProjectLive.Show do
     <Show.render type="project" author={@project.author} visibility={@project.visibility}
       updated_at={NaiveDateTime.to_date(@project.updated_at)}
       source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )} changeset={@changeset}/>
+    """
+  end
+
+  defp render_added_audio_card_with_one_button(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="unassign" button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_added_audio_card_with_two_buttons(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="unassign" button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id} button_two_action="make_primary"
+      button_two_label="Make primary" button_two_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_added_asset_card_with_one_button(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+    image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
+    button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_added_asset_card_with_two_buttons(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
+      button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id}
+      button_two_action="make_primary" button_two_label="Make primary"
+      button_two_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_available_audio_card_with_one_button(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="assign" button_one_label="Add"
+      button_one_phx_value_ref={@asset_lease.id} />
+    """
+  end
+
+  defp render_available_asset_card_with_one_button(assigns) do
+    ~H"""
+    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      image_source={@asset_lease.asset.thumbnail_image} button_one_action="assign"
+      button_one_label="Add" button_one_phx_value_ref={@asset_lease.id} />
     """
   end
 end
