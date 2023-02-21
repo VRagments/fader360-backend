@@ -1,4 +1,4 @@
-defmodule DarthWeb.ProjectLive.Form do
+defmodule DarthWeb.Projects.ProjectLive.Form do
   use DarthWeb, :live_navbar_view
   require Logger
   alias Darth.Model.User, as: UserStruct
@@ -93,7 +93,7 @@ defmodule DarthWeb.ProjectLive.Form do
     socket
     |> assign(changeset: ProjectStruct.changeset(%ProjectStruct{}))
     |> assign(action_label: "Create")
-    |> assign(:return_to, Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+    |> assign(:return_to, Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
   end
 
   defp apply_action(socket, :edit, %{"project_id" => project_id}) do
@@ -103,12 +103,12 @@ defmodule DarthWeb.ProjectLive.Form do
         |> assign(:changeset, ProjectStruct.changeset(project))
         |> assign(:project, project)
         |> assign(action_label: "Update")
-        |> assign(:return_to, Routes.live_path(socket, DarthWeb.ProjectLive.Show, project_id))
+        |> assign(:return_to, Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, project_id))
 
       _ ->
         socket
         |> put_flash(:error, "Unable to fetch project")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+        |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
     end
   end
 end

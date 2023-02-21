@@ -1,15 +1,7 @@
-<Header.render heading={@asset_lease.asset.name} />
-<%=if Asset.is_audio_asset?(@asset_lease.asset.media_type) do %>
-<.render_audio_asset_detail socket={@socket} asset_lease={@asset_lease} />
-<% end %>
-<%=if Asset.is_video_asset?(@asset_lease.asset.media_type) do %>
-<.render_video_asset_detail asset_lease={@asset_lease} />
-<%end %>
-<%=if Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
-<.render_image_asset_detail asset_lease={@asset_lease} />
-<% end %>
+<Header.render heading={"Manage projects of " <> @asset_lease.asset.name} button_label=" Done"
+    button_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+    button_action="done" />
 
-<Header.render heading="Added Projects" />
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list"
         class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
@@ -24,18 +16,7 @@
         <% else %>
         <.render_added_default_project_card socket={@socket} user_project={user_project} />
         <% end %>
-        <% end %>
-        <% end %>
-    </ul>
-</section>
-
-
-<Header.render heading="Available Projects" />
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <ul role="list"
-        class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-        <%= for user_project <- @user_projects_list do %>
-        <%=unless AssetLease.is_part_of_project?(@asset_lease, user_project) do%>
+        <%else %>
         <%= if Project.has_primary_asset_lease?(user_project) do %>
         <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
         <.render_available_audio_project_card socket={@socket} user_project={user_project} />
@@ -49,3 +30,8 @@
         <% end %>
     </ul>
 </section>
+
+<Pagination.render total_pages={@total_pages} current_page={@current_page}
+    back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page:
+    (@current_page-1))} forward_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+    @asset_lease.id, page: (@current_page+1))} />

@@ -1,0 +1,14 @@
+<Header.render heading={@project.name} button_label="Edit Project"
+    button_link={Routes.project_form_path(@socket, :edit, @project.id)} button_action="edit_project"
+    button_two_action="manage" button_two_label="Manage Project Assets"
+    button_two_link={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets, @project.id)} />
+<%= if Project.has_primary_asset_lease?(@project) do %>
+<%= if Asset.is_audio_asset?(@project.primary_asset.media_type) do %>
+<.render_project_with_audio_primary_asset socket={@socket} project={@project}
+    changeset={@changeset} />
+<% else %>
+<.render_project_with_primary_asset socket={@socket} project={@project} changeset={@changeset} />
+<% end %>
+<% else %>
+<.render_project_with_no_primary_asset socket={@socket} project={@project} changeset={@changeset} />
+<% end %>

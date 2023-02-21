@@ -109,12 +109,14 @@ defmodule DarthWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
-    live "/users/assets", AssetLive.Index
-    live "/users/assets/:asset_lease_id", AssetLive.Show
-    live "/users/projects/new", ProjectLive.Form, :new
-    live "/users/projects", ProjectLive.Index
-    live "/users/projects/:project_id", ProjectLive.Show
-    live "/users/projects/:project_id/edit", ProjectLive.Form, :edit
+    live "/users/assets", Assets.AssetLive.Index
+    live "/users/assets/:asset_lease_id", Assets.AssetLive.Show
+    live "/users/projects/new", Projects.ProjectLive.Form, :new
+    live "/users/projects/:project_id/assets", Projects.ProjectLive.FormAssets
+    live "/users/projects", Projects.ProjectLive.Index
+    live "/users/projects/:project_id", Projects.ProjectLive.Show
+    live "/users/projects/:project_id/edit", Projects.ProjectLive.Form, :edit
+    live "/users/assets/:asset_lease_id/projects", Assets.AssetLive.FormProjects
   end
 
   scope "/", DarthWeb do
@@ -125,7 +127,7 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :required_mv_authenticated_user]
-    live "/users/mv-assets", MvAssetLive.Index
+    live "/users/mv-assets", Assets.MvAssetLive.Index
   end
 
   scope "/", DarthWeb do

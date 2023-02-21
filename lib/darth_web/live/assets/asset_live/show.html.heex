@@ -1,0 +1,12 @@
+<Header.render heading={@asset_lease.asset.name} button_label="Manage Asset Projects"
+    button_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id)}
+    button_action="manage" />
+<%=if Asset.is_audio_asset?(@asset_lease.asset.media_type) do %>
+<.render_audio_asset_detail socket={@socket} asset_lease={@asset_lease} />
+<% end %>
+<%=if Asset.is_video_asset?(@asset_lease.asset.media_type) do %>
+<.render_video_asset_detail asset_lease={@asset_lease} />
+<%end %>
+<%=if Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
+<.render_image_asset_detail asset_lease={@asset_lease} />
+<% end %>

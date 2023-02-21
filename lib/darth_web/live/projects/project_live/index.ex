@@ -1,4 +1,4 @@
-defmodule DarthWeb.ProjectLive.Index do
+defmodule DarthWeb.Projects.ProjectLive.Index do
   use DarthWeb, :live_navbar_view
   require Logger
   import Ecto.Query
@@ -67,7 +67,7 @@ defmodule DarthWeb.ProjectLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -80,7 +80,7 @@ defmodule DarthWeb.ProjectLive.Index do
         socket =
           socket
           |> put_flash(:info, "Project deleted successfully")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -88,7 +88,7 @@ defmodule DarthWeb.ProjectLive.Index do
         socket =
           socket
           |> put_flash(:info, "Unable to delete project")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -113,7 +113,7 @@ defmodule DarthWeb.ProjectLive.Index do
       socket
       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
       |> put_flash(:info, "Project updated")
-      |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+      |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
     {:noreply, socket}
   end
@@ -138,7 +138,7 @@ defmodule DarthWeb.ProjectLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -148,7 +148,7 @@ defmodule DarthWeb.ProjectLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -156,7 +156,7 @@ defmodule DarthWeb.ProjectLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
       @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
       subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
@@ -168,7 +168,7 @@ defmodule DarthWeb.ProjectLive.Index do
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
       @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
       subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
       image_source={@user_project.primary_asset.thumbnail_image}
@@ -180,7 +180,7 @@ defmodule DarthWeb.ProjectLive.Index do
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.ProjectLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
       @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
       subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
       image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}

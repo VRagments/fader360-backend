@@ -1,22 +1,19 @@
-defmodule DarthWeb.ProjectLive.Show do
+defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   use DarthWeb, :live_navbar_view
   require Logger
-  alias Darth.Controller.AssetLease
-  alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.User
+  alias Darth.Controller.AssetLease
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
-  alias Darth.Model.Project, as: ProjectStruct
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.Show
+  alias Darth.Model.User, as: UserStruct
   alias DarthWeb.Components.ShowCard
+  alias DarthWeb.Components.Header
+  alias DarthWeb.Components.Pagination
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
-         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases"),
-         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects"),
-         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets") do
+         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects") do
       {:ok,
        socket
        |> assign(current_user: user)}
@@ -32,7 +29,7 @@ defmodule DarthWeb.ProjectLive.Show do
         {:ok, socket}
 
       nil ->
-        Logger.error("Error message: User not found in Database")
+        Logger.error("Error message: User not found in database")
 
         socket =
           socket
@@ -44,9 +41,10 @@ defmodule DarthWeb.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"project_id" => project_id}, _url, socket) do
+  def handle_params(%{"project_id" => project_id} = params, _url, socket) do
     with {:ok, project} <- Project.read(project_id, true),
-         %{entries: asset_leases} <- AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false),
+         %{query_page: current_page, total_pages: total_pages, entries: asset_leases} <-
+           AssetLease.query_by_user(socket.assigns.current_user.id, params, false),
          asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
          asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map),
          true <- project.user_id == socket.assigns.current_user.id do
@@ -56,7 +54,8 @@ defmodule DarthWeb.ProjectLive.Show do
          project: project,
          asset_leases_map: asset_leases_map,
          asset_leases_list: asset_leases_list,
-         changeset: ProjectStruct.changeset(project)
+         current_page: current_page,
+         total_pages: total_pages
        )}
     else
       {:error, reason} ->
@@ -65,7 +64,7 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -77,7 +76,7 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
 
@@ -87,7 +86,7 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
         {:noreply, socket}
     end
@@ -101,7 +100,12 @@ defmodule DarthWeb.ProjectLive.Show do
       socket =
         socket
         |> put_flash(:info, "Project assigned to asset")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, socket.assigns.project.id))
+        |> push_patch(
+          to:
+            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              page: socket.assigns.current_page
+            )
+        )
 
       {:noreply, socket}
     else
@@ -111,7 +115,12 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to assign project to the asset")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, socket.assigns.project.id))
+          |> push_patch(
+            to:
+              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
 
         {:noreply, socket}
     end
@@ -126,7 +135,12 @@ defmodule DarthWeb.ProjectLive.Show do
       socket =
         socket
         |> put_flash(:info, "Asset removed from project")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, project.id))
+        |> push_patch(
+          to:
+            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, project.id,
+              page: socket.assigns.current_page
+            )
+        )
 
       {:noreply, socket}
     else
@@ -136,7 +150,12 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to remove asset from the project")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, socket.assigns.project.id))
+          |> push_patch(
+            to:
+              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
 
         {:noreply, socket}
     end
@@ -150,7 +169,12 @@ defmodule DarthWeb.ProjectLive.Show do
         socket
         |> assign(project: project)
         |> put_flash(:info, "Project primary asset updated")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, project.id))
+        |> push_patch(
+          to:
+            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, project.id,
+              page: socket.assigns.current_page
+            )
+        )
 
       {:noreply, socket}
     else
@@ -160,20 +184,14 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to update the primary asset")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, socket.assigns.project.id))
+          |> push_patch(
+            to:
+              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
 
         {:noreply, socket}
-    end
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("update_visibility", %{"project" => project_params}, socket) do
-    case Project.update(socket.assigns.project, project_params) do
-      {:ok, _updated_project} ->
-        {:noreply, socket}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
     end
   end
 
@@ -191,34 +209,6 @@ defmodule DarthWeb.ProjectLive.Show do
     asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
 
     {:noreply, socket |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info({:project_deleted, project}, socket) do
-    socket =
-      if socket.assigns.project.id == project.id do
-        socket
-        |> put_flash(:info, "Project deleted successfully")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.ProjectLive.Index))
-      else
-        socket
-      end
-
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info({:project_updated, project}, socket) do
-    socket =
-      if socket.assigns.project.id == project.id do
-        socket
-        |> put_flash(:info, "Project updated")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.ProjectLive.Show, project.id))
-      else
-        socket
-      end
-
-    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -274,7 +264,7 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -284,81 +274,57 @@ defmodule DarthWeb.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
     end
   end
 
-  defp render_project_with_audio_primary_asset(assigns) do
-    ~H"""
-    <Show.render type="project" author={@project.author} visibility={@project.visibility}
-      updated_at={NaiveDateTime.to_date(@project.updated_at)}
-      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )} changeset={@changeset} />
-    """
-  end
-
-  defp render_project_with_primary_asset(assigns) do
-    ~H"""
-    <Show.render type="project" author={@project.author} visibility={@project.visibility}
-      updated_at={NaiveDateTime.to_date(@project.updated_at)}
-      source={@project.primary_asset.thumbnail_image} changeset={@changeset}/>
-    """
-  end
-
-  defp render_project_with_no_primary_asset(assigns) do
-    ~H"""
-    <Show.render type="project" author={@project.author} visibility={@project.visibility}
-      updated_at={NaiveDateTime.to_date(@project.updated_at)}
-      source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )} changeset={@changeset}/>
-    """
-  end
-
   defp render_added_audio_card_with_one_button(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="unassign" button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id} />
+      button_one_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
     """
   end
 
   defp render_added_audio_card_with_two_buttons(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="unassign" button_one_label="Remove"
       button_one_phx_value_ref={@asset_lease.id} button_two_action="make_primary"
-      button_two_label="Make primary" button_two_phx_value_ref={@asset_lease.id} />
+      button_two_label="Make primary" button_two_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
     """
   end
 
   defp render_added_asset_card_with_one_button(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-    show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+    show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
     image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
-    button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id} />
+    button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
     """
   end
 
   defp render_added_asset_card_with_two_buttons(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
       button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id}
       button_two_action="make_primary" button_two_label="Make primary"
-      button_two_phx_value_ref={@asset_lease.id} />
+      button_two_phx_value_ref={@asset_lease.id} state="Asset added to Project" />
     """
   end
 
   defp render_available_audio_card_with_one_button(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="assign" button_one_label="Add"
       button_one_phx_value_ref={@asset_lease.id} />
@@ -368,7 +334,7 @@ defmodule DarthWeb.ProjectLive.Show do
   defp render_available_asset_card_with_one_button(assigns) do
     ~H"""
     <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image} button_one_action="assign"
       button_one_label="Add" button_one_phx_value_ref={@asset_lease.id} />
     """

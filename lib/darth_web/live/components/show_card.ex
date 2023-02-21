@@ -11,6 +11,7 @@ defmodule DarthWeb.Components.ShowCard do
   attr :button_one_label, :string, default: ""
   attr :button_two_phx_value_ref, :string, default: ""
   attr :button_two_action, :string, default: nil
+  attr :state, :string, default: nil
   attr :button_two_label, :string, default: ""
 
   def render(assigns) do
@@ -23,6 +24,10 @@ defmodule DarthWeb.Components.ShowCard do
           <h3 class="truncate text-sm font-medium text-gray-900"><%=@title%></h3>
         </div>
         <p class="mt-1 truncate text-sm text-gray-500"><%=@subtitle%></p>
+        <%= if not is_nil(@state) do%>
+        <span class="inline-block flex-shrink-0 rounded-full bg-green-200
+          px-2 py-0.5 text-xs font-medium text-green-800"><%=@state%></span>
+        <%end%>
       </div>
       <img class="h-20 w-20 flex-shrink-0 full bg-gray-300" src={@image_source} alt="">
     </div>

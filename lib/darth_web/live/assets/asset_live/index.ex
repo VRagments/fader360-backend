@@ -1,4 +1,4 @@
-defmodule DarthWeb.AssetLive.Index do
+defmodule DarthWeb.Assets.AssetLive.Index do
   use DarthWeb, :live_navbar_view
   require Logger
   alias Darth.Controller.User
@@ -27,7 +27,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:ok, socket}
 
@@ -37,7 +37,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:ok, socket}
     end
@@ -65,7 +65,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -75,7 +75,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
     end
@@ -155,7 +155,9 @@ defmodule DarthWeb.AssetLive.Index do
       socket =
         socket
         |> put_flash(:info, "Uploaded Successfully")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+        |> push_patch(
+          to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+        )
 
       {:noreply, socket}
     else
@@ -163,7 +165,9 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to add asset to the database: #{reason}")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+          |> push_patch(
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+          )
 
         {:noreply, socket}
 
@@ -171,7 +175,9 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Selected asset type cannot be used in Fader!")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+          |> push_patch(
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+          )
 
         {:noreply, socket}
 
@@ -179,7 +185,9 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Choose a file to upload!")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+          |> push_patch(
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+          )
 
         {:noreply, socket}
     end
@@ -194,7 +202,9 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:info, "Re-transcoding asset")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+          |> push_patch(
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+          )
 
         {:noreply, socket}
 
@@ -202,7 +212,9 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to start asset Re-transcoding: #{error}")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+          |> push_patch(
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+          )
 
         {:noreply, socket}
     end
@@ -219,7 +231,9 @@ defmodule DarthWeb.AssetLive.Index do
       socket =
         socket
         |> put_flash(:info, "Asset deleted successfully")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page))
+        |> push_navigate(
+          to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
+        )
 
       {:noreply, socket}
     else
@@ -233,7 +247,7 @@ defmodule DarthWeb.AssetLive.Index do
           socket
           |> put_flash(:error, delete_message)
           |> push_navigate(
-            to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page)
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
         {:noreply, socket}
@@ -245,7 +259,7 @@ defmodule DarthWeb.AssetLive.Index do
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
           |> push_navigate(
-            to: Routes.live_path(socket, DarthWeb.AssetLive.Index, page: socket.assigns.current_page)
+            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
         {:noreply, socket}
@@ -268,7 +282,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
 
@@ -278,7 +292,7 @@ defmodule DarthWeb.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.AssetLive.Index))
+          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
         {:noreply, socket}
     end
@@ -348,7 +362,7 @@ defmodule DarthWeb.AssetLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
       @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
       button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
@@ -359,7 +373,7 @@ defmodule DarthWeb.AssetLive.Index do
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
       @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
       button_two_label="Delete" image_source={@asset_lease.asset.thumbnail_image}
@@ -370,7 +384,7 @@ defmodule DarthWeb.AssetLive.Index do
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.AssetLive.Show,
+    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
       @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
       button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
