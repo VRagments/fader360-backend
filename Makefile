@@ -9,6 +9,10 @@ DOCKER_LOCAL_IMAGE ?= "${DOCKER_IMAGE}:${DOCKER_TAG}"
 
 all: help
 
+.PHONY: proxy
+proxy: ## start local development reverse proxy
+	node assets/httpAndWebsocketProxy.js
+
 .PHONY: deps
 deps: ## initialize dependencies
 	HEX_HTTP_TIMEOUT=120 mix do deps.get, deps.compile
