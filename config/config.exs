@@ -9,14 +9,14 @@ import Config
 
 config :darth,
   ecto_repos: [Darth.Repo],
-  asset_static_base_url: "http://localhost:45000/media/",
+  asset_static_base_url: "http://localhost:45020/media/",
   asset_static_base_path: "./priv/static/media/",
   asset_static_sub_path: "media",
-  uploads_base_url: "http://localhost:45000/files/",
+  uploads_base_url: "http://localhost:45020/files/",
   uploads_base_path: "./priv/static/uploads",
   mv_asset_download_path: Path.join(Path.dirname(__DIR__), "tmp"),
   mv_asset_preview_download_path: "./priv/static/preview_download/",
-  asset_preview_static_url: "http://localhost:45000/preview_download/"
+  asset_preview_static_url: "http://localhost:45020/preview_download/"
 
 config :darth, Darth.Repo,
   migration_primary_key: [name: :id, type: :uuid],
@@ -24,7 +24,7 @@ config :darth, Darth.Repo,
 
 # Configures the endpoint
 config :darth, DarthWeb.Endpoint,
-  url: [host: "localhost", port: "45000"],
+  url: [host: "localhost", port: "45020"],
   render_errors: [view: DarthWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Darth.PubSub,
   live_view: [signing_salt: "iMX9wAB3"]

@@ -32,7 +32,6 @@ refresh-db: ## re-initialize database
 	mix do ecto.drop, ecto.create, ecto.migrate
 	mix run priv/repo/seeds.exs
 
-
 .PHONY: run
 run: ## run local development server
 	iex -S mix phx.server
@@ -84,11 +83,6 @@ clean : ## delete build artifacts
 		priv/static/assets \
 		priv/static/cache_manifest.json
 
-
-.PHONY: help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
 .PHONY: docker-tag
 docker-tag: ## tag local docker image
 	test -n "$(DOCKER_LOCAL_IMAGE)"  # $$DOCKER_LOCAL_IMAGE
@@ -123,3 +117,7 @@ docker-refresh-db: ## run local docker container to refresh database
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
 	docker compose up darth_refresh_db
+
+.PHONY: help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

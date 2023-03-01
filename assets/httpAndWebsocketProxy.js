@@ -2,10 +2,18 @@ const http = require('http'),
     httpProxy = require('http-proxy');
 
 const host = 'localhost';
-const backend_port = 45000;
-const backend_api_url = '/api';
-const backend_socket_url = '/phoenix/live_reload/socket';
 const proxy_port = 45020;
+
+/**
+ * Currently, it seems we are launching backend websocket requests from '/phoenix/live_reload/socket/websocket?[...]'
+ * and from '/live/websocket?[...]', so this should suffice for now(?)
+ * Nb:
+ * Webpack on frontend also uses websocket, call is to 'ws://localhost:45010/ws' so should work
+ */
+const backend_socket_url = '/websocket';
+const backend_port = 45000;
+
+const frontend_url = '/editor';
 const frontend_port = 45010;
 
 const backendProxy = httpProxy.createProxyServer({
@@ -23,10 +31,10 @@ const frontendProxy = httpProxy.createProxyServer({
 });
 
 const server = http.createServer((req, res) => {
-    if (req.url.includes(backend_api_url)) {
-        backendProxy.web(req, res);
-    } else {
+    if (req.url.includes(frontend_url)) {
         frontendProxy.web(req, res);
+    } else {
+        backendProxy.web(req, res);
     }
 });
 
