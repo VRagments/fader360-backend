@@ -2,9 +2,11 @@
 
 MIX_ENV ?= dev
 VERSION ?= $(shell  grep -r version mix.exs | cut -d'"' -f2)
-NEW_DARTH__ADMIN_HTTP_PORT ?= 15000
-DOCKER_IMAGE ?= new_darth
-DOCKER_TAG ?= $(shell date +%Y%m%d).${VERSION}-${MIX_ENV}
+
+DOCKER_PROJECT ?= mediaverseeu
+DOCKER_IMAGE ?= fader360-backend
+# ?= defers variable resolution in recipes. need to pin it statically here
+DOCKER_TAG := $(shell date +%Y%m%d-%H%M%S).v${VERSION}-${MIX_ENV}
 DOCKER_LOCAL_IMAGE ?= "${DOCKER_IMAGE}:${DOCKER_TAG}"
 
 all: help
@@ -83,10 +85,26 @@ clean : ## delete build artifacts
 		priv/static/assets \
 		priv/static/cache_manifest.json
 
+.PHONY: dockerhub-login
+dockerhub-login: ## loginto mediaversue docker hub
+	docker login
+
 .PHONY: docker-tag
 docker-tag: ## tag local docker image
 	test -n "$(DOCKER_LOCAL_IMAGE)"  # $$DOCKER_LOCAL_IMAGE
-	docker tag ${DOCKER_LOCAL_IMAGE} ${DOCKER_REPO_URL}/${DOCKER_PROJECT}/${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
+	docker tag ${DOCKER_LOCAL_IMAGE} ${DOCKER_PROJECT}/${DOCKER_IMAGE}:${DOCKER_TAG}
+
+.PHONY: docker-push
+docker-push: ## push local tagged docker image to repository
+	docker push ${DOCKER_PROJECT}/${DOCKER_IMAGE}:${DOCKER_TAG}
+
+.PHONY: docker-list
+docker-list: ## list docker images in repository
+	docker image ls --all ${DOCKER_PROJECT}/${DOCKER_IMAGE}
+
+.PHONY: docker-pull
+docker-pull: ## pull docker image from repository
+	docker pull ${DOCKER_PROJECT}/${DOCKER_IMAGE}:${DOCKER_TAG}
 
 .PHONY: docker-build
 docker-build: ## build docker based image for distribution
@@ -96,7 +114,11 @@ docker-build: ## build docker based image for distribution
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
-	docker compose build \darth
+	docker compose build fader360_backend
+
+.PHONY: build-upload-release
+build-upload-release: | docker-build docker-tag docker-push
+build-upload-release: ## build, tag and push a new release docker image
 
 .PHONY: docker-dev
 docker-dev: ## run local docker container in interactive iex mode

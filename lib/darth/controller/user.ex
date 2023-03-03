@@ -507,17 +507,18 @@ defmodule Darth.Controller.User do
   end
 
   defp update_custom_file(attribute, old_value, user, params) do
-    base_path = Application.get_env(:darth, :uploads_base_path)
-    base_url = Application.get_env(:darth, :uploads_base_url)
     filename = params.filename
     new_filename = Ecto.UUID.generate() <> Path.extname(filename)
-    path = Path.join(base_path, new_filename)
-    url = "#{base_url}#{new_filename}"
+    uploads_path = Application.get_env(:darth, :uploads_base_path)
+    app_uploads_path = Application.app_dir(:darth, uploads_path)
+    path = Path.join(app_uploads_path, new_filename)
+    base_url = DarthWeb.Endpoint.url()
+    url = "#{base_url}/files/#{new_filename}"
     {:ok, mime_type} = AssetFile.Helpers.mime_type(params.path)
 
     with true <- custom_file_mime_type_supported?(attribute, mime_type),
          _ <- delete_file(old_value["path"]),
-         :ok <- File.mkdir_p(base_path),
+         :ok <- File.mkdir_p(app_uploads_path),
          {:ok, _} <- File.copy(params.path, path) do
       new_value = %{
         "name" => filename,

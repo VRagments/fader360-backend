@@ -9,14 +9,9 @@ import Config
 
 config :darth,
   ecto_repos: [Darth.Repo],
-  asset_static_base_url: "http://localhost:45020/media/",
-  asset_static_base_path: "./priv/static/media/",
-  asset_static_sub_path: "media",
-  uploads_base_url: "http://localhost:45020/files/",
-  uploads_base_path: "./priv/static/uploads",
-  mv_asset_download_path: Path.join(Path.dirname(__DIR__), "tmp"),
-  mv_asset_preview_download_path: "./priv/static/preview_download/",
-  asset_preview_static_url: "http://localhost:45020/preview_download/"
+  asset_static_base_path: ["priv", "static", "media"],
+  uploads_base_path: ["priv", "static", "uploads"],
+  mv_asset_preview_download_path: ["priv", "static", "preview_download"]
 
 config :darth, Darth.Repo,
   migration_primary_key: [name: :id, type: :uuid],
@@ -82,8 +77,7 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-# Use Jason for JSON parsing in Phoenix
-config :phoenix, :json_library, Poison
+config :phoenix, :json_library, Jason
 
 config :ua_inspector,
   database_path: Path.join("/tmp", "darth_ua_inspector")

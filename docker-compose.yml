@@ -7,7 +7,7 @@ services:
       - "docker/${MIX_ENV}.env"
     restart: always
 
-  darth:
+  fader360_backend:
     build:
       context: ./docker
       target: darth_release

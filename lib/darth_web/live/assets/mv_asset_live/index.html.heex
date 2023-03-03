@@ -5,7 +5,7 @@
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <%= for mv_asset <- @mv_assets do %>
         <%= if not Asset.asset_already_added?(Map.get(mv_asset, "key")) do %>
-        <%= if File.exists?(Path.join([Application.get_env(:darth, :mv_asset_preview_download_path),Map.get(mv_asset, "previewLinkKey"), Map.get(mv_asset, "originalFilename")]))do %>
+        <%= if File.exists?(asset_file_path(Map.get(mv_asset, "previewLinkKey"), Map.get(mv_asset, "originalFilename")))do %>
         <%= if Asset.is_audio_asset?(Map.get(mv_asset, "contentType")) do%>
         <.render_audio_card mv_asset={mv_asset} socket={@socket} current_user={@current_user}
             asset_preview_static_url={@asset_preview_static_url} />

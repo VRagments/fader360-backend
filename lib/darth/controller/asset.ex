@@ -160,7 +160,8 @@ defmodule Darth.Controller.Asset do
 
   def base_path(asset) do
     path = Application.get_env(:darth, :asset_static_base_path)
-    ~s(#{path}#{asset.id})
+    app_path = Application.app_dir(:darth, path)
+    Path.join(app_path, asset.id)
   end
 
   # URL Schema: BASE_URL/ASSET_ID/NAME.SUFFIX
@@ -288,7 +289,7 @@ defmodule Darth.Controller.Asset do
   end
 
   def create_current_asset_path(asset_filename) do
-    default_asset_path = Application.get_env(:darth, :mv_asset_download_path)
+    default_asset_path = Application.app_dir(:darth, "tmp")
 
     case File.mkdir_p(default_asset_path) do
       :ok ->
@@ -301,8 +302,9 @@ defmodule Darth.Controller.Asset do
   end
 
   def create_preview_asset_path(asset_filename, asset_previewlinkkey) do
-    default_preview_asset_folder =
-      Path.join(Application.get_env(:darth, :mv_asset_preview_download_path), asset_previewlinkkey)
+    download_path = Application.get_env(:darth, :mv_asset_preview_download_path)
+    app_path = Application.app_dir(:darth, download_path)
+    default_preview_asset_folder = Path.join(app_path, asset_previewlinkkey)
 
     case File.mkdir_p(default_preview_asset_folder) do
       :ok ->
@@ -439,15 +441,15 @@ defmodule Darth.Controller.Asset do
   end
 
   defp asset_url(asset, prefix \\ "") do
-    base_url = Application.get_env(:darth, :asset_static_base_url)
+    base_url = DarthWeb.Endpoint.url()
     name = filename(asset, prefix)
-    ~s(#{base_url}#{asset.id}/#{name})
+    "#{base_url}/media/#{asset.id}/#{name}"
   end
 
   defp encode_file_plug(params), do: params |> Map.delete(:path) |> Poison.encode()
 
   defp delete_repo({:ok, asset}) do
-    current_asset_folder = Path.join(Application.get_env(:darth, :asset_static_base_path), asset.id)
+    current_asset_folder = base_path(asset)
 
     case File.rm_rf(current_asset_folder) do
       {:ok, _} ->

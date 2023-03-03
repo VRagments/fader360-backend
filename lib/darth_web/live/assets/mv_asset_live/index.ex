@@ -42,7 +42,8 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   def handle_params(_params, _url, socket) do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
-    asset_preview_static_url = Application.get_env(:darth, :asset_preview_static_url)
+    base_url = DarthWeb.Endpoint.url()
+    asset_preview_static_url = "#{base_url}/preview_download/"
 
     case MvApiClient.fetch_assets(mv_node, mv_token) do
       {:ok, assets} ->
@@ -127,9 +128,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
     for asset <- assets do
       filename = Map.get(asset, "originalFilename")
       asset_previewlink_key = Map.get(asset, "previewLinkKey")
-
-      file_path =
-        Path.join([Application.get_env(:darth, :mv_asset_preview_download_path), asset_previewlink_key, filename])
+      file_path = asset_file_path(asset_previewlink_key, filename)
 
       if File.exists?(file_path) do
         :ok
@@ -248,5 +247,11 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
       button_one_action="view" button_two_action="add_mv_asset"
       button_two_phx_value_ref={Map.get(@mv_asset, "key" )} />
     """
+  end
+
+  defp asset_file_path(preview_link_key, original_filename) do
+    download_path = Application.get_env(:darth, :mv_asset_preview_download_path)
+    app_path = Application.app_dir(:darth, download_path)
+    Path.join([app_path, preview_link_key, original_filename])
   end
 end

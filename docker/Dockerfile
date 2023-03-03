@@ -27,7 +27,7 @@ RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-ins
 
 # nodejs
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-install-recommends \
+RUN apt-get update && apt-get install -y -qq --no-install-recommends \
     nodejs \
     && apt-get -qq clean \
     && rm -rf /var/lib/apt/lists/*
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-ins
 # yarn
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-install-recommends \
+RUN apt-get update && apt-get install -y -qq --no-install-recommends \
     yarn \
     && apt-get -qq clean \
     && rm -rf /var/lib/apt/lists/*
