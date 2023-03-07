@@ -4,7 +4,7 @@ defmodule Darth.MixProject do
   def project do
     [
       app: :darth,
-      version: "0.1.2",
+      version: "0.1.3",
       elixir: "~> 1.14.0",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix_swagger] ++ Mix.compilers(),
