@@ -135,8 +135,10 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("save", _params, socket) do
-    with uploads_base_path = Application.get_env(:darth, :uploads_base_path),
-         :ok <- File.mkdir_p(uploads_base_path),
+    uploads_path = Application.get_env(:darth, :uploads_base_path)
+    uploads_base_path = Application.app_dir(:darth, uploads_path)
+
+    with :ok <- File.mkdir_p(uploads_base_path),
          uploaded_file_path =
            consume_uploaded_entries(socket, :media, fn %{path: path},
                                                        %Phoenix.LiveView.UploadEntry{client_name: file_name} ->

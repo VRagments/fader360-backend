@@ -20,6 +20,7 @@ RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-ins
     wget \
     ffmpeg \
     imagemagick \
+    bc \
     file \
     make \
     && apt-get -qq clean \
@@ -56,6 +57,14 @@ RUN mix phx.digest.clean --all
 ENTRYPOINT ["/bin/sh", "-c"]
 
 FROM elixir:1.14.3-slim as darth_release
+
+RUN apt-get update && apt-get full-upgrade -y && apt-get install -y -qq --no-install-recommends \
+    bc \
+    ffmpeg \
+    imagemagick \
+    file \
+    && apt-get -qq clean \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/
 COPY --from=darth_base /work/darth_release darth_release
