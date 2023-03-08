@@ -61,8 +61,7 @@ defmodule Darth.MixProject do
       {:ua_inspector, "~> 3.0"},
       {:faker, "~> 0.17"},
       {:httpoison, "~> 1.8"},
-      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
-      {:cors_plug, "~> 3.0", runtime: Mix.env() == :dev}
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
     ]
   end
 
