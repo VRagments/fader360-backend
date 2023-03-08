@@ -89,16 +89,17 @@ defmodule Darth.AssetProcessor.Transcoder do
   # INTERNAL FUNCTIONS
   #
 
-  @default_transcoding_scripts %{
-    audio: "./priv/transcode_audio.sh",
-    image: "./priv/transcode_image.sh",
-    video: "./priv/transcode_video.sh"
-  }
   @video_profiles Application.compile_env(:darth, :transcoding_video_profiles, "720_1")
   defp run_asset(%{media_type: media_type} = asset) do
+    default_transcoding_scripts = %{
+      audio: Application.app_dir(:darth, ["priv", "transcode_audio.sh"]),
+      image: Application.app_dir(:darth, ["priv", "transcode_image.sh"]),
+      video: Application.app_dir(:darth, ["priv", "transcode_video.sh"])
+    }
+
     norm_media_type = Controller.Asset.normalized_media_type(media_type)
 
-    script_path = Application.get_env(:darth, :transcoding_scripts, @default_transcoding_scripts)[norm_media_type]
+    script_path = default_transcoding_scripts[norm_media_type]
 
     [script] = Path.wildcard(script_path)
     %{data_filename: data_filename, static_filename: static_filename, static_path: static_path} = asset
