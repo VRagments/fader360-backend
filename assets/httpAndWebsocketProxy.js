@@ -1,7 +1,7 @@
 const http = require('http'),
     httpProxy = require('http-proxy');
 
-const host = 'localhost';
+const host = '127.0.0.1';
 const proxy_port = 45020;
 
 /**
