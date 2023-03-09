@@ -138,166 +138,140 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     uploads_path = Application.get_env(:darth, :uploads_base_path)
     uploads_base_path = Application.app_dir(:darth, uploads_path)
 
-    with :ok <- File.mkdir_p(uploads_base_path),
-         uploaded_file_path =
-           consume_uploaded_entries(socket, :media, fn %{path: path},
-                                                       %Phoenix.LiveView.UploadEntry{client_name: file_name} ->
-             dest = Path.join([:code.priv_dir(:darth), "static", "uploads", file_name])
-             # The `static/uploads` directory must exist for `File.cp!/2` to work.
-             File.cp!(path, dest)
-             {:ok, Routes.static_path(socket, dest)}
-           end),
-         asset_details <- get_required_asset_details(socket, uploaded_file_path),
-         true <- not is_nil(asset_details),
-         true <- not is_nil(Asset.normalized_media_type(Map.get(asset_details, "media_type"))),
-         user = socket.assigns.current_user,
-         {:ok, asset_struct} <- Asset.create(asset_details),
-         {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
-         :ok <- File.rm(uploaded_file_path) do
-      socket =
+    socket =
+      with :ok <- File.mkdir_p(uploads_base_path),
+           uploaded_file_path =
+             consume_uploaded_entries(socket, :media, fn %{path: path},
+                                                         %Phoenix.LiveView.UploadEntry{client_name: file_name} ->
+               dest = Path.join([:code.priv_dir(:darth), "static", "uploads", file_name])
+               # The `static/uploads` directory must exist for `File.cp!/2` to work.
+               File.cp!(path, dest)
+               {:ok, Routes.static_path(socket, dest)}
+             end),
+           asset_details <- get_required_asset_details(socket, uploaded_file_path),
+           true <- not is_nil(asset_details),
+           true <- not is_nil(Asset.normalized_media_type(Map.get(asset_details, "media_type"))),
+           user = socket.assigns.current_user,
+           {:ok, asset_struct} <- Asset.create(asset_details),
+           {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
+           :ok <- File.rm(uploaded_file_path) do
         socket
         |> put_flash(:info, "Uploaded Successfully")
         |> push_patch(
           to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
         )
-
-      {:noreply, socket}
-    else
-      {:error, reason} ->
-        socket =
+      else
+        {:error, reason} ->
           socket
           |> put_flash(:error, "Unable to add asset to the database: #{reason}")
           |> push_patch(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
-        {:noreply, socket}
-
-      false ->
-        socket =
+        false ->
           socket
           |> put_flash(:error, "Selected asset type cannot be used in Fader!")
           |> push_patch(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
-        {:noreply, socket}
-
-      nil ->
-        socket =
+        nil ->
           socket
           |> put_flash(:error, "Choose a file to upload!")
           |> push_patch(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
-
-        {:noreply, socket}
-    end
+      end
 
     {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("re_transcode", %{"ref" => asset_id}, socket) do
-    case Phoenix.PubSub.broadcast(Darth.PubSub, "assets", {:asset_transcode, asset_id}) do
-      :ok ->
-        socket =
+    socket =
+      case Phoenix.PubSub.broadcast(Darth.PubSub, "assets", {:asset_transcode, asset_id}) do
+        :ok ->
           socket
           |> put_flash(:info, "Re-transcoding asset")
           |> push_patch(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
-        {:noreply, socket}
-
-      error ->
-        socket =
+        error ->
           socket
           |> put_flash(:error, "Unable to start asset Re-transcoding: #{error}")
           |> push_patch(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
-
-        {:noreply, socket}
-    end
+      end
 
     {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"ref" => asset_lease_id}, socket) do
-    with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
-         {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
-         :ok <- AssetLease.maybe_delete(asset_lease),
-         :ok <- Asset.delete(asset_lease.asset) do
-      socket =
+    socket =
+      with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
+           {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
+           :ok <- AssetLease.maybe_delete(asset_lease),
+           :ok <- Asset.delete(asset_lease.asset) do
         socket
         |> put_flash(:info, "Asset deleted successfully")
         |> push_navigate(
           to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
         )
+      else
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {reason_atom, _} = List.first(changeset.errors)
 
-      {:noreply, socket}
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {reason_atom, _} = List.first(changeset.errors)
+          delete_message = handle_asset_lease_deletion(reason_atom, socket.assigns.current_user, asset_lease_id)
+          Logger.error("Error message while deleting asset_lease: #{inspect(delete_message)}")
 
-        delete_message = handle_asset_lease_deletion(reason_atom, socket.assigns.current_user, asset_lease_id)
-        Logger.error("Error message while deleting asset_lease: #{inspect(delete_message)}")
-
-        socket =
           socket
           |> put_flash(:error, delete_message)
           |> push_navigate(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
 
-        {:noreply, socket}
+        {:error, reason} ->
+          Logger.error("Error message while deleting asset_lease: #{inspect(reason)}")
 
-      {:error, reason} ->
-        Logger.error("Error message while deleting asset_lease: #{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
           |> push_navigate(
             to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
           )
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp get_updated_asset_list(socket) do
-    case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
-      %{entries: asset_leases} ->
-        asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
-        asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+    socket =
+      case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
+        %{entries: asset_leases} ->
+          asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+          asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
 
-        {:noreply,
-         socket
-         |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
+          socket
+          |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)
 
-      {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error("Error message: Database error while fetching asset via asset leases: #{query_error}")
+        {:error, query_error = %Ecto.QueryError{}} ->
+          Logger.error("Error message: Database error while fetching asset via asset leases: #{query_error}")
 
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
           |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
-        {:noreply, socket}
+        _ ->
+          Logger.error("Error message: User not found while fetching assests")
 
-      _ ->
-        Logger.error("Error message: User not found while fetching assests")
-
-        socket =
           socket
           |> put_flash(:error, "User not found")
           |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp get_required_asset_details(socket, filepath) do

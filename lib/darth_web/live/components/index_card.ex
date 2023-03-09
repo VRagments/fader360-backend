@@ -9,12 +9,12 @@ defmodule DarthWeb.Components.IndexCard do
   attr :visibility, :string, required: true
   attr :button_one_route, :string, default: ""
   attr :button_one_phx_value_ref, :string, default: ""
-  attr :button_one_action, :string, required: true
-  attr :button_one_label, :string, required: true
+  attr :button_one_action, :string, default: nil
+  attr :button_one_label, :string, default: nil
   attr :button_two_route, :string, default: ""
   attr :button_two_phx_value_ref, :string, default: ""
-  attr :button_two_action, :string, required: true
-  attr :button_two_label, :string, required: true
+  attr :button_two_action, :string, default: nil
+  attr :button_two_label, :string, default: nil
   attr :audio_source, :string, default: nil
 
   def render(assigns) do
@@ -38,6 +38,7 @@ defmodule DarthWeb.Components.IndexCard do
         </dl>
         </.link>
       </div>
+      <%= if (not is_nil(@button_one_action) and not is_nil(@button_two_action)) do%>
       <div class="-mt-px flex divide-x divide-gray-200">
         <div class="flex w-0 flex-1">
         <%= if @button_one_action == "re_transcode" do %>
@@ -64,6 +65,7 @@ defmodule DarthWeb.Components.IndexCard do
           </button>
         </div>
       </div>
+      <%end%>
     </li>
     """
   end

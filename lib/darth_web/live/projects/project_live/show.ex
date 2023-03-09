@@ -145,7 +145,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     ~H"""
     <Show.render type="project" author={@project.author} visibility={@project.visibility}
       updated_at={NaiveDateTime.to_date(@project.updated_at)}
-      source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )} changeset={@changeset}/>
+      source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )} changeset={@changeset}/>
     """
   end
 end

@@ -1,5 +1,5 @@
 <div>
-    <nav class="bg-white shadow">
+    <nav class="bg-white shadow sticky top-0">
         <div class="mx-auto lg:px-32">
             <div class="relative flex h-16 justify-between">
                 <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -19,12 +19,14 @@
                             Assets
                         </.link>
                         <%= if User.is_mediaverse_account?(@current_user) do %>
-                        <.link navigate={Routes.live_path(@socket, DarthWeb.Assets.MvAssetLive.Index)}
+                        <.link navigate={Routes.live_path(@socket,
+                            DarthWeb.Assets.MvAssetLive.Index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             MediaVerse Assets
                         </.link>
                         <%end%>
-                        <.link navigate={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index)}
+                        <.link navigate={Routes.live_path(@socket,
+                            DarthWeb.Projects.ProjectLive.Index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             Projects</.link>
                     </div>

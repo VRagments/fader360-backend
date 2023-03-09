@@ -149,54 +149,45 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
     mv_node = socket.assigns.current_user.mv_node
     mv_token = socket.assigns.mv_token
 
-    with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
-         download_params = %{
-           media_type: Map.get(asset, "contentType"),
-           mv_asset_key: Map.get(asset, "key"),
-           mv_asset_deeplink_key: Map.get(asset, "deepLinkKey"),
-           mv_node: mv_node,
-           mv_token: mv_token,
-           mv_asset_filename: Map.get(asset, "originalFilename"),
-           current_user: socket.assigns.current_user
-         },
-         :ok <- Downloader.add_download_params(download_params) do
-      socket =
+    socket =
+      with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
+           download_params = %{
+             media_type: Map.get(asset, "contentType"),
+             mv_asset_key: Map.get(asset, "key"),
+             mv_asset_deeplink_key: Map.get(asset, "deepLinkKey"),
+             mv_node: mv_node,
+             mv_token: mv_token,
+             mv_asset_filename: Map.get(asset, "originalFilename"),
+             current_user: socket.assigns.current_user
+           },
+           :ok <- Downloader.add_download_params(download_params) do
         socket
         |> put_flash(:info, "Downloading MediaVerse Asset")
         |> push_patch(to: Routes.live_path(socket, DarthWeb.Assets.MvAssetLive.Index))
+      else
+        {:ok, %{"message" => message}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
 
-      {:noreply, socket}
-    else
-      {:ok, %{"message" => message}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
-
-        socket =
           socket
           |> put_flash(:error, message)
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Assets.MvAssetLive.Index))
 
-        {:noreply, socket}
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, "Server response error")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Assets.MvAssetLive.Index))
 
-        {:noreply, socket}
+        {:error, reason} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
 
-      {:error, reason} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, inspect(reason))
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Assets.MvAssetLive.Index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp render_audio_card(assigns) do

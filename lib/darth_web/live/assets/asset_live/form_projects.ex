@@ -116,32 +116,26 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     socket =
       case AssetLease.assign_project(socket.assigns.asset_lease, socket.assigns.current_user, user_project) do
         {:ok, _asset_lease} ->
-          socket =
-            socket
-            |> put_flash(:info, "Asset added to project")
-            |> push_patch(
-              to:
-                Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
-                  page: socket.assigns.current_page
-                )
-            )
-
           socket
+          |> put_flash(:info, "Asset added to project")
+          |> push_patch(
+            to:
+              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+                page: socket.assigns.current_page
+              )
+          )
 
         {:error, reason} ->
           Logger.error("Error message when assigning the asset_lease with project:#{inspect(reason)}")
 
-          socket =
-            socket
-            |> put_flash(:error, "Unable add asset to project")
-            |> push_patch(
-              to:
-                Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
-                  page: socket.assigns.current_page
-                )
-            )
-
           socket
+          |> put_flash(:error, "Unable add asset to project")
+          |> push_patch(
+            to:
+              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+                page: socket.assigns.current_page
+              )
+          )
       end
 
     {:noreply, socket}
@@ -155,32 +149,26 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
       with {:ok, asset_lease} <-
              AssetLease.unassign_project(socket.assigns.asset_lease, socket.assigns.current_user, user_project),
            {:ok, _project} <- Project.unassign_primary_asset_lease(user_project, asset_lease) do
-        socket =
+        socket
+        |> put_flash(:info, "Asset removed from project")
+        |> push_patch(
+          to:
+            Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              page: socket.assigns.current_page
+            )
+        )
+      else
+        {:error, reason} ->
+          Logger.error("Error message when assigning the asset_lease with project:#{inspect(reason)}")
+
           socket
-          |> put_flash(:info, "Asset removed from project")
+          |> put_flash(:error, "Unable to remove asset from project")
           |> push_patch(
             to:
               Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
-
-        socket
-      else
-        {:error, reason} ->
-          Logger.error("Error message when assigning the asset_lease with project:#{inspect(reason)}")
-
-          socket =
-            socket
-            |> put_flash(:error, "Unable to remove asset from project")
-            |> push_patch(
-              to:
-                Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
-                  page: socket.assigns.current_page
-                )
-            )
-
-          socket
       end
 
     {:noreply, socket}
@@ -219,18 +207,17 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
   end
 
   defp get_updated_project_list(socket) do
-    with query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
-         %{entries: user_projects} <- Project.query(%{}, query, true),
-         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
-         user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
-      {:noreply,
-       socket
-       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)}
-    else
-      {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error("Error message: Database error while fetching user projects: #{inspect(query_error)}")
+    socket =
+      with query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
+           %{entries: user_projects} <- Project.query(%{}, query, true),
+           user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
+           user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
+        socket
+        |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
+      else
+        {:error, query_error = %Ecto.QueryError{}} ->
+          Logger.error("Error message: Database error while fetching user projects: #{inspect(query_error)}")
 
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(
@@ -240,12 +227,9 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
               )
           )
 
-        {:noreply, socket}
+        err ->
+          Logger.error("Error message: #{inspect(err)}")
 
-      err ->
-        Logger.error("Error message: #{inspect(err)}")
-
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(
@@ -254,9 +238,9 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
                 page: socket.assigns.current_page
               )
           )
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp render_added_audio_project_card(assigns) do

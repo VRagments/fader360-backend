@@ -32,6 +32,6 @@
 </section>
 
 <Pagination.render total_pages={@total_pages} current_page={@current_page}
-    back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page:
-    (@current_page-1))} forward_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-    @asset_lease.id, page: (@current_page+1))} />
+    back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+    @asset_lease.id, page: (@current_page-1))} forward_button_route={Routes.live_path(@socket,
+    DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page: (@current_page+1))} />

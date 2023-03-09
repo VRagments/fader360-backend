@@ -34,6 +34,10 @@ defmodule DarthWeb.Components.Header do
         <.button_with_link button_action={@button_action} button_link={@button_link} button_label ={@button_label} />
         <% end %>
 
+        <%=if @button_action == "add" do %>
+        <.button_with_link button_action={@button_action} button_link={@button_link} button_label ={@button_label} />
+        <% end %>
+
         <%=if @button_action == "manage" do %>
         <.button_with_link button_action={@button_action} button_link={@button_link} button_label ={@button_label} />
         <% end %>
@@ -49,6 +53,17 @@ defmodule DarthWeb.Components.Header do
           <.live_file_input upload={@uploads.media} />
           <.button_to_upload button_action={@button_action} button_label ="Upload" />
         </form>
+        <%end%>
+
+        <%= if @button_action == "upload_and_link" do%>
+        <form id="upload-form"
+          class="block text-lg text-gray-900 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none"
+          , id="small_size" , phx-submit="save" phx-change="validate">
+          <.live_file_input upload={@uploads.media} />
+          <.button_to_upload button_action={@button_two_action} button_label ="Upload" />
+        </form>
+        <div class="relative -ml-px inline-flex bg-white px-4 py-2 text-sm font-medium text-gray-700 focus:z-10"></div>
+        <.button_with_link button_action={@button_action} button_link={@button_link} button_label ={@button_label} />
         <%end%>
       </div>
       </div>
@@ -116,6 +131,8 @@ defmodule DarthWeb.Components.Header do
 
   defp render_svg(%{action: "edit_project"} = assigns), do: Icons.edit_pencil_square(assigns)
   defp render_svg(%{action: "create_project"} = assigns), do: Icons.add_mv_asset_plus(assigns)
+  defp render_svg(%{action: "add"} = assigns), do: Icons.add_mv_asset_plus(assigns)
+  defp render_svg(%{action: "upload_and_link"} = assigns), do: Icons.add_mv_asset_plus(assigns)
   defp render_svg(%{action: "add_all_mv_assets"} = assigns), do: Icons.add_mv_asset_plus(assigns)
   defp render_svg(%{action: "upload"} = assigns), do: Icons.arrow_up_tray(assigns)
   defp render_svg(%{action: "manage"} = assigns), do: Icons.manage_asset_adjustments_vertical(assigns)

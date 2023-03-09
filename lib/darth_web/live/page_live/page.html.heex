@@ -1,1 +1,89 @@
-<img class="flex mx-auto" src={Routes.static_path(@socket, "/images/mv.png" )}>
+<div class="mx-auto max-w-xl lg:text-center">
+    <img src={Routes.static_path(@socket, "/images/Fader_Color_20180326-182538.svg" )}
+        class="item-center justify-center" , alt="Your Company" />
+    <p class="mt-2 text-xl font-bold tracking-tight text-gray-900 sm:text-xl">Everything you need to
+        tell your story!</p>
+</div>
+
+<%= if User.is_mediaverse_account?(@current_user) do %>
+<Header.render heading="Assets" button_label="Add from MediaVerse"
+    button_link={Routes.live_path(@socket, DarthWeb.Assets.MvAssetLive.Index)}
+    button_action="upload_and_link" button_two_action="upload" uploads={@uploads} />
+<% else %>
+<Header.render heading="Assets" button_label="Upload" button_action="upload" uploads={@uploads} />
+<% end %>
+<div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
+    <%# render each avatar entry %>
+    <%= for entry <- @uploads.media.entries do %>
+    <article class="upload-entry">
+        <%# entry.progress will update automatically for in-flight entries %>
+        <progress value={entry.progress} max="100"> <%= entry.progress %>%
+        </progress>
+        <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
+        <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
+            aria-label="cancel">&times;</button>
+        <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
+        <%= for err <- upload_errors(@uploads.media, entry) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
+    </article>
+    <% end %>
+    <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
+    <%= for err <- upload_errors(@uploads.media) do %>
+    <p class="alert alert-danger"><%= error_to_string(err) %></p>
+    <% end %>
+</div>
+
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <%= for i <- 0..3 do %>
+        <%= if Enum.empty?(@asset_leases_list) do %>
+        <.render_place_holder_card socket={@socket} visibility="status" subtitle="type" />
+        <% else %>
+        <.render_card socket={@socket} card={Enum.at(@asset_leases_list, i)} visibility="status"
+            subtitle="type" />
+        <% end %>
+        <% end %>
+    </ul>
+    <HyperLink.render link_text="Show all Assets" link_route={Routes.live_path(@socket,
+        DarthWeb.Assets.AssetLive.Index)} />
+</section>
+
+<Header.render heading="Projects" button_label="Create"
+    button_link={Routes.project_form_path(@socket, :new)} button_action="create_project" />
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <%= for i <- 0..3 do %>
+        <%= if Enum.empty?(@projects_list) do %>
+        <.render_place_holder_card socket={@socket} visibility="visibility" subtitle="author" />
+        <% else %>
+        <.render_card socket={@socket} card={Enum.at(@projects_list, i)} visibility="visibility"
+            subtitle="author" />
+        <% end %>
+        <% end %>
+    </ul>
+    <HyperLink.render link_text="Show all Projects" link_route={Routes.live_path(@socket,
+        DarthWeb.Projects.ProjectLive.Index)} />
+</section>
+<div
+    class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight flex items-center my-4 before:flex-1 after:flex-1 container mx-auto lg:pt-12 lg:px-32">
+    Activity
+</div>
+
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <div class="flow-root">
+        <ul role="list" class="-mb-8">
+            <%= for entry <- @sorted_combined_entries do%>
+            <%= if Map.has_key?(entry, :author) do %>
+            <Activity.render action="activity_done" type="Project" name={entry.name}
+                inserted_at={entry.inserted_at} show_path={Routes.live_path(@socket,
+                DarthWeb.Projects.ProjectLive.Show, entry.id)} />
+            <%else%>
+            <Activity.render action="activity_done" type="Asset" name={entry.asset.name}
+                inserted_at={entry.inserted_at} show_path={Routes.live_path(@socket,
+                DarthWeb.Assets.AssetLive.Show, entry.id)} />
+            <%end%>
+            <% end %>
+        </ul>
+    </div>
+</section>

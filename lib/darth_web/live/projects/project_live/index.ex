@@ -75,23 +75,20 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"ref" => project_id}, socket) do
-    case Project.delete(project_id) do
-      :ok ->
-        socket =
+    socket =
+      case Project.delete(project_id) do
+        :ok ->
           socket
           |> put_flash(:info, "Project deleted successfully")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
-        {:noreply, socket}
-
-      _ ->
-        socket =
+        _ ->
           socket
           |> put_flash(:info, "Unable to delete project")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -124,34 +121,30 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
   end
 
   defp get_updated_project_list(socket) do
-    with query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
-         %{entries: user_projects} <- Project.query(%{}, query, true),
-         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
-         user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
-      {:noreply,
-       socket
-       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)}
-    else
-      {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error("Error message: Database error while fetching user projects: #{inspect(query_error)}")
+    socket =
+      with query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
+           %{entries: user_projects} <- Project.query(%{}, query, true),
+           user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
+           user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
+        socket
+        |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
+      else
+        {:error, query_error = %Ecto.QueryError{}} ->
+          Logger.error("Error message: Database error while fetching user projects: #{inspect(query_error)}")
 
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
 
-        {:noreply, socket}
+        err ->
+          Logger.error("Error message: #{inspect(err)}")
 
-      err ->
-        Logger.error("Error message: #{inspect(err)}")
-
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp render_audio_card(assigns) do
@@ -183,7 +176,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
       @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
       subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}
       button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
       button_one_action="edit" button_two_action="delete"
       button_two_phx_value_ref={@user_project.id} />

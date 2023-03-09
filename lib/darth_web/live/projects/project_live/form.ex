@@ -68,25 +68,22 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
       |> Map.put("user_id", socket.assigns.current_user.id)
       |> Map.put("author", socket.assigns.current_user.display_name)
 
-    case Project.create(params) do
-      {:ok, %ProjectStruct{}} ->
-        socket =
+    socket =
+      case Project.create(params) do
+        {:ok, %ProjectStruct{}} ->
           socket
           |> put_flash(:info, "Project created successfully")
           |> push_navigate(to: socket.assigns.return_to)
 
-        {:noreply, socket}
+        {:error, reason} ->
+          Logger.error("Project creation failed: #{inspect(reason)}")
 
-      {:error, reason} ->
-        Logger.error("Project creation failed: #{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:info, "Project creation failed")
           |> push_navigate(to: socket.assigns.return_to)
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :new, _params) do

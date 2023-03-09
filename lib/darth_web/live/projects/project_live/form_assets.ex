@@ -94,10 +94,10 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
   @impl Phoenix.LiveView
   def handle_event("assign", %{"ref" => asset_lease_id}, socket) do
-    with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
-         {:ok, _asset_lease} <-
-           AssetLease.assign_project(asset_lease, socket.assigns.current_user, socket.assigns.project) do
-      socket =
+    socket =
+      with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
+           {:ok, _asset_lease} <-
+             AssetLease.assign_project(asset_lease, socket.assigns.current_user, socket.assigns.project) do
         socket
         |> put_flash(:info, "Project assigned to asset")
         |> push_patch(
@@ -106,13 +106,10 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
               page: socket.assigns.current_page
             )
         )
+      else
+        {:error, reason} ->
+          Logger.error("Error message when assigning the asset_lease with project:#{inspect(reason)}")
 
-      {:noreply, socket}
-    else
-      {:error, reason} ->
-        Logger.error("Error message when assigning the asset_lease with project:#{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, "Unable to assign project to the asset")
           |> push_patch(
@@ -121,18 +118,18 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
                 page: socket.assigns.current_page
               )
           )
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("unassign", %{"ref" => asset_lease_id}, socket) do
-    with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
-         {:ok, asset_lease} <-
-           AssetLease.unassign_project(asset_lease, socket.assigns.current_user, socket.assigns.project),
-         {:ok, project} <- Project.unassign_primary_asset_lease(socket.assigns.project, asset_lease) do
-      socket =
+    socket =
+      with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
+           {:ok, asset_lease} <-
+             AssetLease.unassign_project(asset_lease, socket.assigns.current_user, socket.assigns.project),
+           {:ok, project} <- Project.unassign_primary_asset_lease(socket.assigns.project, asset_lease) do
         socket
         |> put_flash(:info, "Asset removed from project")
         |> push_patch(
@@ -141,13 +138,10 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
               page: socket.assigns.current_page
             )
         )
+      else
+        {:error, reason} ->
+          Logger.error("Error message:#{inspect(reason)}")
 
-      {:noreply, socket}
-    else
-      {:error, reason} ->
-        Logger.error("Error message:#{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, "Unable to remove asset from the project")
           |> push_patch(
@@ -156,16 +150,16 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
                 page: socket.assigns.current_page
               )
           )
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("make_primary", %{"ref" => asset_lease_id}, socket) do
-    with {:ok, project} <- Project.update(socket.assigns.project, %{primary_asset_lease_id: asset_lease_id}),
-         {:ok, project} <- Project.read(project.id) do
-      socket =
+    socket =
+      with {:ok, project} <- Project.update(socket.assigns.project, %{primary_asset_lease_id: asset_lease_id}),
+           {:ok, project} <- Project.read(project.id) do
         socket
         |> assign(project: project)
         |> put_flash(:info, "Project primary asset updated")
@@ -175,13 +169,10 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
               page: socket.assigns.current_page
             )
         )
+      else
+        {:error, reason} ->
+          Logger.error("Error message:#{inspect(reason)}")
 
-      {:noreply, socket}
-    else
-      {:error, reason} ->
-        Logger.error("Error message:#{inspect(reason)}")
-
-        socket =
           socket
           |> put_flash(:error, "Unable to update the primary asset")
           |> push_patch(
@@ -190,9 +181,9 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
                 page: socket.assigns.current_page
               )
           )
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -247,37 +238,31 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   end
 
   defp get_updated_asset_list(socket) do
-    case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
-      %{entries: asset_leases} ->
-        asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
-        asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+    socket =
+      case AssetLease.query_by_user(socket.assigns.current_user.id, %{}, false) do
+        %{entries: asset_leases} ->
+          asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+          asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
 
-        {:noreply,
-         socket
-         |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)}
+          socket
+          |> assign(asset_leases_list: asset_leases_list, asset_leases_map: asset_leases_map)
 
-      {:error, query_error = %Ecto.QueryError{}} ->
-        Logger.error(
-          "Error message from MediaVerse: Database error while fetching asset via asset leases: #{inspect(query_error)}"
-        )
+        {:error, query_error = %Ecto.QueryError{}} ->
+          Logger.error("Database error while fetching asset via asset leases: #{inspect(query_error)}")
 
-        socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
           |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
 
-        {:noreply, socket}
+        err ->
+          Logger.error("Error message from MediaVerse: #{inspect(err)}")
 
-      err ->
-        Logger.error("Error message from MediaVerse: #{inspect(err)}")
-
-        socket =
           socket
           |> put_flash(:error, "User not found")
           |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   defp render_added_audio_card_with_one_button(assigns) do
