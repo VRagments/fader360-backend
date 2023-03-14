@@ -1,5 +1,10 @@
-<Header.render heading="Projects" button_label="Create"
-    button_link={Routes.project_form_path(@socket, :new)} button_action="create_project" />
+<Header.render heading="Projects">
+    <LinkButton.render
+        link={Routes.project_form_path(@socket, :new)}
+        action="add"
+        label="Create"
+    />
+</Header.render>
 
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -16,7 +21,11 @@
         <% end %>
     </ul>
 </section>
-<Pagination.render total_pages={@total_pages} current_page={@current_page}
+<Pagination.render
+    total_pages={@total_pages}
+    current_page={@current_page}
     back_button_route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index, page:
-    (@current_page-1))} forward_button_route={Routes.live_path(@socket,
-    DarthWeb.Projects.ProjectLive.Index, page: (@current_page+1))} />
+        (@current_page-1))}
+    forward_button_route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index, page:
+        (@current_page+1))}
+/>

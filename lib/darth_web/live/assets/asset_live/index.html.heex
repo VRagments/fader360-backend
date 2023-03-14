@@ -1,4 +1,10 @@
-<Header.render heading="Assets" button_action="upload" uploads={@uploads} />
+<Header.render heading="Assets">
+    <FormUpload.render
+        action="Upload"
+        uploads={@uploads}
+    />
+</Header.render>
+
 <div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
     <%# render each avatar entry %>
     <%= for entry <- @uploads.media.entries do %>
@@ -35,7 +41,11 @@
         <% end %>
     </ul>
 </section>
-<Pagination.render total_pages={@total_pages} current_page={@current_page}
+<Pagination.render
+    total_pages={@total_pages}
+    current_page={@current_page}
     back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Index, page:
-    (@current_page-1))} forward_button_route={Routes.live_path(@socket,
-    DarthWeb.Assets.AssetLive.Index, page: (@current_page+1))} />
+        (@current_page-1))}
+    forward_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Index, page:
+        (@current_page+1))}
+/>

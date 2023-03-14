@@ -7,9 +7,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.Project
-  alias DarthWeb.Components.IndexCard
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.Pagination
+  alias DarthWeb.Components.{IndexCard, Header, Pagination, LinkButton}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -149,37 +147,58 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
-      subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
+        @user_project.id)}
+      title={@user_project.name}
+      visibility={@user_project.visibility}
+      subtitle={@user_project.author}
+      button_one_label="Edit"
+      button_two_label="Delete"
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit" button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id} />
+      button_one_action="edit"
+      button_two_action="delete"
+      button_two_phx_value_ref={@user_project.id}
+    />
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
-      subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
+        @user_project.id)}
+      title={@user_project.name}
+      visibility={@user_project.visibility}
+      subtitle={@user_project.author}
+      button_one_label="Edit"
+      button_two_label="Delete"
       image_source={@user_project.primary_asset.thumbnail_image}
       button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit" button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id} />
+      button_one_action="edit"
+      button_two_action="delete"
+      button_two_phx_value_ref={@user_project.id}
+    />
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @user_project.id)} title={@user_project.name} visibility={@user_project.visibility}
-      subtitle={@user_project.author} button_one_label="Edit" button_two_label="Delete"
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
+        @user_project.id)}
+      title={@user_project.name}
+      visibility={@user_project.visibility}
+      subtitle={@user_project.author}
+      button_one_label="Edit"
+      button_two_label="Delete"
       image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}
       button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit" button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id} />
+      button_one_action="edit"
+      button_two_action="delete"
+      button_two_phx_value_ref={@user_project.id}
+    />
     """
   end
 end

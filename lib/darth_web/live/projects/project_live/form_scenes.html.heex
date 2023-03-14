@@ -1,0 +1,43 @@
+<section class="flex flex-col mt-4 px-4 py-2 mx-auto items-center justify-center">
+    <div class="mt-10 sm:mt-0">
+        <div class="md:grid md:grid-cols-2 md:gap-6">
+            <FormHeader.render
+                title="Project Scene Information"
+                subtitle="Click the checkbox to allow directly jumping to this scene.
+                    This can be chnaged later."
+            />
+            <div class="mt-5 md:col-span-2 md:mt-0">
+                <.form :let={f} for={@changeset} phx-submit="save">
+                <div class="overflow-hidden shadow sm:rounded-md">
+                    <div class="bg-white px-4 py-5 sm:p-6">
+                        <div class="grid grid-cols-8 gap-3">
+                            <FormInputField.render
+                                title="Project Scene Name"
+                                form={f}
+                                input_name={:name}
+                                autocomplete="Name"
+                                placeholder="Project Scene Name"
+                            />
+                            <FormCheckBox.render
+                                title="Navigatable?"
+                                form={f}
+                                input_name={:navigatable}
+                                subtitle="Allow directly jumping to the scene?"
+                            />
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">
+                        <button type="submit"
+                            class="inline-flex justify-center rounded-md border border-transparent bg-blue-600
+                                py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none
+                                focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            >
+                                <%=@action_label%>
+                        </button>
+                    </div>
+                </div>
+                </.form>
+            </div>
+        </div>
+    </div>
+</section>

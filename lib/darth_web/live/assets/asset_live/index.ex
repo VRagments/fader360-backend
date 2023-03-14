@@ -5,9 +5,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.IndexCard
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.Pagination
+  alias DarthWeb.Components.{IndexCard, Header, FormUpload, Pagination}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -338,34 +336,55 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
-      button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,@asset_lease.id)}
+      title={@asset_lease.asset.name}
+      visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type}
+      button_one_label="Re-Transcode"
+      button_two_label="Delete"
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+      button_one_action="re_transcode"
+      button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete"
+      button_two_phx_value_ref={@asset_lease.id}
+    />
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
-      button_two_label="Delete" image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      title={@asset_lease.asset.name}
+      visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type}
+      button_one_label="Re-Transcode"
+      button_two_label="Delete"
+      image_source={@asset_lease.asset.thumbnail_image}
+      button_one_action="re_transcode"
+      button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete"
+      button_two_phx_value_ref={@asset_lease.id}
+    />
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @asset_lease.id)} title={@asset_lease.asset.name} visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type} button_one_label="Re-Transcode"
-      button_two_label="Delete" image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      button_one_action="re_transcode" button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete" button_two_phx_value_ref={@asset_lease.id} />
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      title={@asset_lease.asset.name}
+      visibility={@asset_lease.asset.status}
+      subtitle={@asset_lease.asset.media_type}
+      button_one_label="Re-Transcode"
+      button_two_label="Delete"
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+      button_one_action="re_transcode"
+      button_one_phx_value_ref={@asset_lease.asset.id}
+      button_two_action="delete"
+      button_two_phx_value_ref={@asset_lease.id}
+    />
     """
   end
 

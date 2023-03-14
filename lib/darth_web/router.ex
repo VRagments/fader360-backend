@@ -113,9 +113,12 @@ defmodule DarthWeb.Router do
     live "/users/assets/:asset_lease_id", Assets.AssetLive.Show
     live "/users/projects/new", Projects.ProjectLive.Form, :new
     live "/users/projects/:project_id/assets", Projects.ProjectLive.FormAssets
+    live "/users/projects/:project_id/project_scenes/new", Projects.ProjectLive.FormScenes, :new
     live "/users/projects", Projects.ProjectLive.Index
     live "/users/projects/:project_id", Projects.ProjectLive.Show
     live "/users/projects/:project_id/edit", Projects.ProjectLive.Form, :edit
+    live "/users/projects/:project_id/project_scenes/:project_scene_id", Projects.ProjectLive.SceneShow
+    live "/users/projects/:project_id/project_scenes/:project_scene_id/edit", Projects.ProjectLive.FormScenes, :edit
     live "/users/assets/:asset_lease_id/projects", Assets.AssetLive.FormProjects
   end
 

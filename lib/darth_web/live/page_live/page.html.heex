@@ -6,11 +6,23 @@
 </div>
 
 <%= if User.is_mediaverse_account?(@current_user) do %>
-<Header.render heading="Assets" button_label="Add from MediaVerse"
-    button_link={Routes.live_path(@socket, DarthWeb.Assets.MvAssetLive.Index)}
-    button_action="upload_and_link" button_two_action="upload" uploads={@uploads} />
+<Header.render heading="Assets">
+    <LinkUploadButtonGroup.render
+        button_one_label="Add from MediaVerse"
+        button_one_link={Routes.live_path(@socket, DarthWeb.Assets.MvAssetLive.Index)}
+        button_one_action="add"
+        button_two_action="Upload"
+        uploads={@uploads}
+    />
+</Header.render>
 <% else %>
-<Header.render heading="Assets" button_label="Upload" button_action="upload" uploads={@uploads} />
+<Header.render heading="Assets">
+    <FormUpload.render
+        action="Upload"
+        uploads={@uploads}
+    />
+</Header.render>
+
 <% end %>
 <div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
     <%# render each avatar entry %>
@@ -49,8 +61,14 @@
         DarthWeb.Assets.AssetLive.Index)} />
 </section>
 
-<Header.render heading="Projects" button_label="Create"
-    button_link={Routes.project_form_path(@socket, :new)} button_action="create_project" />
+<Header.render heading="Projects">
+    <LinkButton.render
+        link={Routes.project_form_path(@socket, :new)}
+        action="add"
+        label="Create"
+    />
+</Header.render>
+
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <%= for i <- 0..3 do %>
@@ -62,8 +80,11 @@
         <% end %>
         <% end %>
     </ul>
-    <HyperLink.render link_text="Show all Projects" link_route={Routes.live_path(@socket,
-        DarthWeb.Projects.ProjectLive.Index)} />
+    <HyperLink.render
+        link_text="Show all Projects"
+        link_route={Routes.live_path(@socket,
+            DarthWeb.Projects.ProjectLive.Index)}
+    />
 </section>
 <div
     class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight flex items-center my-4 before:flex-1 after:flex-1 container mx-auto lg:pt-12 lg:px-32">
@@ -75,13 +96,22 @@
         <ul role="list" class="-mb-8">
             <%= for entry <- @sorted_combined_entries do%>
             <%= if Map.has_key?(entry, :author) do %>
-            <Activity.render action="activity_done" type="Project" name={entry.name}
-                inserted_at={entry.inserted_at} show_path={Routes.live_path(@socket,
-                DarthWeb.Projects.ProjectLive.Show, entry.id)} />
+            <Activity.render
+                action="activity_done"
+                type="Project" name={entry.name}
+                inserted_at={entry.inserted_at}
+                show_path={Routes.live_path(@socket,
+                    DarthWeb.Projects.ProjectLive.Show, entry.id)}
+            />
             <%else%>
-            <Activity.render action="activity_done" type="Asset" name={entry.asset.name}
-                inserted_at={entry.inserted_at} show_path={Routes.live_path(@socket,
-                DarthWeb.Assets.AssetLive.Show, entry.id)} />
+            <Activity.render
+                action="activity_done"
+                type="Asset"
+                name={entry.asset.name}
+                inserted_at={entry.inserted_at}
+                show_path={Routes.live_path(@socket,
+                    DarthWeb.Assets.AssetLive.Show, entry.id)}
+            />
             <%end%>
             <% end %>
         </ul>

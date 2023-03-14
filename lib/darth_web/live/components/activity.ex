@@ -28,5 +28,5 @@ defmodule DarthWeb.Components.Activity do
     """
   end
 
-  defp render_svg(%{action: "activity_done"} = assigns), do: Icons.blue_tick_mark_activity(assigns)
+  defp render_svg(%{action: "activity_done"} = assigns), do: Icons.green_tick_mark_activity(assigns)
 end

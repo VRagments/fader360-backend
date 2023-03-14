@@ -1,12 +1,22 @@
-<Header.render heading={@asset_lease.asset.name} button_label="Manage Asset Projects"
-    button_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id)}
-    button_action="manage" />
-<%=if Asset.is_audio_asset?(@asset_lease.asset.media_type) do %>
-<.render_audio_asset_detail socket={@socket} asset_lease={@asset_lease} />
-<% end %>
-<%=if Asset.is_video_asset?(@asset_lease.asset.media_type) do %>
-<.render_video_asset_detail asset_lease={@asset_lease} />
-<%end %>
-<%=if Asset.is_image_asset?(@asset_lease.asset.media_type) do %>
-<.render_image_asset_detail asset_lease={@asset_lease} />
-<% end %>
+<Header.render heading={@asset_lease.asset.name}>
+    <LinkButton.render
+        link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+            @asset_lease.id)}
+        action="manage"
+        label="Manage Asset Projects"
+    />
+</Header.render>
+
+<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+    <div class="relative sm:py-16 lg:py-0">
+        <Icons.dots_pattern />
+        <.render_media_display asset={@asset_lease.asset} socket={@socket} />
+    </div>
+    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+        <div class="mt-10">
+            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                <.render_asset_stats asset={@asset_lease.asset} />
+            </dl>
+        </div>
+    </div>
+</div>

@@ -8,10 +8,7 @@ defmodule DarthWeb.PageLive.Page do
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.Activity
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.IndexCard
-  alias DarthWeb.Components.HyperLink
+  alias DarthWeb.Components.{Activity, Header, IndexCard, HyperLink, LinkUploadButtonGroup, FormUpload, LinkButton}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -290,61 +287,84 @@ defmodule DarthWeb.PageLive.Page do
 
   defp render_asset_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @card.id)} title={@card.asset.name} visibility={@card.asset.status}
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,@card.id)}
+      title={@card.asset.name}
+      visibility={@card.asset.status}
       subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )} />
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+    />
     """
   end
 
   defp render_asset_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @card.id)} title={@card.asset.name} visibility={@card.asset.status}
-      subtitle={@card.asset.media_type} image_source={@card.asset.thumbnail_image} />
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @card.id)}
+      title={@card.asset.name}
+      visibility={@card.asset.status}
+      subtitle={@card.asset.media_type}
+      image_source={@card.asset.thumbnail_image}
+    />
     """
   end
 
   defp render_asset_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,
-      @card.id)} title={@card.asset.name} visibility={@card.asset.status}
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @card.id)}
+      title={@card.asset.name}
+      visibility={@card.asset.status}
       subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}/>
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+    />
     """
   end
 
   defp render_project_audio_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @card.id)} title={@card.name} visibility={@card.visibility}
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      title={@card.name}
+      visibility={@card.visibility}
       subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}/>
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+    />
     """
   end
 
   defp render_project_image_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @card.id)} title={@card.name} visibility={@card.visibility}
-      subtitle={@card.author} image_source={@card.primary_asset.thumbnail_image}/>
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      title={@card.name}
+      visibility={@card.visibility}
+      subtitle={@card.author}
+      image_source={@card.primary_asset.thumbnail_image}
+    />
     """
   end
 
   defp render_project_default_card(assigns) do
     ~H"""
-    <IndexCard.render show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show,
-      @card.id)} title={@card.name} visibility={@card.visibility}
+    <IndexCard.render
+      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      title={@card.name}
+      visibility={@card.visibility}
       subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
+      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}
+    />
     """
   end
 
   defp render_place_holder_card(assigns) do
     ~H"""
-    <IndexCard.render title="Name" visibility={@visibility}
+    <IndexCard.render
+      title="Name"
+      visibility={@visibility}
       subtitle={@subtitle}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}/>
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+    />
     """
   end
 

@@ -1,15 +1,48 @@
-<Header.render heading={@project.name} button_label="Edit Project"
-    button_link={Routes.project_form_path(@socket, :edit, @project.id)} button_action="edit_project"
-    button_two_action="manage" button_two_label="Manage Project Assets"
-    button_two_link={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-    @project.id)} />
-<%= if Project.has_primary_asset_lease?(@project) do %>
-<%= if Asset.is_audio_asset?(@project.primary_asset.media_type) do %>
-<.render_project_with_audio_primary_asset socket={@socket} project={@project}
-    changeset={@changeset} />
-<% else %>
-<.render_project_with_primary_asset socket={@socket} project={@project} changeset={@changeset} />
-<% end %>
-<% else %>
-<.render_project_with_no_primary_asset socket={@socket} project={@project} changeset={@changeset} />
-<% end %>
+<Header.render heading={@project.name}>
+    <LinkButtonGroup.render
+        button_one_link={Routes.project_form_path(@socket, :edit, @project.id)}
+        button_one_action="edit"
+        button_one_label="Edit Project"
+        button_two_link={Routes.live_path(@socket,
+            DarthWeb.Projects.ProjectLive.FormAssets,@project.id)}
+        button_two_action="manage"
+        button_two_label="Manage Project Assets"
+    />
+</Header.render>
+
+<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+    <div class="relative sm:py-16 lg:py-0">
+        <Icons.dots_pattern />
+        <.render_media_display project={@project} socket={@socket} />
+    </div>
+    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+        <div class="mt-10">
+            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                <.render_project_stats project={@project} changeset={@changeset}
+                    select_options={@select_options} />
+            </dl>
+        </div>
+    </div>
+</div>
+
+<Header.render heading="Project Scenes">
+    <LinkButton.render
+        link={Routes.project_form_scenes_path(@socket, :new, @project.id)}
+        action="add"
+        label="Create"
+    />
+</Header.render>
+
+<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <%= for project_scene <- @project_scenes_list do %>
+        <%= if ProjectScene.has_primary_asset_lease?(project_scene) do %>
+        <.render_scene_with_image_card socket={@socket} user_project={@project}
+            project_scene={project_scene} />
+        <%else%>
+        <.render_scene_with_default_card socket={@socket} user_project={@project}
+            project_scene={project_scene} />
+        <%end%>
+        <%end%>
+    </ul>
+</section>

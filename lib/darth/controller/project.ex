@@ -145,6 +145,10 @@ defmodule Darth.Controller.Project do
     |> Enum.sort_by(& &1.inserted_at)
   end
 
+  def pre_load_asset_leases_and_assets_into_project(project) do
+    Repo.preload(project, asset_leases: :asset)
+  end
+
   #
   # INTERNAL FUNCTIONS
   #

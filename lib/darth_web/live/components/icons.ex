@@ -128,17 +128,7 @@ defmodule DarthWeb.Components.Icons do
     """
   end
 
-  def done_check(assigns) do
-    ~H"""
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-      <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0
-        01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0
-        011.05-.143z" clip-rule="evenodd" />
-    </svg>
-    """
-  end
-
-  def blue_tick_mark_activity(assigns) do
+  def green_tick_mark_activity(assigns) do
     ~H"""
     <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
       <svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -147,6 +137,37 @@ defmodule DarthWeb.Components.Icons do
           011.05-.143z" clip-rule="evenodd" />
       </svg>
     </span>
+    """
+  end
+
+  def back_curved_arrow(assigns) do
+    ~H"""
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+      <path fill-rule="evenodd" d="M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375
+        0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0
+        01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z"
+        clip-rule="evenodd" />
+    </svg>
+    """
+  end
+
+  def dots_pattern(assigns) do
+    ~H"""
+    <div aria-hidden="true"
+            class="hidden sm:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-screen">
+    <div class="absolute inset-y-0 right-1/2 w-full rounded-r-3xl bg-gray-50 lg:right-72"></div>
+    <svg class="absolute top-8 left-1/2 -ml-3 lg:-right-8 lg:left-auto lg:top-12"
+      width="404" height="392" fill="none" viewBox="0 0 404 392">
+      <defs>
+        <pattern id="02f20b47-fd69-4224-a62a-4c9de5c763f7" x="0" y="0" width="20"
+          height="20" patternUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="4" height="4" class="text-gray-200"
+          fill="currentColor" />
+        </pattern>
+       </defs>
+      <rect width="404" height="392" fill="url(#02f20b47-fd69-4224-a62a-4c9de5c763f7)" />
+    </svg>
+    </div>
     """
   end
 end

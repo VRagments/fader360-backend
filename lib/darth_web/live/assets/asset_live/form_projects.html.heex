@@ -1,6 +1,10 @@
-<Header.render heading={"Manage projects of " <> @asset_lease.asset.name} button_label=" Done"
-    button_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
-    button_action="done" />
+<Header.render heading={"Manage projects of " <> @asset_lease.asset.name}>
+    <LinkButton.render
+        link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+        action="back"
+        label="Back"
+    />
+</Header.render>
 
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list"
@@ -31,7 +35,11 @@
     </ul>
 </section>
 
-<Pagination.render total_pages={@total_pages} current_page={@current_page}
+<Pagination.render
+    total_pages={@total_pages}
+    current_page={@current_page}
     back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-    @asset_lease.id, page: (@current_page-1))} forward_button_route={Routes.live_path(@socket,
-    DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page: (@current_page+1))} />
+        @asset_lease.id, page: (@current_page-1))}
+    forward_button_route={Routes.live_path(@socket,
+        DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page: (@current_page+1))}
+/>

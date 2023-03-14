@@ -1,12 +1,11 @@
 defmodule DarthWeb.Assets.AssetLive.Show do
   use DarthWeb, :live_navbar_view
   require Logger
-  alias Darth.Model.User, as: UserStruct
+  alias(Darth.Model.User, as: UserStruct)
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.Show
+  alias DarthWeb.Components.{ShowAudio, ShowVideo, ShowImage, Stat, Icons, LinkButton, Header}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -140,35 +139,58 @@ defmodule DarthWeb.Assets.AssetLive.Show do
     end
   end
 
-  defp render_audio_asset_detail(assigns) do
-    ~H"""
-    <Show.render type="audio_asset"
-      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      data_source={@asset_lease.asset.static_url}
-      file_size={get_file_size(@asset_lease.asset.attributes)}
-      duration={get_duration(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
-      media_type={@asset_lease.asset.media_type} />
-    """
+  defp render_media_display(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.asset.media_type)
+
+    case normalised_media_type do
+      :audio ->
+        ~H"""
+        <ShowAudio.render source = {Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+          data_source={@asset.static_url}/>
+        """
+
+      :video ->
+        ~H"""
+        <ShowVideo.render data_source={@asset.static_url} />
+        """
+
+      :image ->
+        ~H"""
+        <ShowImage.render source={@asset.static_url} />
+        """
+    end
   end
 
-  defp render_video_asset_detail(assigns) do
-    ~H"""
-    <Show.render type="video_asset" data_source={@asset_lease.asset.static_url}
-      width={get_width(@asset_lease.asset.attributes)}
-      height={get_height(@asset_lease.asset.attributes)}
-      file_size={get_file_size(@asset_lease.asset.attributes)}
-      duration={get_duration(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
-      media_type={@asset_lease.asset.media_type} />
-    """
-  end
+  defp render_asset_stats(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.asset.media_type)
 
-  defp render_image_asset_detail(assigns) do
-    ~H"""
-    <Show.render type="image_asset" source={@asset_lease.asset.static_url}
-      width={get_width(@asset_lease.asset.attributes)}
-      height={get_height(@asset_lease.asset.attributes)}
-      file_size={get_file_size(@asset_lease.asset.attributes)} status={@asset_lease.asset.status}
-      media_type={@asset_lease.asset.media_type} />
-    """
+    case normalised_media_type do
+      :audio ->
+        ~H"""
+        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+        <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
+        <Stat.render title="Status" value={@asset.status} />
+        <Stat.render title="Media Type" value= {@asset.media_type} />
+        """
+
+      :video ->
+        ~H"""
+        <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
+        <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
+        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+        <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
+        <Stat.render title="Status" value={@asset.status} />
+        <Stat.render title="Media Type" value= {@asset.media_type} />
+        """
+
+      :image ->
+        ~H"""
+        <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
+        <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
+        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+        <Stat.render title="Status" value={@asset.status} />
+        <Stat.render title="Media Type" value= {@asset.media_type} />
+        """
+    end
   end
 end

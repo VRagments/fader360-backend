@@ -5,6 +5,7 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.User
   alias Darth.Controller.Project
+  alias DarthWeb.Components.{FormHeader, FormInputField, FormSelectField}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -37,8 +38,11 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
 
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
+    select_options = Ecto.Enum.mappings(ProjectStruct, :visibility)
+
     socket =
       socket
+      |> assign(select_options: select_options)
       |> apply_action(socket.assigns.live_action, params)
 
     {:noreply, socket}

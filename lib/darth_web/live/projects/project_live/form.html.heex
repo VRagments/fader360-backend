@@ -1,33 +1,28 @@
 <section class="flex flex-col mt-4 px-4 py-2 mx-auto items-center justify-center">
     <div class="mt-10 sm:mt-0">
         <div class="md:grid md:grid-cols-2 md:gap-6">
-            <div class="md:col-span-1">
-                <div class="px-4 sm:px-0">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900">Project Information</h3>
-                    <p class="mt-1 text-sm text-gray-600">Select the project visibility according to
-                        your preference. This can be changed later.</p>
-                </div>
-            </div>
+            <FormHeader.render
+                title="Project Information"
+                subtitle="Select the project visibility according to your preference. This can be changed later."
+            />
             <div class="mt-5 md:col-span-2 md:mt-0">
                 <.form :let={f} for={@changeset} phx-submit="save">
                     <div class="overflow-hidden shadow sm:rounded-md">
                         <div class="bg-white px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-8 gap-3">
-                                <div class="col-span-6 sm:col-span-3">
-                                    <label class="block text-sm font-medium text-gray-700">Project
-                                        Name</label>
-                                    <%= text_input f, :name, required: true, type: "text", autocomplete: "project_name", placeholder: "Project Name",
-                                      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
-                                </div>
-                                <div> <%= error_tag f, :name %> </div>
-
-                                <div class="col-span-6 sm:col-span-3">
-                                    <label
-                                        class="block text-sm font-medium text-gray-700">Visibility</label>
-                                    <%= select f, :visibility, ["Private": "private","LinkShare": "link_share","Discoverable": "discoverable"],
-                                      class: "mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm" %>
-                                </div>
-                                <div> <%= error_tag f, :visibility %> </div>
+                                <FormInputField.render
+                                    title="Project Name"
+                                    form={f}
+                                    input_name={:name}
+                                    autocomplete="Name"
+                                    placeholder="Project Name"
+                                />
+                                <FormSelectField.render
+                                    title="Visibility"
+                                    form={f}
+                                    input_name={:visibility}
+                                    options={@select_options}
+                                />
                             </div>
                         </div>
                         <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">

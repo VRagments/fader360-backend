@@ -6,9 +6,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
   alias Darth.Model.User, as: UserStruct
-  alias DarthWeb.Components.ShowCard
-  alias DarthWeb.Components.Header
-  alias DarthWeb.Components.Pagination
+  alias DarthWeb.Components.{Pagination, Header, ShowCard, LinkButton}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -267,61 +265,95 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
   defp render_added_audio_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
       show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="unassign" button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
+      button_one_action="unassign"
+      button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id}
+      state="Asset added to Project"
+    />
     """
   end
 
   defp render_added_audio_card_with_two_buttons(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
       show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="unassign" button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id} button_two_action="make_primary"
-      button_two_label="Make primary" button_two_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
+      button_one_action="unassign"
+      button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id}
+      button_two_action="make_primary"
+      button_two_label="Make primary"
+      button_two_phx_value_ref={@asset_lease.id}
+      state="Asset added to Project"
+    />
     """
   end
 
   defp render_added_asset_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
-    show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
-    image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
-    button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id} state="Asset added to Project"/>
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
+      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      image_source={@asset_lease.asset.thumbnail_image}
+      button_one_action="unassign"
+      button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id}
+      state="Asset added to Project"
+    />
     """
   end
 
   defp render_added_asset_card_with_two_buttons(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
       show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image} button_one_action="unassign"
-      button_one_label="Remove" button_one_phx_value_ref={@asset_lease.id}
-      button_two_action="make_primary" button_two_label="Make primary"
-      button_two_phx_value_ref={@asset_lease.id} state="Asset added to Project" />
+      image_source={@asset_lease.asset.thumbnail_image}
+      button_one_action="unassign"
+      button_one_label="Remove"
+      button_one_phx_value_ref={@asset_lease.id}
+      button_two_action="make_primary"
+      button_two_label="Make primary"
+      button_two_phx_value_ref={@asset_lease.id}
+      state="Asset added to Project"
+    />
     """
   end
 
   defp render_available_audio_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
       show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="assign" button_one_label="Add"
-      button_one_phx_value_ref={@asset_lease.id} />
+      button_one_action="assign"
+      button_one_label="Add"
+      button_one_phx_value_ref={@asset_lease.id}
+    />
     """
   end
 
   defp render_available_asset_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render title={@asset_lease.asset.name} subtitle={@asset_lease.asset.media_type}
+    <ShowCard.render
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
       show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image} button_one_action="assign"
-      button_one_label="Add" button_one_phx_value_ref={@asset_lease.id} />
+      image_source={@asset_lease.asset.thumbnail_image}
+      button_one_action="assign"
+      button_one_label="Add"
+      button_one_phx_value_ref={@asset_lease.id}
+    />
     """
   end
 end

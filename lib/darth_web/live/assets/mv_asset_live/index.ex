@@ -5,8 +5,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.{MvApiClient, AssetProcessor.Downloader, AssetProcessor.PreviewDownloader}
-  alias DarthWeb.Components.IndexCard
-  alias DarthWeb.Components.Header
+  alias DarthWeb.Components.{IndexCard, Header, ClickButton}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
@@ -192,51 +191,74 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render title={Map.get(@mv_asset, "originalFilename" )}
-      visibility={Map.get(@mv_asset, "contentType" )} subtitle={Map.get(@mv_asset, "createdBy"
-      )} button_one_label="View" button_two_label="Add to Fader"
+    <IndexCard.render
+      title={Map.get(@mv_asset, "originalFilename" )}
+      visibility={Map.get(@mv_asset, "contentType" )}
+      subtitle={Map.get(@mv_asset, "createdBy")}
+      button_one_label="View"
+      button_two_label="Add to Fader"
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(@mv_asset, "key" )}
+      button_two_action="add_mv_asset"
+      button_two_phx_value_ref={Map.get(@mv_asset, "key" )}
       button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
-      Map.get(@mv_asset, "key")} button_one_action="view" audio_source={Path.join([@asset_preview_static_url,
-      Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])} />
+        Map.get(@mv_asset, "key")} button_one_action="view"
+      audio_source={Path.join([@asset_preview_static_url,
+        Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+    />
     """
   end
 
   defp render_video_card(assigns) do
     ~H"""
-    <IndexCard.render title={Map.get(@mv_asset, "originalFilename" )}
-      visibility={Map.get(@mv_asset, "contentType" )} subtitle={Map.get(@mv_asset, "createdBy" )}
-      button_one_label="View" button_two_label="Add to Fader"
+    <IndexCard.render
+      title={Map.get(@mv_asset, "originalFilename" )}
+      visibility={Map.get(@mv_asset, "contentType" )}
+      subtitle={Map.get(@mv_asset, "createdBy" )}
+      button_one_label="View"
+      button_two_label="Add to Fader"
       image_source={Path.join([@asset_preview_static_url,
-      Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
-      button_two_action="add_mv_asset" button_two_phx_value_ref={Map.get(@mv_asset, "key"
-      )} button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/video/"
-      )<>Map.get(@mv_asset, "key")} button_one_action="view" />
+        Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+      button_two_action="add_mv_asset"
+      button_two_phx_value_ref={Map.get(@mv_asset, "key")}
+      button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/video/"
+        )<>Map.get(@mv_asset, "key")}
+      button_one_action="view"
+    />
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render title={Map.get(@mv_asset, "originalFilename" )}
-      visibility={Map.get(@mv_asset, "contentType" )} subtitle={Map.get(@mv_asset, "createdBy"
-      )} button_one_label="View" button_two_label="Add to Fader"
+    <IndexCard.render
+      title={Map.get(@mv_asset, "originalFilename" )}
+      visibility={Map.get(@mv_asset, "contentType" )}
+      subtitle={Map.get(@mv_asset, "createdBy")}
+      button_one_label="View"
+      button_two_label="Add to Fader"
       image_source={Path.join([@asset_preview_static_url, Map.get(@mv_asset, "previewLinkKey"
-      ), Map.get(@mv_asset, "originalFilename" )])} button_two_action="add_mv_asset"
+        ), Map.get(@mv_asset, "originalFilename" )])}
+      button_two_action="add_mv_asset"
       button_two_phx_value_ref={Map.get(@mv_asset, "key" )}
       button_one_route={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
-      Map.get(@mv_asset, "key")} button_one_action="view" />
+        Map.get(@mv_asset, "key")}
+      button_one_action="view"
+    />
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render title={Map.get(@mv_asset, "originalFilename" )}
-      visibility={Map.get(@mv_asset, "contentType" )} button_two_label="Add to Fader"
-      subtitle={Map.get(@mv_asset, "createdBy" )} button_one_label="View"
+    <IndexCard.render
+      title={Map.get(@mv_asset, "originalFilename" )}
+      visibility={Map.get(@mv_asset, "contentType" )}
+      button_two_label="Add to Fader"
+      subtitle={Map.get(@mv_asset, "createdBy" )}
+      button_one_label="View"
       image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      button_one_action="view" button_two_action="add_mv_asset"
-      button_two_phx_value_ref={Map.get(@mv_asset, "key" )} />
+      button_one_action="view"
+      button_two_action="add_mv_asset"
+      button_two_phx_value_ref={Map.get(@mv_asset, "key" )}
+    />
     """
   end
 
