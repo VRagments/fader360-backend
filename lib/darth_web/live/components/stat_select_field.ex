@@ -4,7 +4,7 @@ defmodule DarthWeb.Components.StatSelectField do
   attr :changeset, :map, required: true
   attr :form_chnage_name, :string, required: true
   attr :title, :string, required: true
-  attr :input_name, :string, required: true
+  attr :input_name, :atom, required: true
   attr :select_options, :list, required: true
 
   def render(assigns) do

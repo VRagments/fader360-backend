@@ -1,4 +1,5 @@
 defmodule DarthWeb.QueryParameters do
+  use PhoenixSwagger
   import PhoenixSwagger.Path
 
   alias PhoenixSwagger.Path.PathObject
@@ -42,12 +43,21 @@ defmodule DarthWeb.QueryParameters do
     end
   end
 
-  def project_create_or_update(%PathObject{} = path) do
+  def project_create(%PathObject{} = path) do
     parameters path do
-      name(:formData, :string, "Name of the Asset")
-      data(:formData, :object, "Custom project data")
-      visibility(:formData, :string, "Current project visibility")
-      primary_asset_id(:formData, :string, "ID for the asset lease to be used for previews")
+      body(:body, Schema.ref(:ProjectCreateBody), "User project")
+    end
+  end
+
+  def project_update(%PathObject{} = path) do
+    parameters path do
+      body(:body, Schema.ref(:ProjectUpdateBody), "User project")
+    end
+  end
+
+  def project_scene_create_or_update(%PathObject{} = path) do
+    parameters path do
+      body(:body, Schema.ref(:ProjectSceneBody), "Project Scene")
     end
   end
 end

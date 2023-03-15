@@ -52,6 +52,7 @@ defmodule DarthWeb.Router do
 
     resources "/projects", ApiProjectController, only: [:index, :show, :create, :update, :delete] do
       resources "/assets", ApiProjectAssetController, only: [:index, :show, :create]
+      resources "/project_scenes", ApiProjectSceneController, only: [:index, :show, :create, :update, :delete]
     end
 
     resources("/assets", ApiAssetController, only: [:index, :show, :create, :update, :delete]) do

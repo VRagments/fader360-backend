@@ -11,6 +11,43 @@ defmodule DarthWeb.ApiProjectController do
 
   def swagger_definitions do
     %{
+      ProjectCreateBody:
+        swagger_schema do
+          title("Project")
+          description("User project")
+
+          properties do
+            name(:string, "User-provided project name")
+            visibility(:string, "Current project visibility")
+          end
+
+          example(%{
+            name: "my project one",
+            visibility: "public"
+          })
+        end,
+      ProjectUpdateBody:
+        swagger_schema do
+          title("Project")
+          description("User project")
+
+          properties do
+            name(:string, "User-provided project name")
+            data(Schema.ref(:ProjectData), "Custom project data")
+            primary_asset_lease_id(:string, "Asset lease id used for project images")
+            visibility(:string, "Current project visibility")
+          end
+
+          example(%{
+            name: "my project one",
+            data: %{
+              "key_one" => "somedate",
+              "key_two" => "someotherdate"
+            },
+            primary_asset_lease_id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+            visibility: "public"
+          })
+        end,
       Project:
         swagger_schema do
           title("Project")
@@ -194,7 +231,7 @@ defmodule DarthWeb.ApiProjectController do
     produces("application/json")
     security([%{Bearer: []}])
 
-    QueryParameters.project_create_or_update()
+    QueryParameters.project_create()
 
     response(201, "Created", Schema.ref(:Project))
     response(422, "Error")
@@ -255,7 +292,7 @@ defmodule DarthWeb.ApiProjectController do
       id(:path, :string, "Project ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
     end
 
-    QueryParameters.project_create_or_update()
+    QueryParameters.project_update()
 
     response(200, "OK", Schema.ref(:Project))
     response(404, "Not Found, if the project visibility prohibits the call")
