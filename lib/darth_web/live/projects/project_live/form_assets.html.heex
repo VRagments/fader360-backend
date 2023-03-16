@@ -1,7 +1,7 @@
 <Header.render heading={"Manage assets of " <> @project.name}>
     <LinkUploadButtonGroup.render
         button_one_label="Back"
-        button_one_link={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id)}
+        button_one_link={Routes.project_show_path(@socket, :show, @project.id)}
         button_one_action="back"
         button_two_action="Upload"
         uploads={@uploads}
@@ -50,8 +50,7 @@
         <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
             <%= if @current_page > 1 do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-                        @project.id, page: (@current_page-1))}
+                    route={Routes.project_form_assets_path(@socket, :index, @project.id, page: (@current_page-1))}
                     action="left"
                     label="Previous"
                     class="-mt-px flex w-0 flex-1"
@@ -63,15 +62,13 @@
                 <RenderPageNumbers.render
                     socket={@socket}
                     page={page}
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-                        @project.id, page: page)}
+                    route={Routes.project_form_assets_path(@socket, :index, @project.id, page: page)}
                     current_page={@current_page}
                 />
             <% end %>
             <%= if @current_page < @total_pages do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-                        @project.id, page: (@current_page+1))}
+                    route={Routes.project_form_assets_path(@socket, :index, @project.id, page: (@current_page+1))}
                     action="right"
                     label="Next"
                     class="-mt-px flex w-0 flex-1 justify-end"

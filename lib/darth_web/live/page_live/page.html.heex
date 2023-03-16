@@ -9,7 +9,7 @@
 <Header.render heading="Assets">
     <LinkUploadButtonGroup.render
         button_one_label="Add from MediaVerse"
-        button_one_link={Routes.live_path(@socket, DarthWeb.Assets.MvAssetLive.Index)}
+        button_one_link={Routes.mv_asset_index_path(@socket, :index)}
         button_one_action="add"
         button_two_action="Upload"
         uploads={@uploads}
@@ -37,8 +37,7 @@
         <% end %>
         <% end %>
     </ul>
-    <HyperLink.render link_text="Show all Assets" link_route={Routes.live_path(@socket,
-        DarthWeb.Assets.AssetLive.Index)} />
+    <HyperLink.render link_text="Show all Assets" link_route={Routes.asset_index_path(@socket, :index)} />
 </section>
 
 <Header.render heading="Projects">
@@ -62,8 +61,7 @@
     </ul>
     <HyperLink.render
         link_text="Show all Projects"
-        link_route={Routes.live_path(@socket,
-            DarthWeb.Projects.ProjectLive.Index)}
+        link_route={Routes.project_index_path(@socket, :index)}
     />
 </section>
 <div
@@ -80,8 +78,7 @@
                 action="activity_done"
                 type="Project" name={entry.name}
                 inserted_at={entry.inserted_at}
-                show_path={Routes.live_path(@socket,
-                    DarthWeb.Projects.ProjectLive.Show, entry.id)}
+                show_path={Routes.project_show_path(@socket, :show, entry.id)}
             />
             <%else%>
             <Activity.render
@@ -89,8 +86,7 @@
                 type="Asset"
                 name={entry.asset.name}
                 inserted_at={entry.inserted_at}
-                show_path={Routes.live_path(@socket,
-                    DarthWeb.Assets.AssetLive.Show, entry.id)}
+                show_path={Routes.asset_show_path(@socket, :show, entry.id)}
             />
             <%end%>
             <% end %>

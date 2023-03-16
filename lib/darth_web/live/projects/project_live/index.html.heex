@@ -29,7 +29,7 @@
         <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
             <%= if @current_page > 1 do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index, page: (@current_page-1))}
+                    route={Routes.project_index_path(@socket, :index, page: (@current_page-1))}
                     action="left"
                     label="Previous"
                     class="-mt-px flex w-0 flex-1"
@@ -41,13 +41,13 @@
                 <RenderPageNumbers.render
                     socket={@socket}
                     page={page}
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index, page: page)}
+                    route={Routes.project_index_path(@socket, :index, page: page)}
                     current_page={@current_page}
                 />
             <% end %>
             <%= if @current_page < @total_pages do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Index, page: (@current_page+1))}
+                    route={Routes.project_index_path(@socket, :index, page: (@current_page+1))}
                     action="right"
                     label="Next"
                     class="-mt-px flex w-0 flex-1 justify-end"

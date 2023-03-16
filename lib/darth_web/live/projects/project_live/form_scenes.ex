@@ -20,7 +20,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormScenes do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -30,7 +30,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormScenes do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -92,7 +92,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormScenes do
     socket
     |> assign(changeset: ProjectSceneStruct.changeset(%ProjectSceneStruct{}))
     |> assign(action_label: "Create")
-    |> assign(:return_to, Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, project_id))
+    |> assign(:return_to, Routes.project_show_path(socket, :show, project_id))
   end
 
   defp apply_action(socket, :edit, %{"project_scene_id" => project_scene_id, "project_id" => project_id}) do
@@ -104,13 +104,13 @@ defmodule DarthWeb.Projects.ProjectLive.FormScenes do
         |> assign(action_label: "Update")
         |> assign(
           :return_to,
-          Routes.live_path(socket, DarthWeb.Projects.ProjectLive.SceneShow, project_id, project_scene_id)
+          Routes.project_scene_show_path(socket, :show, project_id, project_scene_id)
         )
 
       _ ->
         socket
         |> put_flash(:error, "Unable to fetch project scene")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, project_id))
+        |> push_navigate(to: Routes.project_show_path(socket, :show, project_id))
     end
   end
 end

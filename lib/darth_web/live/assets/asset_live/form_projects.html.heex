@@ -1,6 +1,6 @@
 <Header.render heading={"Manage projects of " <> @asset_lease.asset.name}>
     <LinkButtonGroup.render
-        button_two_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+        button_two_link={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
         button_two_action="back"
         button_two_label="Back"
         button_one_link={Routes.project_form_path(@socket, :new, @asset_lease.id)}
@@ -47,8 +47,7 @@
         <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
             <%= if @current_page > 1 do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-                        @asset_lease.id, page: (@current_page-1))}
+                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: (@current_page-1))}
                     action="left"
                     label="Previous"
                     class="-mt-px flex w-0 flex-1"
@@ -60,15 +59,13 @@
                 <RenderPageNumbers.render
                     socket={@socket}
                     page={page}
-                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-                        @asset_lease.id, page: page)}
+                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: page)}
                     current_page={@current_page}
                 />
             <% end %>
             <%= if @current_page < @total_pages do %>
                 <PaginationLink.render
-                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-                        @asset_lease.id, page: (@current_page+1))}
+                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: (@current_page+1))}
                     action="right"
                     label="Next"
                     class="-mt-px flex w-0 flex-1 justify-end"

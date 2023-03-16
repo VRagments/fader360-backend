@@ -41,7 +41,7 @@ defmodule DarthWeb.PageLive.Page do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -51,7 +51,7 @@ defmodule DarthWeb.PageLive.Page do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -181,7 +181,7 @@ defmodule DarthWeb.PageLive.Page do
            :ok <- File.rm(uploaded_file_path) do
         socket
         |> put_flash(:info, "Uploaded Successfully")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+        |> push_patch(to: Routes.page_page_path(socket, :index))
       else
         {:error, reason} ->
           Logger.error("Error while uploading the asset: #{inspect(reason)}")
@@ -240,7 +240,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_asset_audio_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,@card.id)}
+      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
       title={@card.asset.name}
       visibility={@card.asset.status}
       subtitle={@card.asset.media_type}
@@ -252,7 +252,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_asset_image_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @card.id)}
+      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
       title={@card.asset.name}
       visibility={@card.asset.status}
       subtitle={@card.asset.media_type}
@@ -264,7 +264,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_asset_default_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @card.id)}
+      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
       title={@card.asset.name}
       visibility={@card.asset.status}
       subtitle={@card.asset.media_type}
@@ -276,7 +276,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_project_audio_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
       visibility={@card.visibility}
       subtitle={@card.author}
@@ -288,7 +288,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_project_image_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
       visibility={@card.visibility}
       subtitle={@card.author}
@@ -300,7 +300,7 @@ defmodule DarthWeb.PageLive.Page do
   defp render_project_default_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @card.id)}
+      show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
       visibility={@card.visibility}
       subtitle={@card.author}

@@ -35,7 +35,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -45,7 +45,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -73,7 +73,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -83,7 +83,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -155,9 +155,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
            :ok <- File.rm(uploaded_file_path) do
         socket
         |> put_flash(:info, "Uploaded Successfully")
-        |> push_patch(
-          to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-        )
+        |> push_patch(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
       else
         {:error, reason} ->
           Logger.error("Error while uploading the asset: #{inspect(reason)}")
@@ -176,16 +174,12 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         :ok ->
           socket
           |> put_flash(:info, "Re-transcoding asset")
-          |> push_patch(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          |> push_patch(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
 
         error ->
           socket
           |> put_flash(:error, "Unable to start asset Re-transcoding: #{error}")
-          |> push_patch(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          |> push_patch(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
       end
 
     {:noreply, socket}
@@ -200,9 +194,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
            :ok <- Asset.delete(asset_lease.asset) do
         socket
         |> put_flash(:info, "Asset deleted successfully")
-        |> push_navigate(
-          to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-        )
+        |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
       else
         {:error, %Ecto.Changeset{} = changeset} ->
           {reason_atom, _} = List.first(changeset.errors)
@@ -212,18 +204,14 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
           socket
           |> put_flash(:error, delete_message)
-          |> push_navigate(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
 
         {:error, reason} ->
           Logger.error("Error message while deleting asset_lease: #{inspect(reason)}")
 
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
-          |> push_navigate(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
       end
 
     {:noreply, socket}
@@ -244,14 +232,14 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
 
         _ ->
           Logger.error("Error message: User not found while fetching assests")
 
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
       end
 
     {:noreply, socket}
@@ -312,7 +300,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   defp render_audio_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show,@asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show,@asset_lease.id)}
       title={@asset_lease.asset.name}
       visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type}
@@ -330,7 +318,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   defp render_image_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       title={@asset_lease.asset.name}
       visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type}
@@ -348,7 +336,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   defp render_default_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       title={@asset_lease.asset.name}
       visibility={@asset_lease.asset.status}
       subtitle={@asset_lease.asset.media_type}

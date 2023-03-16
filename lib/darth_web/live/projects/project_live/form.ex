@@ -20,7 +20,7 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -30,7 +30,7 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -94,14 +94,14 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
     socket
     |> assign(changeset: ProjectStruct.changeset(%ProjectStruct{}))
     |> assign(action_label: "Create")
-    |> assign(:return_to, Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, asset_lease_id))
+    |> assign(:return_to, Routes.asset_form_projects_path(socket, :index, asset_lease_id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(changeset: ProjectStruct.changeset(%ProjectStruct{}))
     |> assign(action_label: "Create")
-    |> assign(:return_to, Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+    |> assign(:return_to, Routes.project_index_path(socket, :index))
   end
 
   defp apply_action(socket, :edit, %{"project_id" => project_id}) do
@@ -111,12 +111,12 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
         |> assign(:changeset, ProjectStruct.changeset(project))
         |> assign(:project, project)
         |> assign(action_label: "Update")
-        |> assign(:return_to, Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, project_id))
+        |> assign(:return_to, Routes.project_show_path(socket, :show, project_id))
 
       _ ->
         socket
         |> put_flash(:error, "Unable to fetch project")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+        |> push_navigate(to: Routes.project_index_path(socket, :index))
     end
   end
 end

@@ -106,21 +106,21 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :require_authenticated_user]
-    live "/", PageLive.Page
+    live "/", PageLive.Page, :index
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
-    live "/users/assets", Assets.AssetLive.Index
-    live "/users/assets/:asset_lease_id", Assets.AssetLive.Show
+    live "/users/assets", Assets.AssetLive.Index, :index
+    live "/users/assets/:asset_lease_id", Assets.AssetLive.Show, :show
     live "/users/projects/new", Projects.ProjectLive.Form, :new
-    live "/users/projects/:project_id/assets", Projects.ProjectLive.FormAssets
+    live "/users/projects/:project_id/assets", Projects.ProjectLive.FormAssets, :index
     live "/users/projects/:project_id/project_scenes/new", Projects.ProjectLive.FormScenes, :new
-    live "/users/projects", Projects.ProjectLive.Index
-    live "/users/projects/:project_id", Projects.ProjectLive.Show
+    live "/users/projects", Projects.ProjectLive.Index, :index
+    live "/users/projects/:project_id", Projects.ProjectLive.Show, :show
     live "/users/projects/:project_id/edit", Projects.ProjectLive.Form, :edit
-    live "/users/projects/:project_id/project_scenes/:project_scene_id", Projects.ProjectLive.SceneShow
+    live "/users/projects/:project_id/project_scenes/:project_scene_id", Projects.ProjectLive.SceneShow, :show
     live "/users/projects/:project_id/project_scenes/:project_scene_id/edit", Projects.ProjectLive.FormScenes, :edit
-    live "/users/assets/:asset_lease_id/projects", Assets.AssetLive.FormProjects
+    live "/users/assets/:asset_lease_id/projects", Assets.AssetLive.FormProjects, :index
     live "/users/assets/:asset_lease_id/projects/new", Projects.ProjectLive.Form, :new
   end
 
@@ -132,7 +132,7 @@ defmodule DarthWeb.Router do
 
   scope "/", DarthWeb do
     pipe_through [:browser, :required_mv_authenticated_user]
-    live "/users/mv-assets", Assets.MvAssetLive.Index
+    live "/users/mv-assets", Assets.MvAssetLive.Index, :index
   end
 
   scope "/", DarthWeb do

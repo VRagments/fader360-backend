@@ -40,7 +40,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -50,7 +50,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -89,7 +89,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to project scenes")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -99,7 +99,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -111,7 +111,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -121,7 +121,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -145,12 +145,12 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         :ok ->
           socket
           |> put_flash(:info, "Project scene deleted successfully")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, socket.assigns.project.id))
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
 
         _ ->
           socket
           |> put_flash(:info, "Unable to delete project scene")
-          |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, socket.assigns.project.id))
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
       end
 
     {:noreply, socket}
@@ -162,7 +162,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       if socket.assigns.project.id == project.id do
         socket
         |> put_flash(:info, "Project deleted successfully")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+        |> push_navigate(to: Routes.project_index_path(socket, :index))
       else
         socket
       end
@@ -176,7 +176,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       if socket.assigns.project.id == project.id do
         socket
         |> put_flash(:info, "Project updated")
-        |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, project.id))
+        |> push_patch(to: Routes.project_show_path(socket, :show, project.id))
       else
         socket
       end
@@ -203,7 +203,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       socket
       |> assign(project_scenes_list: project_scenes_list, project_scenes_map: project_scenes_map)
       |> put_flash(:info, "Project scene updated")
-      |> push_patch(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Show, socket.assigns.project.id))
+      |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
 
     {:noreply, socket}
   end
@@ -234,7 +234,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
 
           socket
           |> put_flash(:error, "Unable to project scenes")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
       end
 
     {:noreply, socket}
@@ -283,8 +283,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   defp render_scene_with_image_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.SceneShow,
-      @user_project.id, @project_scene.id)}
+      show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
       title={@project_scene.name}
       visibility={@project_scene.navigatable}
       subtitle={@project_scene.duration <> " Sec"}
@@ -302,8 +301,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   defp render_scene_with_default_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.SceneShow,
-        @user_project.id, @project_scene.id)}
+      show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
       title={@project_scene.name}
       visibility={@project_scene.navigatable}
       subtitle={@project_scene.duration <> " Sec"}

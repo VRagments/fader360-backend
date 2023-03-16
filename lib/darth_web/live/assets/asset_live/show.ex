@@ -20,8 +20,8 @@ defmodule DarthWeb.Assets.AssetLive.Show do
 
         socket =
           socket
-          |> put_flash(:error, "Asset not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> put_flash(:error, "User not found")
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -31,7 +31,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -49,7 +49,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this Asset")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -59,7 +59,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
         socket =
           socket
           |> put_flash(:error, "Error while fetching asset and projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -69,7 +69,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
         socket =
           socket
           |> put_flash(:error, "Asset not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -97,7 +97,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
       if socket.assigns.asset_lease.asset.id == asset.id do
         socket
         |> put_flash(:info, "Asset deleted successfully")
-        |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+        |> push_navigate(to: Routes.asset_index_path(socket, :index))
       else
         socket
       end

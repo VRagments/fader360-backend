@@ -36,7 +36,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -46,7 +46,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -76,7 +76,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -88,7 +88,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this project")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -98,7 +98,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket =
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -114,7 +114,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         |> put_flash(:info, "Project assigned to asset")
         |> push_patch(
           to:
-            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+            Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
               page: socket.assigns.current_page
             )
         )
@@ -126,7 +126,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
           |> put_flash(:error, "Unable to assign project to the asset")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
                 page: socket.assigns.current_page
               )
           )
@@ -145,10 +145,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         socket
         |> put_flash(:info, "Asset removed from project")
         |> push_patch(
-          to:
-            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, project.id,
-              page: socket.assigns.current_page
-            )
+          to: Routes.project_form_assets_path(socket, :index, project.id, page: socket.assigns.current_page)
         )
       else
         {:error, reason} ->
@@ -158,7 +155,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
           |> put_flash(:error, "Unable to remove asset from the project")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
                 page: socket.assigns.current_page
               )
           )
@@ -176,10 +173,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         |> assign(project: project)
         |> put_flash(:info, "Project primary asset updated")
         |> push_patch(
-          to:
-            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, project.id,
-              page: socket.assigns.current_page
-            )
+          to: Routes.project_form_assets_path(socket, :index, project.id, page: socket.assigns.current_page)
         )
       else
         {:error, reason} ->
@@ -189,7 +183,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
           |> put_flash(:error, "Unable to update the primary asset")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
                 page: socket.assigns.current_page
               )
           )
@@ -224,7 +218,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
         |> put_flash(:info, "Uploaded Successfully")
         |> push_patch(
           to:
-            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+            Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
               page: socket.assigns.current_page
             )
         )
@@ -305,14 +299,14 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
           socket
           |> put_flash(:error, "Unable to fetch assets")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         err ->
           Logger.error("Error message from MediaVerse: #{inspect(err)}")
 
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
       end
 
     {:noreply, socket}
@@ -323,7 +317,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="unassign"
       button_one_label="Remove"
@@ -338,7 +332,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="unassign"
       button_one_label="Remove"
@@ -356,7 +350,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image}
       button_one_action="unassign"
       button_one_label="Remove"
@@ -371,7 +365,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image}
       button_one_action="unassign"
       button_one_label="Remove"
@@ -389,7 +383,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="assign"
       button_one_label="Add"
@@ -403,7 +397,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image}
       button_one_action="assign"
       button_one_label="Add"

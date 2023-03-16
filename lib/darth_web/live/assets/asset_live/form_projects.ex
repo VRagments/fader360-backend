@@ -28,7 +28,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
 
         {:ok, socket}
 
@@ -38,7 +38,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> redirect(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> redirect(to: Routes.asset_index_path(socket, :index))
 
         {:ok, socket}
     end
@@ -69,7 +69,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "Current user don't have access to this Asset")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -81,7 +81,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "Error while fetching projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -91,7 +91,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "Error while fetching asset and projects")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
 
@@ -101,7 +101,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         socket =
           socket
           |> put_flash(:error, "Asset not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index))
+          |> push_navigate(to: Routes.asset_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -118,7 +118,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
           |> put_flash(:info, "Asset added to project")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
@@ -130,7 +130,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
           |> put_flash(:error, "Unable add asset to project")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
@@ -151,7 +151,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
         |> put_flash(:info, "Asset removed from project")
         |> push_patch(
           to:
-            Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+            Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
               page: socket.assigns.current_page
             )
         )
@@ -163,7 +163,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
           |> put_flash(:error, "Unable to remove asset from project")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
@@ -192,7 +192,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
       |> assign(user_projects_list: user_projects_list, user_projects_map: user_projects_map)
       |> push_patch(
         to:
-          Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+          Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
             page: socket.assigns.current_page
           )
       )
@@ -220,7 +220,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
@@ -232,7 +232,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
           |> put_flash(:error, "Unable to fetch projects")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, socket.assigns.asset_lease.id,
+              Routes.asset_form_projects_path(socket, :index, socket.assigns.asset_lease.id,
                 page: socket.assigns.current_page
               )
           )
@@ -246,7 +246,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="unassign"
       button_one_label="Remove from Project"
@@ -261,7 +261,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={@user_project.primary_asset.thumbnail_image}
       button_one_action="unassign"
       button_one_label="Remove from Project"
@@ -276,7 +276,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
       button_one_action="unassign"
       button_one_label="Remove from Project"
@@ -291,7 +291,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       button_one_action="assign"
       button_one_label="Add to Project"
@@ -305,7 +305,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={@user_project.primary_asset.thumbnail_image}
       button_one_action="assign"
       button_one_label="Add to Project"
@@ -319,7 +319,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     <ShowCard.render
       title={@user_project.name}
       subtitle={@user_project.visibility}
-      show_path={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @user_project.id)}
+      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
       button_one_action="assign"
       button_one_label="Add to Project"

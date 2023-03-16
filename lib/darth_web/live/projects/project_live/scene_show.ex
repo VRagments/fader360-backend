@@ -23,7 +23,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
 
@@ -33,7 +33,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         socket =
           socket
           |> put_flash(:error, "User not found")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.PageLive.Page))
+          |> push_navigate(to: Routes.page_page_path(socket, :index))
 
         {:ok, socket}
     end
@@ -63,7 +63,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         socket =
           socket
           |> put_flash(:error, "Error: #{inspect(reason)}")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -80,9 +80,9 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         |> put_flash(:info, "Asset assigned to project scene")
         |> push_patch(
           to:
-            Routes.live_path(
+            Routes.project_scene_show_path(
               socket,
-              DarthWeb.Projects.ProjectLive.SceneShow,
+              :show,
               socket.assigns.project.id,
               socket.assigns.project_scene.id
             )
@@ -95,7 +95,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
           |> put_flash(:error, "Unable to assign asset to the project scene")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
                 page: socket.assigns.current_page
               )
           )
@@ -115,9 +115,9 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         |> put_flash(:info, "Asset assigned to project scene")
         |> push_patch(
           to:
-            Routes.live_path(
+            Routes.project_scene_show_path(
               socket,
-              DarthWeb.Projects.ProjectLive.SceneShow,
+              :show,
               socket.assigns.project.id,
               socket.assigns.project_scene.id
             )
@@ -130,7 +130,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
           |> put_flash(:error, "Unable to remove asset from the project")
           |> push_patch(
             to:
-              Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
                 page: socket.assigns.current_page
               )
           )
@@ -153,7 +153,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   def handle_info({:project_deleted, _project}, socket) do
     socket
     |> put_flash(:error, "Project deleted")
-    |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+    |> push_navigate(to: Routes.project_index_path(socket, :index))
   end
 
   @impl Phoenix.LiveView
@@ -189,15 +189,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
       socket
       |> assign(project_scene: project_scene)
       |> put_flash(:info, "Project scene updated")
-      |> push_patch(
-        to:
-          Routes.live_path(
-            socket,
-            DarthWeb.Projects.ProjectLive.SceneShow,
-            socket.assigns.project.id,
-            project_scene.id
-          )
-      )
+      |> push_patch(to: Routes.project_scene_show_path(socket, :show, socket.assigns.project.id, project_scene.id))
 
     {:noreply, socket}
   end
@@ -258,7 +250,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
 
           socket
           |> put_flash(:error, "Error: #{inspect(reason)}")
-          |> push_navigate(to: Routes.live_path(socket, DarthWeb.Projects.ProjectLive.Index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
       end
 
     {:noreply, socket}
@@ -304,7 +296,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image}
       button_one_action="unassign"
       button_one_label="Remove"
@@ -319,7 +311,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
     <ShowCard.render
       title={@asset_lease.asset.name}
       subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={@asset_lease.asset.thumbnail_image}
       button_one_action="assign"
       button_one_label="Add"
