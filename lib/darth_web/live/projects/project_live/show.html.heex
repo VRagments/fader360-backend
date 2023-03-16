@@ -33,16 +33,53 @@
     />
 </Header.render>
 
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <%= for project_scene <- @project_scenes_list do %>
-        <%= if ProjectScene.has_primary_asset_lease?(project_scene) do %>
-        <.render_scene_with_image_card socket={@socket} user_project={@project}
-            project_scene={project_scene} />
-        <%else%>
-        <.render_scene_with_default_card socket={@socket} user_project={@project}
-            project_scene={project_scene} />
-        <%end%>
-        <%end%>
-    </ul>
-</section>
+<%= if @total_pages == 0 do %>
+    <EmptyState.render label="Create Project Scene"/>
+<% else %>
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for project_scene <- @project_scenes_list do %>
+                <%= if ProjectScene.has_primary_asset_lease?(project_scene) do %>
+                    <.render_scene_with_image_card socket={@socket} user_project={@project}
+                        project_scene={project_scene} />
+                <%else%>
+                    <.render_scene_with_default_card socket={@socket} user_project={@project}
+                        project_scene={project_scene} />
+                <%end%>
+            <%end%>
+        </ul>
+    </section>
+
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+            <%= if @current_page > 1 do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id, page: (@current_page-1))}
+                    action="left"
+                    label="Previous"
+                    class="-mt-px flex w-0 flex-1"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1"></div>
+            <% end %>
+            <%= for page <- 1..@total_pages do%>
+                <RenderPageNumbers.render
+                    socket={@socket}
+                    page={page}
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id, page: page)}
+                    current_page={@current_page}
+                />
+            <% end %>
+            <%= if @current_page < @total_pages do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id, page: (@current_page+1))}
+                    action="right"
+                    label="Next"
+                    class="-mt-px flex w-0 flex-1 justify-end"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1 justify-end"></div>
+            <% end %>
+        </nav>
+    </section>
+<% end %>

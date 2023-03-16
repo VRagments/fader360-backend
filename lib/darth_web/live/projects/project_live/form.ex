@@ -90,6 +90,13 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
     {:noreply, socket}
   end
 
+  defp apply_action(socket, :new, %{"asset_lease_id" => asset_lease_id}) do
+    socket
+    |> assign(changeset: ProjectStruct.changeset(%ProjectStruct{}))
+    |> assign(action_label: "Create")
+    |> assign(:return_to, Routes.live_path(socket, DarthWeb.Assets.AssetLive.FormProjects, asset_lease_id))
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(changeset: ProjectStruct.changeset(%ProjectStruct{}))

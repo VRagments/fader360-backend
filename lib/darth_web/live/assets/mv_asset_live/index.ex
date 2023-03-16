@@ -5,7 +5,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.{MvApiClient, AssetProcessor.Downloader, AssetProcessor.PreviewDownloader}
-  alias DarthWeb.Components.{IndexCard, Header, ClickButton}
+  alias DarthWeb.Components.{IndexCard, Header, ClickButton, PaginationLink, RenderPageNumbers, EmptyState}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
@@ -38,16 +38,30 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(_params, _url, socket) do
+  def handle_params(params, _url, socket) do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
     base_url = DarthWeb.Endpoint.url()
     asset_preview_static_url = "#{base_url}/preview_download/"
+    current_page = Map.get(params, "page", 0)
 
-    case MvApiClient.fetch_assets(mv_node, mv_token) do
-      {:ok, assets} ->
+    case MvApiClient.fetch_assets(mv_node, mv_token, current_page) do
+      {:ok,
+       %{
+         "assets" => assets,
+         "currentPage" => current_page,
+         "totalPages" => total_pages
+       }} ->
         add_to_preview_downloader(assets, mv_node, mv_token)
-        {:noreply, socket |> assign(mv_assets: assets, asset_preview_static_url: asset_preview_static_url)}
+
+        {:noreply,
+         socket
+         |> assign(
+           mv_assets: assets,
+           asset_preview_static_url: asset_preview_static_url,
+           current_page: current_page,
+           total_pages: total_pages
+         )}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")

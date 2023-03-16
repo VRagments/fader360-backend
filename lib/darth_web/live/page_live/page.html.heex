@@ -22,29 +22,9 @@
         uploads={@uploads}
     />
 </Header.render>
-
 <% end %>
-<div class="flex flex-col mt-4 px-4 py-2 max-w-xl mx-auto" phx-drop-target={@uploads.media.ref}>
-    <%# render each avatar entry %>
-    <%= for entry <- @uploads.media.entries do %>
-    <article class="upload-entry">
-        <%# entry.progress will update automatically for in-flight entries %>
-        <progress value={entry.progress} max="100"> <%= entry.progress %>%
-        </progress>
-        <%# a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 %>
-        <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}
-            aria-label="cancel">&times;</button>
-        <%# Phoenix.Component.upload_errors/2 returns a list of error atoms %>
-        <%= for err <- upload_errors(@uploads.media, entry) do %>
-        <p class="alert alert-danger"><%= error_to_string(err) %></p>
-        <% end %>
-    </article>
-    <% end %>
-    <%# Phoenix.Component.upload_errors/1 returns a list of error atoms %>
-    <%= for err <- upload_errors(@uploads.media) do %>
-    <p class="alert alert-danger"><%= error_to_string(err) %></p>
-    <% end %>
-</div>
+
+<UploadProgress.render uploads={@uploads} />
 
 <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
     <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

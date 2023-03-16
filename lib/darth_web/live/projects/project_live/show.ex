@@ -17,7 +17,10 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     Stat,
     StatSelectField,
     LinkButtonGroup,
-    LinkButton
+    LinkButton,
+    PaginationLink,
+    RenderPageNumbers,
+    EmptyState
   }
 
   @impl Phoenix.LiveView
@@ -54,7 +57,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"project_id" => project_id}, _url, socket) do
+  def handle_params(%{"project_id" => project_id} = params, _url, socket) do
     select_options = Ecto.Enum.mappings(ProjectStruct, :visibility)
 
     project_scenes_query =
@@ -63,7 +66,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
 
     with {:ok, project} <- Project.read(project_id, true),
          true <- project.user_id == socket.assigns.current_user.id,
-         %{entries: project_scenes} <- ProjectScene.query(%{}, project_scenes_query, true) do
+         %{query_page: current_page, total_pages: total_pages, entries: project_scenes} <-
+           ProjectScene.query(params, project_scenes_query, true) do
       project_scenes_map = Map.new(project_scenes, fn ps -> {ps.id, ps} end)
       project_scenes_list = ProjectScene.get_sorted_project_scenes_list(project_scenes_map)
 
@@ -74,6 +78,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          select_options: select_options,
          project_scenes_map: project_scenes_map,
          project_scenes_list: project_scenes_list,
+         total_pages: total_pages,
+         current_page: current_page,
          changeset: ProjectStruct.changeset(project)
        )}
     else

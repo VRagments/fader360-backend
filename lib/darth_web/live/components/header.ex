@@ -1,6 +1,5 @@
 defmodule DarthWeb.Components.Header do
   use DarthWeb, :component
-  alias DarthWeb.Components.Icons
 
   attr :heading, :string, required: true
   slot(:inner_block, required: true)

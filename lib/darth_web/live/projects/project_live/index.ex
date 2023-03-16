@@ -7,7 +7,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.Project
-  alias DarthWeb.Components.{IndexCard, Header, Pagination, LinkButton}
+  alias DarthWeb.Components.{IndexCard, Header, PaginationLink, LinkButton, RenderPageNumbers, EmptyState}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do

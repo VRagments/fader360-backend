@@ -8,12 +8,24 @@ defmodule DarthWeb.PageLive.Page do
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.{Activity, Header, IndexCard, HyperLink, LinkUploadButtonGroup, FormUpload, LinkButton}
+  alias DarthWeb.UploadProcessor
+
+  alias DarthWeb.Components.{
+    Activity,
+    Header,
+    IndexCard,
+    HyperLink,
+    LinkUploadButtonGroup,
+    FormUpload,
+    LinkButton,
+    UploadProgress
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
+    upload_file_size = Application.fetch_env!(:darth, :upload_file_size)
+
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
-         upload_file_size = Application.fetch_env!(:darth, :upload_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects") do
@@ -160,10 +172,10 @@ defmodule DarthWeb.PageLive.Page do
     user = socket.assigns.current_user
 
     socket =
-      with :ok <- create_uploads_base_path(),
-           {:ok, uploaded_file_path} <- get_uploaded_entries(socket),
-           {:ok, asset_details} <- get_asset_details(socket, uploaded_file_path),
-           :ok <- check_for_uploaded_asset_media_type(asset_details),
+      with :ok <- UploadProcessor.create_uploads_base_path(),
+           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket),
+           {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
+           :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
            {:ok, asset_struct} <- Asset.create(asset_details),
            {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
            :ok <- File.rm(uploaded_file_path) do
@@ -179,52 +191,6 @@ defmodule DarthWeb.PageLive.Page do
       end
 
     {:noreply, socket}
-  end
-
-  defp create_uploads_base_path do
-    uploads_base_path = Application.get_env(:darth, :uploads_base_path)
-
-    case File.mkdir_p(uploads_base_path) do
-      :ok -> :ok
-      {:error, reason} -> {:error, "Error while creating the upload file path: #{inspect(reason)}"}
-    end
-  end
-
-  defp get_uploaded_entries(socket) do
-    uploaded_file_path =
-      consume_uploaded_entries(socket, :media, fn %{path: path},
-                                                  %Phoenix.LiveView.UploadEntry{client_name: file_name} ->
-        handle_uploaded_entries(socket, path, file_name)
-      end)
-
-    case Enum.all?(uploaded_file_path) do
-      true -> {:ok, uploaded_file_path}
-      false -> {:error, "Error while copying the uploaded asset"}
-    end
-  end
-
-  defp get_asset_details(socket, uploaded_file_path) do
-    case get_required_asset_details(socket, uploaded_file_path) do
-      nil -> {:error, "Asset details cannot be fetched from the uploaded entry"}
-      asset_details -> {:ok, asset_details}
-    end
-  end
-
-  defp check_for_uploaded_asset_media_type(asset_details) do
-    case is_nil(Asset.normalized_media_type(Map.get(asset_details, "media_type"))) do
-      true -> {:error, "Uploaded asset type is not supported in Fader"}
-      false -> :ok
-    end
-  end
-
-  defp get_required_asset_details(socket, filepath) do
-    case socket.assigns.uploads.media.entries do
-      [%Phoenix.LiveView.UploadEntry{} = uploaded_file] ->
-        %{"name" => uploaded_file.client_name, "media_type" => uploaded_file.client_type, "data_path" => filepath}
-
-      _ ->
-        nil
-    end
   end
 
   defp get_updated_projects_and_assets(socket) do
@@ -269,20 +235,6 @@ defmodule DarthWeb.PageLive.Page do
       end
 
     {:noreply, socket}
-  end
-
-  defp handle_uploaded_entries(socket, path, file_name) do
-    dest = Application.app_dir(:darth, ["priv", "static", "uploads", file_name])
-    Application.app_dir(:darth, ["priv", "static", "uploads", file_name])
-    # The `static/uploads` directory must exist for `File.cp!/2` to work.
-    case File.cp(path, dest) do
-      :ok ->
-        {:ok, Routes.static_path(socket, dest)}
-
-      {:error, reason} ->
-        Logger.error("Error while copying the uploaded asset: #{inspect(reason)}")
-        {:ok, nil}
-    end
   end
 
   defp render_asset_audio_card(assigns) do
@@ -404,8 +356,4 @@ defmodule DarthWeb.PageLive.Page do
         render_place_holder_card(assigns)
     end
   end
-
-  defp error_to_string(:too_large), do: "Too large"
-  defp error_to_string(:too_many_files), do: "You have selected too many files"
-  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end

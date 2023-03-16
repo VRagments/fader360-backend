@@ -5,7 +5,17 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.{IndexCard, Header, FormUpload, Pagination}
+  alias DarthWeb.UploadProcessor
+
+  alias DarthWeb.Components.{
+    IndexCard,
+    Header,
+    FormUpload,
+    PaginationLink,
+    RenderPageNumbers,
+    EmptyState,
+    UploadProgress
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -133,23 +143,13 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("save", _params, socket) do
-    uploads_path = Application.get_env(:darth, :uploads_base_path)
-    uploads_base_path = Application.app_dir(:darth, uploads_path)
+    user = socket.assigns.current_user
 
     socket =
-      with :ok <- File.mkdir_p(uploads_base_path),
-           uploaded_file_path =
-             consume_uploaded_entries(socket, :media, fn %{path: path},
-                                                         %Phoenix.LiveView.UploadEntry{client_name: file_name} ->
-               dest = Path.join([:code.priv_dir(:darth), "static", "uploads", file_name])
-               # The `static/uploads` directory must exist for `File.cp!/2` to work.
-               File.cp!(path, dest)
-               {:ok, Routes.static_path(socket, dest)}
-             end),
-           asset_details <- get_required_asset_details(socket, uploaded_file_path),
-           true <- not is_nil(asset_details),
-           true <- not is_nil(Asset.normalized_media_type(Map.get(asset_details, "media_type"))),
-           user = socket.assigns.current_user,
+      with :ok <- UploadProcessor.create_uploads_base_path(),
+           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket),
+           {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
+           :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
            {:ok, asset_struct} <- Asset.create(asset_details),
            {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
            :ok <- File.rm(uploaded_file_path) do
@@ -160,25 +160,10 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         )
       else
         {:error, reason} ->
-          socket
-          |> put_flash(:error, "Unable to add asset to the database: #{reason}")
-          |> push_patch(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          Logger.error("Error while uploading the asset: #{inspect(reason)}")
 
-        false ->
           socket
-          |> put_flash(:error, "Selected asset type cannot be used in Fader!")
-          |> push_patch(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
-
-        nil ->
-          socket
-          |> put_flash(:error, "Choose a file to upload!")
-          |> push_patch(
-            to: Routes.live_path(socket, DarthWeb.Assets.AssetLive.Index, page: socket.assigns.current_page)
-          )
+          |> put_flash(:error, inspect(reason))
       end
 
     {:noreply, socket}
@@ -270,16 +255,6 @@ defmodule DarthWeb.Assets.AssetLive.Index do
       end
 
     {:noreply, socket}
-  end
-
-  defp get_required_asset_details(socket, filepath) do
-    case socket.assigns.uploads.media.entries do
-      [%Phoenix.LiveView.UploadEntry{} = uploaded_file] ->
-        %{"name" => uploaded_file.client_name, "media_type" => uploaded_file.client_type, "data_path" => filepath}
-
-      _ ->
-        nil
-    end
   end
 
   defp handle_asset_lease_deletion(:projects_asset_leases, user, asset_lease_id) do
@@ -387,8 +362,4 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     />
     """
   end
-
-  defp error_to_string(:too_large), do: "Too large"
-  defp error_to_string(:too_many_files), do: "You have selected too many files"
-  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end

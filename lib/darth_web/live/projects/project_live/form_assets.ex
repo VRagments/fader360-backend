@@ -6,15 +6,29 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
   alias Darth.Model.User, as: UserStruct
-  alias DarthWeb.Components.{Pagination, Header, ShowCard, LinkButton}
+  alias DarthWeb.UploadProcessor
+
+  alias DarthWeb.Components.{
+    PaginationLink,
+    Header,
+    ShowCard,
+    LinkUploadButtonGroup,
+    RenderPageNumbers,
+    EmptyState,
+    UploadProgress
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
+    upload_file_size = Application.fetch_env!(:darth, :upload_file_size)
+
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects") do
       {:ok,
        socket
-       |> assign(current_user: user)}
+       |> assign(current_user: user)
+       |> assign(:uploaded_files, [])
+       |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
     else
       {:error, reason} ->
         Logger.error("Error while reading user information: #{inspect(reason)}")
@@ -179,6 +193,47 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
                 page: socket.assigns.current_page
               )
           )
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :media, ref)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("save", _params, socket) do
+    user = socket.assigns.current_user
+
+    socket =
+      with :ok <- UploadProcessor.create_uploads_base_path(),
+           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket),
+           {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
+           :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
+           {:ok, asset_struct} <- Asset.create(asset_details),
+           {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
+           :ok <- File.rm(uploaded_file_path) do
+        socket
+        |> put_flash(:info, "Uploaded Successfully")
+        |> push_patch(
+          to:
+            Routes.live_path(socket, DarthWeb.Projects.ProjectLive.FormAssets, socket.assigns.project.id,
+              page: socket.assigns.current_page
+            )
+        )
+      else
+        {:error, reason} ->
+          Logger.error("Error while uploading the asset: #{inspect(reason)}")
+
+          socket
+          |> put_flash(:error, inspect(reason))
       end
 
     {:noreply, socket}

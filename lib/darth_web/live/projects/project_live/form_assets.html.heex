@@ -1,48 +1,84 @@
 <Header.render heading={"Manage assets of " <> @project.name}>
-    <LinkButton.render
-        link={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id)}
-        action="back"
-        label="Back"
+    <LinkUploadButtonGroup.render
+        button_one_label="Back"
+        button_one_link={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.Show, @project.id)}
+        button_one_action="back"
+        button_two_action="Upload"
+        uploads={@uploads}
     />
 </Header.render>
 
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <ul role="list"
-        class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-        <%= for asset_lease <- @asset_leases_list do %>
-        <%= if AssetLease.is_part_of_project?(asset_lease, @project) do %>
-        <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
-        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
-        <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
-        <.render_added_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
-        <% else %>
-        <.render_added_audio_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
-        <% end %>
-        <% else %>
-        <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
-        <.render_added_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
-        <% else %>
-        <.render_added_asset_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
-        <% end %>
-        <% end %>
-        <% end %>
-        <% else %>
-        <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
-        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
-        <.render_available_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
-        <% else %>
-        <.render_available_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
-        <% end %>
-        <% end %>
-        <% end %>
-        <% end %>
-    </ul>
-</section>
-<Pagination.render
-    total_pages={@total_pages}
-    current_page={@current_page}
-    back_button_route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-        @project.id, page: (@current_page-1))}
-    forward_button_route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
-        @project.id, page: (@current_page+1))}
-/>
+<UploadProgress.render uploads={@uploads} />
+
+<%= if @total_pages == 0 do %>
+    <EmptyState.render label="Add asset"/>
+<% else %>
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <ul role="list"
+            class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+            <%= for asset_lease <- @asset_leases_list do %>
+                <%= if AssetLease.is_part_of_project?(asset_lease, @project) do %>
+                    <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
+                        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
+                            <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
+                                <.render_added_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+                            <% else %>
+                                <.render_added_audio_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
+                            <% end %>
+                        <% else %>
+                            <%= if AssetLease.is_primary_asset_lease?(@project, asset_lease) do %>
+                                <.render_added_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+                            <% else %>
+                                <.render_added_asset_card_with_two_buttons socket={@socket} asset_lease={asset_lease} />
+                            <% end %>
+                        <% end %>
+                    <% end %>
+                <% else %>
+                    <%= if Asset.is_asset_status_ready?(asset_lease.asset.status) do %>
+                        <%= if Asset.is_audio_asset?(asset_lease.asset.media_type) do %>
+                            <.render_available_audio_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+                        <% else %>
+                            <.render_available_asset_card_with_one_button socket={@socket} asset_lease={asset_lease} />
+                        <% end %>
+                    <% end %>
+                <% end %>
+            <% end %>
+        </ul>
+    </section>
+
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+            <%= if @current_page > 1 do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
+                        @project.id, page: (@current_page-1))}
+                    action="left"
+                    label="Previous"
+                    class="-mt-px flex w-0 flex-1"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1"></div>
+            <% end %>
+            <%= for page <- 1..@total_pages do%>
+                <RenderPageNumbers.render
+                    socket={@socket}
+                    page={page}
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
+                        @project.id, page: page)}
+                    current_page={@current_page}
+                />
+            <% end %>
+            <%= if @current_page < @total_pages do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Projects.ProjectLive.FormAssets,
+                        @project.id, page: (@current_page+1))}
+                    action="right"
+                    label="Next"
+                    class="-mt-px flex w-0 flex-1 justify-end"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1 justify-end"></div>
+            <% end %>
+        </nav>
+    </section>
+<% end %>

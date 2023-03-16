@@ -1,45 +1,81 @@
 <Header.render heading={"Manage projects of " <> @asset_lease.asset.name}>
-    <LinkButton.render
-        link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
-        action="back"
-        label="Back"
+    <LinkButtonGroup.render
+        button_two_link={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.Show, @asset_lease.id)}
+        button_two_action="back"
+        button_two_label="Back"
+        button_one_link={Routes.project_form_path(@socket, :new, @asset_lease.id)}
+        button_one_action="add"
+        button_one_label="Create Project"
     />
 </Header.render>
 
-<section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-    <ul role="list"
-        class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-        <%= for user_project <- @user_projects_list do %>
-        <%= if AssetLease.is_part_of_project?(@asset_lease, user_project) do %>
-        <%= if Project.has_primary_asset_lease?(user_project) do %>
-        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
-        <.render_added_audio_project_card socket={@socket} user_project={user_project} />
-        <% else %>
-        <.render_added_image_project_card socket={@socket} user_project={user_project} />
-        <% end %>
-        <% else %>
-        <.render_added_default_project_card socket={@socket} user_project={user_project} />
-        <% end %>
-        <%else %>
-        <%= if Project.has_primary_asset_lease?(user_project) do %>
-        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
-        <.render_available_audio_project_card socket={@socket} user_project={user_project} />
-        <% else %>
-        <.render_available_image_project_card socket={@socket} user_project={user_project} />
-        <% end %>
-        <% else %>
-        <.render_available_default_project_card socket={@socket} user_project={user_project} />
-        <% end %>
-        <% end %>
-        <% end %>
-    </ul>
-</section>
+<%= if @total_pages == 0 do %>
+    <EmptyState.render
+        label="Create Project"
+    />
+<% else %>
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <ul role="list"
+            class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+            <%= for user_project <- @user_projects_list do %>
+                <%= if AssetLease.is_part_of_project?(@asset_lease, user_project) do %>
+                    <%= if Project.has_primary_asset_lease?(user_project) do %>
+                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
+                            <.render_added_audio_project_card socket={@socket} user_project={user_project} />
+                        <% else %>
+                            <.render_added_image_project_card socket={@socket} user_project={user_project} />
+                        <% end %>
+                    <% else %>
+                        <.render_added_default_project_card socket={@socket} user_project={user_project} />
+                    <% end %>
+                <%else %>
+                    <%= if Project.has_primary_asset_lease?(user_project) do %>
+                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
+                            <.render_available_audio_project_card socket={@socket} user_project={user_project} />
+                        <% else %>
+                            <.render_available_image_project_card socket={@socket} user_project={user_project} />
+                        <% end %>
+                    <% else %>
+                        <.render_available_default_project_card socket={@socket} user_project={user_project} />
+                    <% end %>
+                <% end %>
+            <% end %>
+        </ul>
+    </section>
 
-<Pagination.render
-    total_pages={@total_pages}
-    current_page={@current_page}
-    back_button_route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
-        @asset_lease.id, page: (@current_page-1))}
-    forward_button_route={Routes.live_path(@socket,
-        DarthWeb.Assets.AssetLive.FormProjects, @asset_lease.id, page: (@current_page+1))}
-/>
+    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+        <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+            <%= if @current_page > 1 do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+                        @asset_lease.id, page: (@current_page-1))}
+                    action="left"
+                    label="Previous"
+                    class="-mt-px flex w-0 flex-1"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1"></div>
+            <% end %>
+            <%= for page <- 1..@total_pages do%>
+                <RenderPageNumbers.render
+                    socket={@socket}
+                    page={page}
+                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+                        @asset_lease.id, page: page)}
+                    current_page={@current_page}
+                />
+            <% end %>
+            <%= if @current_page < @total_pages do %>
+                <PaginationLink.render
+                    route={Routes.live_path(@socket, DarthWeb.Assets.AssetLive.FormProjects,
+                        @asset_lease.id, page: (@current_page+1))}
+                    action="right"
+                    label="Next"
+                    class="-mt-px flex w-0 flex-1 justify-end"
+                />
+            <% else %>
+                <div class="-mt-px flex w-0 flex-1 justify-end"></div>
+            <% end %>
+        </nav>
+    </section>
+<% end %>

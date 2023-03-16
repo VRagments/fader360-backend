@@ -8,7 +8,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
   alias Darth.Controller.AssetLease
   alias Darth.Controller.Project
   alias Darth.Controller.Asset
-  alias DarthWeb.Components.{Header, ShowCard, Pagination, LinkButton}
+  alias DarthWeb.Components.{Header, ShowCard, PaginationLink, LinkButtonGroup, RenderPageNumbers, EmptyState}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
