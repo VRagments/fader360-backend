@@ -449,16 +449,7 @@ defmodule Darth.Controller.Asset do
   defp encode_file_plug(params), do: params |> Map.delete(:path) |> Poison.encode()
 
   defp delete_repo({:ok, asset}) do
-    current_asset_folder = base_path(asset)
-
-    case File.rm_rf(current_asset_folder) do
-      {:ok, _} ->
-        :ok = broadcast("assets", {:asset_deleted, asset})
-        :ok
-
-      _ ->
-        {:error, "Error while removing the asset folder after deleting the asset"}
-    end
+    broadcast("assets", {:asset_deleted, asset})
   end
 
   defp delete_repo(err), do: err
