@@ -71,22 +71,18 @@ function help () {
   exit 1
 }
 
-function higherpowerof2 () {
-  local n=$1
-  n=$((n-1))
-  n=$((n|$((n>>1))))
-  n=$((n|$((n>>2))))
-  n=$((n|$((n>>4))))
-  n=$((n|$((n>>8))))
-  n=$((n|$((n>>16))))
-  n=$((n+1))
-  echo $n
-}
+function adjust_resolution () {
+  local height="$1"
+  local width="$2"
+  local max_res="$3"
+  local filename="$4"
 
-function nearestpowerof2 () {
-  local res=$(echo "x=l(${1})/l(2); scale=0; 2^((x+0.5)/1)" | bc -l)
-  echo ${res}
-}
+  if [ "${height}" -gt "${max_res}" ] || [ "${width}" -gt "${max_res}" ]; then
+    convert -auto-orient -resize "${max_res}" "${arg_f}" "${arg_o}/${filename}" &
+  else
+    convert -auto-orient -resize "${width}"x"${height}" "${arg_f}" "${arg_o}/${filename}" &
+  fi
+  }
 
 ### Parse commandline options
 #####################################################################
@@ -244,6 +240,7 @@ midres_filename=midres_${arg_m%.*}.${target_extension}
 preview_filename=preview_${arg_m%.*}.${target_extension}
 squared_filename=squared_${arg_m%.*}.${target_extension}
 thumb_filename=thumb_${arg_m%.*}.${target_extension}
+maxres_filename=${arg_m%.*}.${target_extension} # for static image
 
 if [ "${target_extension}" = "svg" ]; then
   if [ "${arg_f}" != "${arg_o}/${arg_m}" ]; then
@@ -258,30 +255,27 @@ else
   dim=$(convert -auto-orient ${arg_f} -ping -format "%w %h" info:)
   width=$(echo $dim | cut -d' ' -f 1)
   height=$(echo $dim | cut -d' ' -f 2)
-  resx=$(nearestpowerof2 ${height})
-  if [ ${width} -ge ${height} ]; then
-    resx=$(nearestpowerof2 ${width})
-  fi
-  if [ ${resx} -gt ${MAX_RES} ]; then
-    resx=${MAX_RES}
-  fi
+
   # create support image paths
   convert -auto-orient -strip -resize 1920x960 -quality 40 ${arg_f} ${arg_o}/${preview_filename} &
   convert -auto-orient -strip -resize 1080x540 -quality 40 ${arg_f} ${arg_o}/${thumb_filename} &
   convert -auto-orient -thumbnail 512x512^ -gravity center -extent 512x512 ${arg_f} \
     ${arg_o}/${squared_filename} &
-  # transcode different res
-  convert -auto-orient -resize ${resx}x${resx}! ${arg_f} ${arg_o}/${arg_m} &
-  lowres=${resx}
-  if [ ${resx} -gt ${LOW_RES} ]; then
-    lowres=${LOW_RES}
-  fi
-  convert -auto-orient -resize ${lowres}x${lowres}! ${arg_f} ${arg_o}/${lowres_filename} &
-  midres=${resx}
-  if [ ${resx} -gt ${MID_RES} ]; then
-    midres=${MID_RES}
-  fi
-  convert -auto-orient -resize ${midres}x${midres}! ${arg_f} ${arg_o}/${midres_filename} &
+
+  # The image aspect ratio is preserved across all resolutions,
+  # with the highest value of either height or width being replaced by the given resolution if it exceeds it.
+  # Imagemagic then adjusts the other value accordingly.
+  # If the original height and width values do not exceed the given resolution, the conversion is carried out using these values.
+
+  # Static image
+  adjust_resolution "${height}" "${width}" "${MAX_RES}" "${maxres_filename}"
+
+  # Low resolution image
+  adjust_resolution "${height}" "${width}" "${LOW_RES}" "${lowres_filename}"
+
+  # Mid resolution image
+  adjust_resolution "${height}" "${width}" "${MID_RES}" "${midres_filename}"
+
   echo "Waiting for image conversion jobs to finish."
   wait
 fi
