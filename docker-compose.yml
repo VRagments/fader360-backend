@@ -3,6 +3,8 @@ version: '3'
 services:
   db:
     image: postgres:14.4-alpine
+    volumes:
+      - ./docker_data/darth_data:/var/lib/postgresql/data
     env_file:
       - "docker/${MIX_ENV}.env"
     restart: always
@@ -17,8 +19,8 @@ services:
     ports:
       - "45000:45000"
     volumes:
-      - ./docker/media:/root/darth_release/lib/darth-${VERSION}/priv/static/media
-      - ./docker/preview_download:/root/darth_release/lib/darth-${VERSION}/priv/static/preview_download
+      - ./docker_data/media:/root/darth_release/lib/darth-${VERSION}/priv/static/media
+      - ./docker_data/preview_download:/root/darth_release/lib/darth-${VERSION}/priv/static/preview_download
     depends_on:
       - db
     environment:
@@ -40,8 +42,8 @@ services:
     command:
       - "make run"
     volumes:
-      - ./docker/media:/work/priv/static/media
-      - ./docker/preview_download:/work/priv/static/preview_download
+      - ./docker_data/media:/work/priv/static/media
+      - ./docker_data/preview_download:/work/priv/static/preview_download
     environment:
       - MIX_ENV
     env_file:
@@ -57,8 +59,21 @@ services:
       - db
     command:
       - "make refresh-db"
-    volumes:
-      - ./docker/darth_data:/var/lib/postgresql/data
+    environment:
+      - MIX_ENV
+    env_file:
+      - "docker/${MIX_ENV}.env"
+
+  darth_migrate_db:
+    build:
+      context: ./docker
+      target: darth_base
+      args:
+        - MIX_ENV
+    depends_on:
+      - db
+    command:
+      - "make migrate-db"
     environment:
       - MIX_ENV
     env_file:
