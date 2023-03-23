@@ -38,6 +38,8 @@ defmodule Darth.Model.User do
   end
 
   @pw_min_len Application.compile_env(:darth, :user_password_min_len, 10)
+  # In MediaVerse the minimum required password length is 6
+  @mv_pw_min_len Application.compile_env(:darth, :mv_user_password_min_len, 6)
   @pw_max_len Application.compile_env(:darth, :user_password_max_len, 100)
 
   def search_attributes do
@@ -63,7 +65,7 @@ defmodule Darth.Model.User do
 
     model
     |> common_changeset(params_clean)
-    |> validate_length(:password, min: @pw_min_len, max: @pw_max_len)
+    |> validate_password()
     |> validate_confirmation(:password, message: "Passwords do not match")
     |> hash_password()
   end
@@ -142,7 +144,7 @@ defmodule Darth.Model.User do
     model
     |> cast(attrs, [:password])
     |> validate_confirmation(:password, message: "does not match password")
-    |> validate_length(:password, min: @pw_min_len, max: @pw_max_len)
+    |> validate_password()
     |> validate_confirmation(:password, message: "Passwords do not match")
     |> hash_password()
   end
@@ -238,6 +240,18 @@ defmodule Darth.Model.User do
     |> validate_change(:account_plan, fun)
     |> validate_change(:account_generation, fun)
     |> update_features()
+  end
+
+  defp validate_password(changeset) do
+    case get_change(changeset, :mv_node) do
+      nil ->
+        changeset
+        |> validate_length(:password, min: @pw_min_len, max: @pw_max_len)
+
+      _ ->
+        changeset
+        |> validate_length(:password, min: @mv_pw_min_len, max: @pw_max_len)
+    end
   end
 
   defp update_features(cset) do

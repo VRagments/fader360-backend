@@ -70,7 +70,10 @@ config :darth,
   change_email_validity_in_days: 7,
   session_validity_in_days: 60,
   max_age_in_seconds: 60 * 60 * 24 * 60,
-  remember_me_cookie: "_darth_web_user_remember_me"
+  remember_me_cookie: "_darth_web_user_remember_me",
+  user_password_min_len: 10,
+  mv_user_password_min_len: 6,
+  user_password_max_len: 100
 
 # Configures Elixir's Logger
 config :logger, :console,
