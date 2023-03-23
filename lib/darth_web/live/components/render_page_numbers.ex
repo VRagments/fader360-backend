@@ -2,7 +2,6 @@ defmodule DarthWeb.Components.RenderPageNumbers do
   use DarthWeb, :component
   alias DarthWeb.Components.PageNumbers
 
-  attr :socket, :map, required: true
   attr :page, :string, required: true
   attr :current_page, :string, required: true
   attr :route, :string, required: true

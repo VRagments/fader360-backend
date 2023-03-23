@@ -4,7 +4,8 @@ defmodule DarthWeb.UploadProcessor do
   alias DarthWeb.Router.Helpers, as: Routes
 
   def create_uploads_base_path do
-    uploads_base_path = Application.get_env(:darth, :uploads_base_path)
+    path = Application.get_env(:darth, :uploads_base_path)
+    uploads_base_path = Application.app_dir(:darth, path)
 
     case File.mkdir_p(uploads_base_path) do
       :ok -> :ok

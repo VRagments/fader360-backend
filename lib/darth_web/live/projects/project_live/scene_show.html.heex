@@ -24,11 +24,11 @@
     </div>
 </div>
 
-<Header.render heading={"Assets assigned to " <> @project.name}>
+<Header.render heading={Enum.join(["Assets assigned to ", @project.name])}>
     <%=%>
 </Header.render>
 
-<section class=" container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+<section class="py-2 lg:pt-12 md:mx-auto lg:container">
     <ul role="list" class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
         <%= for project_asset_lease <- @project_asset_leases_list do %>
             <%= if AssetLease.is_primary_asset_lease?(@project_scene, project_asset_lease) do%>

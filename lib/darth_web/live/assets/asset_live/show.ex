@@ -5,7 +5,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.{ShowAudio, ShowVideo, ShowImage, Stat, Icons, LinkButton, Header}
+  alias DarthWeb.Components.{ShowAudio, ShowVideo, ShowImage, Stat, Icons, LinkButton, Header, EmptyState}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do

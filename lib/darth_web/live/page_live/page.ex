@@ -242,22 +242,26 @@ defmodule DarthWeb.PageLive.Page do
     <IndexCard.render
       show_path={Routes.asset_show_path(@socket, :show,@card.id)}
       title={@card.asset.name}
-      visibility={@card.asset.status}
+      info={@card.asset.status}
       subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-    />
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+    >
+      <%=%>
+    </IndexCard.render>
     """
   end
 
   defp render_asset_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
-      title={@card.asset.name}
-      visibility={@card.asset.status}
-      subtitle={@card.asset.media_type}
-      image_source={@card.asset.thumbnail_image}
-    />
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show,@card.id)}
+        title={@card.asset.name}
+        info={@card.asset.status}
+        subtitle={@card.asset.media_type}
+        image_source={@card.asset.thumbnail_image}
+      >
+        <%=%>
+      </IndexCard.render>
     """
   end
 
@@ -266,10 +270,12 @@ defmodule DarthWeb.PageLive.Page do
     <IndexCard.render
       show_path={Routes.asset_show_path(@socket, :show,@card.id)}
       title={@card.asset.name}
-      visibility={@card.asset.status}
+      info={@card.asset.status}
       subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-    />
+      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
+    >
+      <%=%>
+    </IndexCard.render>
     """
   end
 
@@ -278,10 +284,12 @@ defmodule DarthWeb.PageLive.Page do
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
-      visibility={@card.visibility}
+      info={@card.visibility}
       subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-    />
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+    >
+      <%=%>
+    </IndexCard.render>
     """
   end
 
@@ -290,10 +298,12 @@ defmodule DarthWeb.PageLive.Page do
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
-      visibility={@card.visibility}
+      info={@card.visibility}
       subtitle={@card.author}
       image_source={@card.primary_asset.thumbnail_image}
-    />
+    >
+      <%=%>
+    </IndexCard.render>
     """
   end
 
@@ -302,21 +312,26 @@ defmodule DarthWeb.PageLive.Page do
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @card.id)}
       title={@card.name}
-      visibility={@card.visibility}
+      info={@card.visibility}
       subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}
-    />
+      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
+    >
+    </IndexCard.render>
     """
   end
 
   defp render_place_holder_card(assigns) do
     ~H"""
-    <IndexCard.render
-      title="Name"
-      visibility={@visibility}
-      subtitle={@subtitle}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-    />
+    <div class="opacity-40">
+      <IndexCard.render
+        title="Name"
+        info={@visibility}
+        subtitle={@subtitle}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
+      >
+        <%=%>
+      </IndexCard.render>
+    </div>
     """
   end
 

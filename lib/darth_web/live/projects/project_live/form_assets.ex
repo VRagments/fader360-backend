@@ -9,13 +9,12 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   alias DarthWeb.UploadProcessor
 
   alias DarthWeb.Components.{
-    PaginationLink,
     Header,
     ShowCard,
     LinkUploadButtonGroup,
-    RenderPageNumbers,
     EmptyState,
-    UploadProgress
+    UploadProgress,
+    Pagination
   }
 
   @impl Phoenix.LiveView
@@ -57,9 +56,11 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     with {:ok, project} <- Project.read(project_id, true),
          %{query_page: current_page, total_pages: total_pages, entries: asset_leases} <-
            AssetLease.query_by_user(socket.assigns.current_user.id, params, false),
-         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end),
-         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map),
          true <- project.user_id == socket.assigns.current_user.id do
+      asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
+      asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
+      map_with_all_links = map_with_all_links(socket, total_pages, project)
+
       {:noreply,
        socket
        |> assign(
@@ -67,7 +68,8 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
          asset_leases_map: asset_leases_map,
          asset_leases_list: asset_leases_list,
          current_page: current_page,
-         total_pages: total_pages
+         total_pages: total_pages,
+         map_with_all_links: map_with_all_links
        )}
     else
       {:error, reason} ->
@@ -312,6 +314,12 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     {:noreply, socket}
   end
 
+  defp map_with_all_links(socket, total_pages, project) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.project_form_assets_path(socket, :index, project.id, page: page)}
+    end)
+  end
+
   defp render_added_audio_card_with_one_button(assigns) do
     ~H"""
     <ShowCard.render
@@ -379,30 +387,84 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   end
 
   defp render_available_audio_card_with_one_button(assigns) do
-    ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="assign"
-      button_one_label="Add"
-      button_one_phx_value_ref={@asset_lease.id}
-    />
-    """
+    if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
+      ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+        button_one_action="assign"
+        button_one_label="Add"
+        button_one_phx_value_ref={@asset_lease.id}
+      />
+      """
+    else
+      ~H"""
+      """
+    end
   end
 
   defp render_available_asset_card_with_one_button(assigns) do
-    ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="assign"
-      button_one_label="Add"
-      button_one_phx_value_ref={@asset_lease.id}
-    />
-    """
+    if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
+      ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={@asset_lease.asset.thumbnail_image}
+        button_one_action="assign"
+        button_one_label="Add"
+        button_one_phx_value_ref={@asset_lease.id}
+      />
+      """
+    else
+      ~H"""
+      """
+    end
+  end
+
+  defp render_asset_show_card(assigns) do
+    if AssetLease.is_part_of_project?(assigns.asset_lease, assigns.project) do
+      render_asset_card_with_one_or_two_buttons(assigns)
+    else
+      render_asset_card_with_one_button(assigns)
+    end
+  end
+
+  defp render_asset_card_with_one_or_two_buttons(assigns) do
+    media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
+
+    case media_type do
+      :audio -> render_audio_card_with_one_or_two_buttons(assigns)
+      :image -> render_image_card_with_one_or_two_buttons(assigns)
+      :video -> render_image_card_with_one_or_two_buttons(assigns)
+    end
+  end
+
+  defp render_image_card_with_one_or_two_buttons(assigns) do
+    if AssetLease.is_primary_asset_lease?(assigns.project, assigns.asset_lease) do
+      render_added_asset_card_with_one_button(assigns)
+    else
+      render_added_asset_card_with_two_buttons(assigns)
+    end
+  end
+
+  defp render_audio_card_with_one_or_two_buttons(assigns) do
+    if AssetLease.is_primary_asset_lease?(assigns.project, assigns.asset_lease) do
+      render_added_audio_card_with_one_button(assigns)
+    else
+      render_added_audio_card_with_two_buttons(assigns)
+    end
+  end
+
+  defp render_asset_card_with_one_button(assigns) do
+    media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
+
+    case media_type do
+      :audio -> render_available_audio_card_with_one_button(assigns)
+      :image -> render_available_asset_card_with_one_button(assigns)
+      :video -> render_available_asset_card_with_one_button(assigns)
+    end
   end
 end

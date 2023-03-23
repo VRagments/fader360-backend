@@ -7,7 +7,15 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.Project
-  alias DarthWeb.Components.{IndexCard, Header, PaginationLink, LinkButton, RenderPageNumbers, EmptyState}
+
+  alias DarthWeb.Components.{
+    IndexCard,
+    Header,
+    Pagination,
+    LinkButton,
+    EmptyState,
+    IndexCardLinkClickButtonGroup
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -47,6 +55,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
       %{query_page: current_page, total_pages: total_pages, entries: user_projects} ->
         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end)
         user_projects_list = Project.get_sorted_user_project_list(user_projects_map)
+        map_with_all_links = map_with_all_links(socket, total_pages)
 
         socket =
           socket
@@ -54,7 +63,8 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
             current_page: current_page,
             total_pages: total_pages,
             user_projects_list: user_projects_list,
-            user_projects_map: user_projects_map
+            user_projects_map: user_projects_map,
+            map_with_all_links: map_with_all_links
           )
 
         {:noreply, socket}
@@ -145,21 +155,31 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     {:noreply, socket}
   end
 
+  defp map_with_all_links(socket, total_pages) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.project_index_path(socket, :index, page: page)}
+    end)
+  end
+
   defp render_audio_card(assigns) do
     ~H"""
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       title={@user_project.name}
-      visibility={@user_project.visibility}
+      info={@user_project.visibility}
       subtitle={@user_project.author}
-      button_one_label="Edit"
-      button_two_label="Delete"
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit"
-      button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id}
-    />
+      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+    >
+      <IndexCardLinkClickButtonGroup.render
+        link_button_action="edit"
+        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
+        link_button_label="Edit"
+        click_button_action="delete"
+        click_button_label="Delete"
+        phx_value_ref={@user_project.id}
+        confirm_message="Do you really want to delete this project? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
   end
 
@@ -168,16 +188,20 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       title={@user_project.name}
-      visibility={@user_project.visibility}
+      info={@user_project.visibility}
       subtitle={@user_project.author}
-      button_one_label="Edit"
-      button_two_label="Delete"
       image_source={@user_project.primary_asset.thumbnail_image}
-      button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit"
-      button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id}
-    />
+    >
+      <IndexCardLinkClickButtonGroup.render
+        link_button_action="edit"
+        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
+        link_button_label="Edit"
+        click_button_action="delete"
+        click_button_label="Delete"
+        phx_value_ref={@user_project.id}
+        confirm_message="Do you really want to delete this project? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
   end
 
@@ -186,16 +210,38 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     <IndexCard.render
       show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
       title={@user_project.name}
-      visibility={@user_project.visibility}
+      info={@user_project.visibility}
       subtitle={@user_project.author}
-      button_one_label="Edit"
-      button_two_label="Delete"
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}
-      button_one_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-      button_one_action="edit"
-      button_two_action="delete"
-      button_two_phx_value_ref={@user_project.id}
-    />
+      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
+    >
+      <IndexCardLinkClickButtonGroup.render
+        link_button_action="edit"
+        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
+        link_button_label="Edit"
+        click_button_action="delete"
+        click_button_label="Delete"
+        phx_value_ref={@user_project.id}
+        confirm_message="Do you really want to delete this project? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
+  end
+
+  defp render_project_card(assigns) do
+    if Project.has_primary_asset_lease?(assigns.user_project) do
+      render_project_media_card(assigns)
+    else
+      render_default_card(assigns)
+    end
+  end
+
+  defp render_project_media_card(assigns) do
+    media_type = Asset.normalized_media_type(assigns.user_project.primary_asset.media_type)
+
+    case media_type do
+      :audio -> render_audio_card(assigns)
+      :video -> render_image_card(assigns)
+      :image -> render_image_card(assigns)
+    end
   end
 end

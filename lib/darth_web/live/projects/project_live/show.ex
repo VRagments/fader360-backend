@@ -10,7 +10,6 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   alias Darth.Model.Project, as: ProjectStruct
 
   alias DarthWeb.Components.{
-    IndexCard,
     ShowImage,
     Header,
     Icons,
@@ -18,9 +17,10 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     StatSelectField,
     LinkButtonGroup,
     LinkButton,
-    PaginationLink,
-    RenderPageNumbers,
-    EmptyState
+    Pagination,
+    EmptyState,
+    IndexCard,
+    IndexCardLinkClickButtonGroup
   }
 
   @impl Phoenix.LiveView
@@ -70,6 +70,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
            ProjectScene.query(params, project_scenes_query, true) do
       project_scenes_map = Map.new(project_scenes, fn ps -> {ps.id, ps} end)
       project_scenes_list = ProjectScene.get_sorted_project_scenes_list(project_scenes_map)
+      map_with_all_links = map_with_all_links(socket, total_pages, project)
 
       {:noreply,
        socket
@@ -80,7 +81,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          project_scenes_list: project_scenes_list,
          total_pages: total_pages,
          current_page: current_page,
-         changeset: ProjectStruct.changeset(project)
+         changeset: ProjectStruct.changeset(project),
+         map_with_all_links: map_with_all_links
        )}
     else
       {:error, query_error = %Ecto.QueryError{}} ->
@@ -240,6 +242,12 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     {:noreply, socket}
   end
 
+  defp map_with_all_links(socket, total_pages, project) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.project_show_path(socket, :show, project.id, page: page)}
+    end)
+  end
+
   defp render_media_display(assigns) do
     with primary_asset_lease = %AssetLeaseStruct{} <- assigns.project.primary_asset_lease,
          normalised_media_type = Asset.normalized_media_type(primary_asset_lease.asset.media_type),
@@ -285,16 +293,21 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     <IndexCard.render
       show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
       title={@project_scene.name}
-      visibility={@project_scene.navigatable}
+      info={@project_scene.navigatable}
       subtitle={@project_scene.duration <> " Sec"}
-      button_one_label="Edit"
-      button_two_label="Delete"
       image_source={@project_scene.primary_asset.thumbnail_image}
-      button_one_route={Routes.project_form_scenes_path(@socket, :edit,
-        @user_project.id, @project_scene.id)}
-      button_one_action="edit" button_two_action="delete"
-      button_two_phx_value_ref={@project_scene.id}
-    />
+    >
+      <IndexCardLinkClickButtonGroup.render
+        link_button_action="edit"
+        link_button_route={Routes.project_form_scenes_path(@socket, :edit,
+          @user_project.id, @project_scene.id)}
+        link_button_label="Edit"
+        click_button_action="delete"
+        click_button_label="Delete"
+        phx_value_ref={@project_scene.id}
+        confirm_message="Do you really want to delete this project scene? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
   end
 
@@ -303,17 +316,29 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     <IndexCard.render
       show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
       title={@project_scene.name}
-      visibility={@project_scene.navigatable}
+      info={@project_scene.navigatable}
       subtitle={@project_scene.duration <> " Sec"}
-      button_one_label="Edit"
-      button_two_label="Delete"
       image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
-      button_one_route={Routes.project_form_scenes_path(@socket, :edit,
-        @user_project.id, @project_scene.id)}
-      button_one_action="edit"
-      button_two_action="delete"
-      button_two_phx_value_ref={@project_scene.id}
-    />
+    >
+      <IndexCardLinkClickButtonGroup.render
+        link_button_action="edit"
+        link_button_route={Routes.project_form_scenes_path(@socket, :edit,
+          @user_project.id, @project_scene.id)}
+        link_button_label="Edit"
+        click_button_action="delete"
+        click_button_label="Delete"
+        phx_value_ref={@project_scene.id}
+        confirm_message="Do you really want to delete this project scene? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
+  end
+
+  defp render_scene_card(assigns) do
+    if ProjectScene.has_primary_asset_lease?(assigns.project_scene) do
+      render_scene_with_image_card(assigns)
+    else
+      render_scene_with_default_card(assigns)
+    end
   end
 end

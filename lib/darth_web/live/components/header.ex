@@ -6,7 +6,7 @@ defmodule DarthWeb.Components.Header do
 
   def render(assigns) do
     ~H"""
-    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
       <div class="md:flex md:items-center md:justify-between">
         <div class="min-w-0 flex-1">
           <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">

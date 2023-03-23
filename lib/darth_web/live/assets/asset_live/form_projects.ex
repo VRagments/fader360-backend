@@ -5,10 +5,11 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
   alias Darth.Controller.User
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.Project, as: ProjectStruct
+  alias Darth.Model.AssetLease, as: AssetLeaseStruct
   alias Darth.Controller.AssetLease
   alias Darth.Controller.Project
   alias Darth.Controller.Asset
-  alias DarthWeb.Components.{Header, ShowCard, PaginationLink, LinkButtonGroup, RenderPageNumbers, EmptyState}
+  alias DarthWeb.Components.{Header, ShowCard, Pagination, LinkButtonGroup, EmptyState}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -50,9 +51,11 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
          true <- AssetLease.has_user?(asset_lease, socket.assigns.current_user.id),
          query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
          %{query_page: current_page, total_pages: total_pages, entries: user_projects} <-
-           Project.query(params, query, true),
-         user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end),
-         user_projects_list = Project.get_sorted_user_project_list(user_projects_map) do
+           Project.query(params, query, true) do
+      map_with_all_links = map_with_all_links(socket, asset_lease, total_pages)
+      user_projects_map = Map.new(user_projects, fn up -> {up.id, up} end)
+      user_projects_list = Project.get_sorted_user_project_list(user_projects_map)
+
       {:noreply,
        socket
        |> assign(
@@ -60,7 +63,8 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
          current_page: current_page,
          total_pages: total_pages,
          user_projects_map: user_projects_map,
-         user_projects_list: user_projects_list
+         user_projects_list: user_projects_list,
+         map_with_all_links: map_with_all_links
        )}
     else
       false ->
@@ -241,6 +245,12 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     {:noreply, socket}
   end
 
+  defp map_with_all_links(socket, asset_lease, total_pages) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.asset_form_projects_path(socket, :index, asset_lease.id, page: page)}
+    end)
+  end
+
   defp render_added_audio_project_card(assigns) do
     ~H"""
     <ShowCard.render
@@ -326,5 +336,47 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
       button_one_phx_value_ref={@user_project.id}
     />
     """
+  end
+
+  defp render_project_show_card(assigns) do
+    if AssetLease.is_part_of_project?(assigns.asset_lease, assigns.user_project) do
+      render_added_project_show_card(assigns)
+    else
+      render_available_project_show_card(assigns)
+    end
+  end
+
+  defp render_available_project_show_card(assigns) do
+    case assigns.user_project.primary_asset_lease do
+      nil -> render_available_default_project_card(assigns)
+      %AssetLeaseStruct{} -> render_available_media_card(assigns)
+    end
+  end
+
+  defp render_available_media_card(assigns) do
+    media_type = Asset.normalized_media_type(assigns.user_project.primary_asset_lease.asset.media_type)
+
+    case media_type do
+      :audio -> render_available_audio_project_card(assigns)
+      :image -> render_available_image_project_card(assigns)
+      :video -> render_available_image_project_card(assigns)
+    end
+  end
+
+  defp render_added_project_show_card(assigns) do
+    case assigns.user_project.primary_asset_lease do
+      nil -> render_added_default_project_card(assigns)
+      %AssetLeaseStruct{} -> render_added_media_card(assigns)
+    end
+  end
+
+  defp render_added_media_card(assigns) do
+    media_type = Asset.normalized_media_type(assigns.user_project.primary_asset_lease.asset.media_type)
+
+    case media_type do
+      :audio -> render_added_audio_project_card(assigns)
+      :image -> render_added_image_project_card(assigns)
+      :video -> render_added_image_project_card(assigns)
+    end
   end
 end

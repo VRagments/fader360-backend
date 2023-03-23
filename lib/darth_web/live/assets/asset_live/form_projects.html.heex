@@ -1,4 +1,4 @@
-<Header.render heading={"Manage projects of " <> @asset_lease.asset.name}>
+<Header.render heading={"Manage projects of #{@asset_lease.asset.name}"}>
     <LinkButtonGroup.render
         button_two_link={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
         button_two_action="back"
@@ -14,65 +14,23 @@
         label="Create Project"
     />
 <% else %>
-    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
         <ul role="list"
             class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
             <%= for user_project <- @user_projects_list do %>
-                <%= if AssetLease.is_part_of_project?(@asset_lease, user_project) do %>
-                    <%= if Project.has_primary_asset_lease?(user_project) do %>
-                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
-                            <.render_added_audio_project_card socket={@socket} user_project={user_project} />
-                        <% else %>
-                            <.render_added_image_project_card socket={@socket} user_project={user_project} />
-                        <% end %>
-                    <% else %>
-                        <.render_added_default_project_card socket={@socket} user_project={user_project} />
-                    <% end %>
-                <%else %>
-                    <%= if Project.has_primary_asset_lease?(user_project) do %>
-                        <%= if Asset.is_audio_asset?(user_project.primary_asset.media_type) do %>
-                            <.render_available_audio_project_card socket={@socket} user_project={user_project} />
-                        <% else %>
-                            <.render_available_image_project_card socket={@socket} user_project={user_project} />
-                        <% end %>
-                    <% else %>
-                        <.render_available_default_project_card socket={@socket} user_project={user_project} />
-                    <% end %>
-                <% end %>
+                <.render_project_show_card
+                    socket={@socket}
+                    user_project={user_project}
+                    asset_lease={@asset_lease}
+                />
             <% end %>
         </ul>
     </section>
 
-    <section class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
-        <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
-            <%= if @current_page > 1 do %>
-                <PaginationLink.render
-                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: (@current_page-1))}
-                    action="left"
-                    label="Previous"
-                    class="-mt-px flex w-0 flex-1"
-                />
-            <% else %>
-                <div class="-mt-px flex w-0 flex-1"></div>
-            <% end %>
-            <%= for page <- 1..@total_pages do%>
-                <RenderPageNumbers.render
-                    socket={@socket}
-                    page={page}
-                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: page)}
-                    current_page={@current_page}
-                />
-            <% end %>
-            <%= if @current_page < @total_pages do %>
-                <PaginationLink.render
-                    route={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id, page: (@current_page+1))}
-                    action="right"
-                    label="Next"
-                    class="-mt-px flex w-0 flex-1 justify-end"
-                />
-            <% else %>
-                <div class="-mt-px flex w-0 flex-1 justify-end"></div>
-            <% end %>
-        </nav>
-    </section>
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+
 <% end %>

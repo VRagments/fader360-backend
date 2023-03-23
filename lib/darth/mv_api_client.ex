@@ -26,7 +26,8 @@ defmodule Darth.MvApiClient do
   end
 
   def fetch_assets(mv_node, mv_token, current_page) do
-    url = mv_node <> "/assets/paginated?page=#{current_page}"
+    int_current_page = String.to_integer(current_page)
+    url = mv_node <> "/assets/paginated?page=#{int_current_page - 1}"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
          {:ok, assets} when is_list(assets) <- Poison.decode(body) do

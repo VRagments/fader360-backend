@@ -6,16 +6,20 @@
     />
 </Header.render>
 
-<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
-    <div class="relative sm:py-16 lg:py-0">
-        <Icons.dots_pattern />
-        <.render_media_display asset={@asset_lease.asset} socket={@socket} />
-    </div>
-    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
-        <div class="mt-10">
-            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
-                <.render_asset_stats asset={@asset_lease.asset} />
-            </dl>
+<%= if Asset.is_asset_status_ready?(@asset_lease.asset.status) do %>
+    <div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+        <div class="relative sm:py-16 lg:py-0">
+            <Icons.dots_pattern />
+            <.render_media_display asset={@asset_lease.asset} socket={@socket} />
+        </div>
+        <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+            <div class="mt-10">
+                <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                    <.render_asset_stats asset={@asset_lease.asset} />
+                </dl>
+            </div>
         </div>
     </div>
-</div>
+<% else %>
+    <EmptyState.render label="Asset is not ready to load the details."/>
+<% end %>

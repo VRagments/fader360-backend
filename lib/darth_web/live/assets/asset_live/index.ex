@@ -8,13 +8,13 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   alias DarthWeb.UploadProcessor
 
   alias DarthWeb.Components.{
-    IndexCard,
     Header,
     FormUpload,
-    PaginationLink,
-    RenderPageNumbers,
     EmptyState,
-    UploadProgress
+    UploadProgress,
+    IndexCard,
+    IndexCardClickButtonGroup,
+    Pagination
   }
 
   @impl Phoenix.LiveView
@@ -55,6 +55,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   def handle_params(params, _url, socket) do
     case AssetLease.query_by_user(socket.assigns.current_user.id, params, false) do
       %{query_page: current_page, total_pages: total_pages, entries: asset_leases} ->
+        map_with_all_links = map_with_all_links(socket, total_pages)
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
         asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)
 
@@ -64,7 +65,8 @@ defmodule DarthWeb.Assets.AssetLive.Index do
            current_page: current_page,
            total_pages: total_pages,
            asset_leases_map: asset_leases_map,
-           asset_leases_list: asset_leases_list
+           asset_leases_list: asset_leases_list,
+           map_with_all_links: map_with_all_links
          )}
 
       {:error, query_error = %Ecto.QueryError{}} ->
@@ -297,57 +299,93 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     end
   end
 
+  defp map_with_all_links(socket, total_pages) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.asset_index_path(socket, :index, page: page)}
+    end)
+  end
+
   defp render_audio_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show,@asset_lease.id)}
-      title={@asset_lease.asset.name}
-      visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type}
-      button_one_label="Re-Transcode"
-      button_two_label="Delete"
+      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
       image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="re_transcode"
-      button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete"
-      button_two_phx_value_ref={@asset_lease.id}
-    />
+      title={@asset_lease.asset.name}
+      subtitle={@asset_lease.asset.media_type}
+      info={@asset_lease.asset.status}
+    >
+      <IndexCardClickButtonGroup.render
+        button_one_action="re_transcode"
+        button_one_phx_value_ref={@asset_lease.asset.id}
+        button_one_label="Re-Transcode"
+        button_two_action="delete"
+        button_two_phx_value_ref={@asset_lease.id}
+        button_two_label="Delete"
+        confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+      />
+    </IndexCard.render>
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      title={@asset_lease.asset.name}
-      visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type}
-      button_one_label="Re-Transcode"
-      button_two_label="Delete"
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="re_transcode"
-      button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete"
-      button_two_phx_value_ref={@asset_lease.id}
-    />
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={@asset_lease.asset.thumbnail_image}
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        info={@asset_lease.asset.status}
+      >
+        <IndexCardClickButtonGroup.render
+          button_one_action="re_transcode"
+          button_one_phx_value_ref={@asset_lease.asset.id}
+          button_one_label="Re-Transcode"
+          button_two_action="delete"
+          button_two_phx_value_ref={@asset_lease.id}
+          button_two_label="Delete"
+          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      title={@asset_lease.asset.name}
-      visibility={@asset_lease.asset.status}
-      subtitle={@asset_lease.asset.media_type}
-      button_one_label="Re-Transcode"
-      button_two_label="Delete"
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      button_one_action="re_transcode"
-      button_one_phx_value_ref={@asset_lease.asset.id}
-      button_two_action="delete"
-      button_two_phx_value_ref={@asset_lease.id}
-    />
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        info={@asset_lease.asset.status}
+      >
+        <IndexCardClickButtonGroup.render
+          button_one_action="re_transcode"
+          button_one_phx_value_ref={@asset_lease.asset.id}
+          button_one_label="Re-Transcode"
+          button_two_action="delete"
+          button_two_phx_value_ref={@asset_lease.id}
+          button_two_label="Delete"
+          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        />
+      </IndexCard.render>
     """
+  end
+
+  defp render_asset_card(assigns) do
+    if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
+      render_asset_media_card(assigns)
+    else
+      render_default_card(assigns)
+    end
+  end
+
+  defp render_asset_media_card(assigns) do
+    media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
+
+    case media_type do
+      :audio -> render_audio_card(assigns)
+      :video -> render_image_card(assigns)
+      :image -> render_image_card(assigns)
+    end
   end
 end

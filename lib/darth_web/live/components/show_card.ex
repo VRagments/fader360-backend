@@ -29,7 +29,7 @@ defmodule DarthWeb.Components.ShowCard do
           px-2 py-0.5 text-xs font-medium text-green-800"><%=@state%></span>
         <%end%>
       </div>
-      <img class="h-20 w-20 flex-shrink-0 full bg-gray-300" src={@image_source} alt="">
+      <img class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl" src={@image_source} alt="">
     </div>
     </.link>
     <div>
