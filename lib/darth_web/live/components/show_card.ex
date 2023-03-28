@@ -24,7 +24,7 @@ defmodule DarthWeb.Components.ShowCard do
           <h3 class="truncate text-sm font-medium text-gray-900"><%=@title%></h3>
         </div>
         <p class="mt-1 truncate text-sm text-gray-500"><%=@subtitle%></p>
-        <%= if not is_nil(@state) do%>
+        <%= unless is_nil(@state) do%>
         <span class="inline-block flex-shrink-0 rounded-full bg-green-200
           px-2 py-0.5 text-xs font-medium text-green-800"><%=@state%></span>
         <%end%>
@@ -40,7 +40,7 @@ defmodule DarthWeb.Components.ShowCard do
             <.render_svg action={@button_one_action} />
             <span class="ml-3"><%=@button_one_label%></span>
           </button>
-          <%= if not is_nil(@button_two_action) do%>
+          <%= unless is_nil(@button_two_action) do%>
           <button type="button" phx-click= {@button_two_action} phx-value-ref={@button_two_phx_value_ref}
           class="relative -mr-px inline-flex w-0 flex-1 items-center justify-center rounded-bl-lg
             border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500">

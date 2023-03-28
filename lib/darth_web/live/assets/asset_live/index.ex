@@ -5,6 +5,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   alias Darth.Controller.Asset
   alias Darth.Model.User, as: UserStruct
   alias Darth.Controller.AssetLease
+  alias Darth.AssetProcessor.Downloader
   alias DarthWeb.UploadProcessor
 
   alias DarthWeb.Components.{
@@ -18,14 +19,14 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   }
 
   @impl Phoenix.LiveView
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          upload_file_size = Application.fetch_env!(:darth, :upload_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases") do
       {:ok,
        socket
-       |> assign(current_user: user)
+       |> assign(current_user: user, mv_token: mv_token)
        |> assign(:uploaded_files, [])
        |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
     else
@@ -125,7 +126,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_info({:asset_lease_deleted, _asset_lease}, socket) do
+  def handle_info({:asset_deleted, _asset_lease}, socket) do
     get_updated_asset_list(socket)
   end
 
@@ -153,6 +154,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
            {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
            :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
            {:ok, asset_struct} <- Asset.create(asset_details),
+           {:ok, asset_struct} <- Asset.init(asset_struct, asset_details),
            {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
            :ok <- File.rm(uploaded_file_path) do
         socket
@@ -213,6 +215,41 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
           socket
           |> put_flash(:error, "Asset cannot be deleted: #{inspect(reason)}")
+          |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("download", %{"ref" => asset_id}, socket) do
+    current_user = socket.assigns.current_user
+    mv_node = current_user.mv_node
+    mv_token = socket.assigns.mv_token
+
+    socket =
+      with {:ok, asset} <- Asset.read(asset_id),
+           download_params = %{
+             media_type: asset.media_type,
+             mv_asset_key: asset.mv_asset_key,
+             mv_asset_deeplink_key: asset.mv_asset_deeplink_key,
+             mv_node: mv_node,
+             mv_token: mv_token,
+             mv_asset_filename: asset.name,
+             current_user: socket.assigns.current_user,
+             asset_struct: asset
+           },
+           :ok <-
+             Downloader.add_download_params(download_params) do
+        socket
+        |> put_flash(:info, "Downloading Asset")
+        |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
+      else
+        {:error, reason} ->
+          Logger.error("Error message while downloading Mediaverse asset: #{inspect(reason)}")
+
+          socket
+          |> put_flash(:error, "Asset cannot be downloaded: #{inspect(reason)}")
           |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
       end
 
@@ -371,11 +408,39 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     """
   end
 
+  defp render_init_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        info={@asset_lease.asset.status}
+      >
+        <IndexCardClickButtonGroup.render
+          button_one_action="download"
+          button_one_phx_value_ref={@asset_lease.asset.id}
+          button_one_label="Download"
+          button_two_action="delete"
+          button_two_phx_value_ref={@asset_lease.id}
+          button_two_label="Delete"
+          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        />
+      </IndexCard.render>
+    """
+  end
+
   defp render_asset_card(assigns) do
-    if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
+    asset = assigns.asset_lease.asset
+
+    if Asset.is_asset_status_ready?(asset.status) do
       render_asset_media_card(assigns)
     else
-      render_default_card(assigns)
+      if Asset.is_asset_download_failed?(asset.status, asset.mv_node) do
+        render_init_card(assigns)
+      else
+        render_default_card(assigns)
+      end
     end
   end
 

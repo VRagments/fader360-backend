@@ -30,4 +30,6 @@ defmodule DarthWeb.Components.IndexCardClickButton do
   defp render_svg(%{action: "delete"} = assigns), do: Icons.delete_trash(assigns)
   defp render_svg(%{action: "re_transcode"} = assigns), do: Icons.re_transcode_arrow_path(assigns)
   defp render_svg(%{action: "add_mv_asset"} = assigns), do: Icons.add_mv_asset_plus(assigns)
+  defp render_svg(%{action: "add_mv_project"} = assigns), do: Icons.add_mv_asset_plus(assigns)
+  defp render_svg(%{action: "download"} = assigns), do: Icons.download_arrow_down_tray(assigns)
 end

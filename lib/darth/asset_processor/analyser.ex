@@ -147,7 +147,7 @@ defmodule Darth.AssetProcessor.Analyser do
         }
       ]
 
-      Poison.encode(data)
+      Jason.encode(data)
     end
   end
 

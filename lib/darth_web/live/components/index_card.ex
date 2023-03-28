@@ -6,7 +6,7 @@ defmodule DarthWeb.Components.IndexCard do
   attr :audio_source, :string, default: nil
   attr :title, :string, required: true
   attr :subtitle, :string, required: true
-  attr :info, :string, required: true
+  attr :info, :string, default: nil
   slot(:inner_block, required: true)
 
   def render(assigns) do
@@ -36,9 +36,11 @@ defmodule DarthWeb.Components.IndexCard do
             <dd class="text-sm text-gray-500"><%=@subtitle%></dd>
             <dt class="sr-only">Subtitle</dt>
             <dd class="mt-3">
+            <%= unless is_nil(@info) do%>
               <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                 <%=@info%>
               </span>
+            <%end%>
             </dd>
           </dl>
         </.link>

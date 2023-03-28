@@ -21,6 +21,9 @@ defmodule Darth.Controller.Asset do
       attributes
       data_filename
       id
+      mv_asset_key
+      mv_asset_deeplink_key
+      mv_node
       preview_image
       inserted_at
       media_type
@@ -44,17 +47,20 @@ defmodule Darth.Controller.Asset do
     Asset.changeset(asset, params)
   end
 
-  def create(params, is_mv_asset \\ false) do
-    with {:ok, json_plug} <- encode_file_plug(params),
-         {:ok, asset} <- params |> new() |> Repo.insert(),
-         new_params = %{
-           "data_filename" => filename(asset, "original"),
-           "raw_metadata" => %{"plug" => json_plug},
-           "static_path" => base_path(asset),
-           "status" => "initialized"
-         },
-         input_file = "#{new_params["static_path"]}/#{new_params["data_filename"]}",
-         {:ok, _} <- write_data_file(new_params["static_path"], input_file, params["data_path"]),
+  def create(params) do
+    params |> new() |> Repo.insert()
+  end
+
+  def init(asset, params, is_mv_asset \\ false) do
+    new_params = %{
+      "data_filename" => filename(asset, "original"),
+      "static_path" => base_path(asset),
+      "status" => "initialized"
+    }
+
+    input_file = "#{new_params["static_path"]}/#{new_params["data_filename"]}"
+
+    with {:ok, _} <- write_data_file(new_params["static_path"], input_file, params["data_path"]),
          delete_temp_downloaded_file(params["data_path"], is_mv_asset),
          {:ok, updated_asset} = ok <- update(asset, new_params, false, true),
          :ok <- broadcast("assets", {:asset_analyze_transcode, updated_asset.id}) do
@@ -354,18 +360,15 @@ defmodule Darth.Controller.Asset do
     save_file.(response, file, save_file)
   end
 
-  def add_asset_to_database(params, mv_asset_file_path) do
-    mv_asset_key = params.mv_asset_key
-    user = params.current_user
+  def add_asset_to_database(params, user) do
+    mv_asset_key = Map.get(params, "mv_asset_key")
 
     case get_asset_with_mv_asset_key(mv_asset_key) do
       nil ->
-        params = build_asset_params(params, mv_asset_file_path)
-
         create_asset_with_lease(user, params)
 
       asset_struct = %Asset{} ->
-        check_status(params, mv_asset_file_path, asset_struct)
+        {:ok, asset_struct}
     end
   end
 
@@ -391,6 +394,11 @@ defmodule Darth.Controller.Asset do
   end
 
   def is_asset_status_ready?(asset_status), do: asset_status == "ready"
+
+  def is_asset_download_failed?(asset_status, asset_mv_node),
+    do: is_mv_asset?(asset_mv_node) and (asset_status == "created" or asset_status == "download_failed")
+
+  def is_mv_asset?(asset_mv_node), do: asset_mv_node != nil
 
   def get_sorted_asset_lease_list(asset_leases_map) do
     asset_leases_map
@@ -445,8 +453,6 @@ defmodule Darth.Controller.Asset do
     name = filename(asset, prefix)
     "#{base_url}/media/#{asset.id}/#{name}"
   end
-
-  defp encode_file_plug(params), do: params |> Map.delete(:path) |> Poison.encode()
 
   defp delete_repo({:ok, asset}) do
     broadcast("assets", {:asset_deleted, asset})
@@ -532,7 +538,7 @@ defmodule Darth.Controller.Asset do
 
   defp regenerate(asset_id, t, sync), do: regenerate(read(asset_id), t, sync)
 
-  defp build_asset_params(params, mv_asset_file_path) do
+  def build_asset_params(params, mv_asset_file_path \\ nil) do
     %{
       "name" => params.mv_asset_filename,
       "mv_node" => params.mv_node,
@@ -557,23 +563,11 @@ defmodule Darth.Controller.Asset do
   end
 
   defp create_asset_with_lease(user, params) do
-    with {:ok, asset_struct} <- create(params, true),
+    with {:ok, asset_struct} <- create(params),
          {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user) do
       {:ok, asset_struct}
     else
       {:error, reason} -> Logger.error("Unable to add MediaVerse asset to the databse: #{reason}")
-    end
-  end
-
-  defp check_status(params, mv_asset_file_path, asset_struct) do
-    case asset_struct.status == "ready" do
-      true ->
-        {:ok, asset_struct}
-
-      false ->
-        delete(asset_struct)
-        params = build_asset_params(params, mv_asset_file_path)
-        create(params, true)
     end
   end
 end

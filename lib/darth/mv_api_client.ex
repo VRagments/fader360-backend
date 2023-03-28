@@ -6,10 +6,10 @@ defmodule Darth.MvApiClient do
       {"Content-type", "application/json"}
     ]
 
-    with {:ok, request_body} <- Poison.encode(%{email: email, password: password}),
+    with {:ok, request_body} <- Jason.encode(%{email: email, password: password}),
          {:ok, %{body: body}} <-
            HTTPoison.post(url, request_body, headers) do
-      Poison.decode(body)
+      Jason.decode(body)
     end
   end
 
@@ -17,7 +17,7 @@ defmodule Darth.MvApiClient do
     url = mv_node <> "/user"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
-         {:ok, response} <- Poison.decode(body) do
+         {:ok, response} <- Jason.decode(body) do
       {:ok, response}
     else
       {:ok, %{"message" => message}} -> {:error, message}
@@ -30,7 +30,7 @@ defmodule Darth.MvApiClient do
     url = mv_node <> "/assets/paginated?page=#{int_current_page - 1}"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
-         {:ok, assets} when is_list(assets) <- Poison.decode(body) do
+         {:ok, assets} when is_list(assets) <- Jason.decode(body) do
       {:ok, assets}
     else
       {:ok, %{"message" => message}} ->
@@ -44,8 +44,33 @@ defmodule Darth.MvApiClient do
   def show_asset(mv_node, mv_token, key) do
     url = mv_node <> "/assets/" <> key
 
-    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)) do
-      Poison.decode(body)
+    case HTTPoison.get(url, get_headers(mv_token)) do
+      {:ok, %{body: body}} -> Jason.decode(body)
+      err -> {:error, "Error while fetching asset: #{inspect(err)}"}
+    end
+  end
+
+  def fetch_projects(mv_node, mv_token) do
+    url = mv_node <> "project/userList/all"
+
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
+         {:ok, projects} when is_list(projects) <- Jason.decode(body) do
+      {:ok, projects}
+    else
+      {:ok, %{"message" => message}} ->
+        {:error, message}
+
+      error ->
+        error
+    end
+  end
+
+  def show_project(mv_node, mv_token, mv_project_id) do
+    url = mv_node <> "/project/" <> mv_project_id
+
+    case HTTPoison.get(url, get_headers(mv_token)) do
+      {:ok, %{body: body}} -> Jason.decode(body)
+      {:error, reason} -> {:error, reason}
     end
   end
 

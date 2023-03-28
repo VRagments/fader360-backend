@@ -2,7 +2,7 @@ defmodule DarthWeb.Components.Header do
   use DarthWeb, :component
 
   attr :heading, :string, required: true
-  slot(:inner_block, required: true)
+  slot(:inner_block, required: false)
 
   def render(assigns) do
     ~H"""

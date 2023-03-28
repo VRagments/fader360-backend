@@ -100,8 +100,11 @@ defmodule DarthWeb.ApiProjectAssetController do
   end
 
   def create(conn, %{"api_project_id" => project_id} = params) do
+    asset_params = read_media_file_data(params)
+
     fun = fn user, _is_owner, project ->
-      with {:ok, asset} <- Asset.create(read_media_file_data(params)),
+      with {:ok, asset} <- Asset.create(asset_params),
+           {:ok, asset} <- Asset.init(asset, asset_params),
            {:ok, lease} <- AssetLease.create_for_user_project(asset, user, project) do
         conn
         |> put_status(:created)

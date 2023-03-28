@@ -1,0 +1,12 @@
+<Header.render heading="MediaVerse Projects"/>
+
+<section class="py-2 lg:pt-12 md:mx-auto lg:container">
+    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <%= for mv_project <- @mv_projects do %>
+            <.render_mv_project_card
+                mv_project={mv_project}
+                socket={@socket}
+            />
+        <% end %>
+    </ul>
+</section>

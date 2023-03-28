@@ -261,7 +261,7 @@ defmodule Darth.AssetProcessor do
 
   defp apply_metadata(asset_id, json_data, asset_status) do
     with sanitized_json = Regex.replace(@convert_wrong_json, json_data, ": 0"),
-         {:ok, metadata} <- Poison.decode(sanitized_json),
+         {:ok, metadata} <- Jason.decode(sanitized_json),
          {:ok, asset} <- Controller.Asset.read(asset_id),
          {:ok, stat} <- stat_original(asset),
          {:ok, attributes} <- determine_attributes(asset.media_type, metadata, stat),
@@ -400,7 +400,8 @@ defmodule Darth.AssetProcessor do
   end
 
   defp determine_raw_metadata(json_data, stat) do
-    with {:ok, json_stat} <- Poison.encode(stat), do: {:ok, %{analysis: json_data, stat: json_stat}}
+    with {:ok, json_stat} <- Map.from_struct(stat) |> Jason.encode(),
+         do: {:ok, %{analysis: json_data, stat: json_stat}}
   end
 
   defp delete_folder(path) do

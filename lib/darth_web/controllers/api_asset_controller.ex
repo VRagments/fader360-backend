@@ -204,8 +204,10 @@ defmodule DarthWeb.ApiAssetController do
 
   def create(conn, params) do
     user = conn.assigns.current_api_user
+    asset_params = read_media_file_data(params)
 
-    with {:ok, asset} <- Asset.create(read_media_file_data(params)),
+    with {:ok, asset} <- Asset.create(asset_params),
+         {:ok, asset} <- Asset.init(asset, asset_params),
          {:ok, lease} <- AssetLease.create_for_user(asset, user) do
       conn
       |> put_status(:created)

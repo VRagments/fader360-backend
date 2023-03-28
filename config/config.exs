@@ -81,6 +81,7 @@ config :logger, :console,
   metadata: [:request_id]
 
 config :phoenix, :json_library, Jason
+config :phoenix_swagger, json_library: Jason
 
 config :ua_inspector,
   database_path: Path.join("/tmp", "darth_ua_inspector")

@@ -79,7 +79,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         socket =
           socket
           |> put_flash(:error, inspect(reason))
-          |> push_patch(to: Routes.mv_asset_index_path(socket, :index, page: socket.assigns.current_page))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:noreply, socket}
 
@@ -89,7 +89,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         socket =
           socket
           |> put_flash(:error, inspect(err))
-          |> push_patch(to: Routes.mv_asset_index_path(socket, :index))
+          |> redirect(to: Routes.page_page_path(socket, :index))
 
         {:noreply, socket}
     end
@@ -169,8 +169,9 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   end
 
   defp add_to_fader(socket, mv_asset_key) do
-    mv_node = socket.assigns.current_user.mv_node
     mv_token = socket.assigns.mv_token
+    current_user = socket.assigns.current_user
+    mv_node = current_user.mv_node
 
     socket =
       with {:ok, asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
@@ -183,7 +184,11 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
              mv_asset_filename: Map.get(asset, "originalFilename"),
              current_user: socket.assigns.current_user
            },
-           :ok <- Downloader.add_download_params(download_params) do
+           database_params = Asset.build_asset_params(download_params),
+           {:ok, asset_struct} <- Asset.add_asset_to_database(database_params, current_user),
+           params = Map.put(download_params, :asset_struct, asset_struct),
+           :ok <-
+             Downloader.add_download_params(params) do
         socket
         |> put_flash(:info, "Downloading MediaVerse Asset")
         |> push_patch(to: Routes.mv_asset_index_path(socket, :index, page: socket.assigns.current_page))

@@ -18,16 +18,20 @@
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             Assets
                         </.link>
+                        <.link navigate={Routes.project_index_path(@socket, :index)}
+                            class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                            Projects
+                        </.link>
                         <%= if User.is_mediaverse_account?(@current_user) do %>
                         <.link navigate={Routes.mv_asset_index_path(@socket, :index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
                             MediaVerse Assets
                         </.link>
-                        <%end%>
-                        <.link navigate={Routes.project_index_path(@socket, :index)}
+                        <.link navigate={Routes.mv_project_index_path(@socket, :index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
-                            Projects
+                            MediaVerse Projects
                         </.link>
+                        <%end%>
                     </div>
                 </div>
                 <div

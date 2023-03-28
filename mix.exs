@@ -43,7 +43,6 @@ defmodule Darth.MixProject do
       {:phoenix_live_view, "~> 0.18"},
       {:phoenix_swagger, "~> 0.8"},
       {:ex_json_schema, "~> 0.5"},
-      {:poison, "~> 3.0"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},

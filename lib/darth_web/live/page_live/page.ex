@@ -134,7 +134,7 @@ defmodule DarthWeb.PageLive.Page do
   end
 
   @impl Phoenix.LiveView
-  def handle_info({:asset_lease_deleted, _asset_lease}, socket) do
+  def handle_info({:asset_deleted, _asset_lease}, socket) do
     get_updated_projects_and_assets(socket)
   end
 
@@ -177,6 +177,7 @@ defmodule DarthWeb.PageLive.Page do
            {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
            :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
            {:ok, asset_struct} <- Asset.create(asset_details),
+           {:ok, asset_struct} <- Asset.init(asset_struct, asset_details),
            {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user),
            :ok <- File.rm(uploaded_file_path) do
         socket

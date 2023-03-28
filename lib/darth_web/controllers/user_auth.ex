@@ -139,7 +139,7 @@ defmodule DarthWeb.UserAuth do
     else
       _ ->
         conn
-        |> Plug.Conn.send_resp(422, Poison.encode!(:unprocessable_entity))
+        |> Plug.Conn.send_resp(422, Jason.encode!(:unprocessable_entity))
         |> halt
     end
   end
