@@ -21,12 +21,17 @@ defmodule DarthWeb.ApiProjectSceneController do
             name(:string, "User-provided project scene name")
             navigatable(:boolean, "User selected option to allow jumping to scene")
             primary_asset_lease_id(:string, "Asset lease id used for project scene background image")
+            data(Schema.ref(:ProjectSceneData), "Custom scene data")
           end
 
           example(%{
             name: "scene one",
             primary_asset_lease_id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
-            navigatable: true
+            navigatable: true,
+            data: %{
+              "key_one" => "somedate",
+              "key_two" => "someotherdate"
+            }
           })
         end,
       ProjectScene:
@@ -37,6 +42,7 @@ defmodule DarthWeb.ApiProjectSceneController do
           properties do
             created_at(:string, "Creation datetime")
             duration(:string, "Duration of the project scene")
+            data(Schema.ref(:ProjectSceneData), "Custom scene data")
             id(:string, "Project Scene id")
             name(:string, "User-provided project scene name")
             navigatable(:boolean, "User selected option to allow jumping to scene")
@@ -51,6 +57,10 @@ defmodule DarthWeb.ApiProjectSceneController do
             id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
             name: "scene one",
             duration: "60",
+            data: %{
+              "key_one" => "somedate",
+              "key_two" => "someotherdate"
+            },
             preview_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
             primary_asset_lease_id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
             project_id: "gd414aa6-1h91-4a22-9ab4-275cc6ddf7b7",
@@ -77,6 +87,10 @@ defmodule DarthWeb.ApiProjectSceneController do
                 id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
                 name: "scene one",
                 duration: "60",
+                data: %{
+                  "key_one" => "somedate",
+                  "key_two" => "someotherdate"
+                },
                 preview_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
                 primary_asset_lease_id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
                 project_id: "gd414aa6-1h91-4a22-9ab4-275cc6ddf7b7",
@@ -89,6 +103,10 @@ defmodule DarthWeb.ApiProjectSceneController do
                 id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
                 name: "scene one",
                 duration: "60",
+                data: %{
+                  "key_one" => "somedate",
+                  "key_two" => "someotherdate"
+                },
                 preview_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
                 primary_asset_lease_id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
                 project_id: "gd414aa6-1h91-4a22-9ab4-275cc6ddf7b7",
@@ -98,6 +116,21 @@ defmodule DarthWeb.ApiProjectSceneController do
                 created_at: "2015-11-10T02:15:25Z"
               }
             ]
+          })
+        end,
+      ProjectSceneData:
+        swagger_schema do
+          title("ProjectSceneData")
+          description("Custom project scene data")
+
+          properties do
+            some_key_one(:string, "some custom key")
+            another_key(:string, "another custom key")
+          end
+
+          example(%{
+            some_key_one: "my data",
+            another_key: "other data here"
           })
         end
     }

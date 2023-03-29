@@ -21,6 +21,7 @@ defmodule DarthWeb.ApiProjectSceneView do
       id: ps.id,
       name: ps.name,
       duration: ps.duration,
+      data: ps.data,
       preview_image: render_primary_asset(ps, :preview_image),
       primary_asset_lease_id: ps.primary_asset_lease_id,
       project_id: ps.project_id,

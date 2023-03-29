@@ -11,6 +11,7 @@ defmodule Darth.Controller.ProjectScene do
 
   def default_select_fields do
     ~w(
+      data
       duration
       id
       inserted_at
@@ -34,7 +35,11 @@ defmodule Darth.Controller.ProjectScene do
 
   def new(params) do
     params =
-      params
+      if is_nil(params["data"]) or params["data"] == "" do
+        Map.put(params, "data", %{})
+      else
+        params
+      end
       |> Map.put("duration", Application.fetch_env!(:darth, :default_project_scene_duration))
 
     ProjectSceneStruct.changeset(%ProjectSceneStruct{}, params)

@@ -6,6 +6,7 @@ defmodule Darth.Model.ProjectScene do
     field(:name, :string)
     field(:duration, :string)
     field(:navigatable, :boolean)
+    field(:data, :map)
 
     belongs_to(:user, User)
     belongs_to(:project, Project)
@@ -23,7 +24,7 @@ defmodule Darth.Model.ProjectScene do
      )
   end
 
-  @allowed_fields ~w(duration name user_id project_id primary_asset_lease_id navigatable)a
+  @allowed_fields ~w(data duration name user_id project_id primary_asset_lease_id navigatable)a
 
   @required_fields ~w(duration name user_id project_id navigatable)a
 
