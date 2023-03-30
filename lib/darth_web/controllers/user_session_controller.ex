@@ -43,7 +43,8 @@ defmodule DarthWeb.UserSessionController do
     |> UserAuth.logout_user()
   end
 
-  def mv_login(conn, _params) do
+  def mv_login(conn, params) do
+    mv_node = Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))
     changeset = User.change_user_registration(%UserModel{})
 
     with %UserModel{} = current_user <- conn.assigns.current_user,
@@ -55,7 +56,7 @@ defmodule DarthWeb.UserSessionController do
       _ ->
         conn
         |> render("mv_login.html",
-          default_mv_node: Application.fetch_env!(:darth, :default_mv_node),
+          default_mv_node: mv_node,
           changeset: changeset,
           username_taken: false
         )
@@ -77,7 +78,7 @@ defmodule DarthWeb.UserSessionController do
     else
       # Databse error
       {:error, %Ecto.Changeset{} = changeset} ->
-        database_error(conn, changeset)
+        database_error(conn, changeset, mv_node)
 
       true ->
         conn
@@ -86,20 +87,24 @@ defmodule DarthWeb.UserSessionController do
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-        error(conn, "Server response error")
+        error(conn, mv_node, "Server response error")
 
       # Custom error message from MediaVerse
       {:ok, %{"message" => message}} ->
         Logger.info(inspect(message))
-        error(conn, message)
+        error(conn, mv_node, message)
 
       {:error, reason, _} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-        error(conn, "Custom error message from MediaVerse: #{inspect(reason)}")
+        error(conn, mv_node, "Custom error message from MediaVerse: #{inspect(reason)}")
+
+      {:error, %Jason.DecodeError{} = reason} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+        error(conn, mv_node, "User not found for provided mv_node")
 
       {:error, reason} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
-        error(conn, "Custom error message from MediaVerse: #{inspect(reason)}")
+        error(conn, mv_node, "Custom error message from MediaVerse: #{inspect(reason)}")
     end
   end
 
@@ -141,12 +146,12 @@ defmodule DarthWeb.UserSessionController do
     end
   end
 
-  defp database_error(conn, changeset) do
+  defp database_error(conn, changeset, mv_node) do
     username_taken = username_already_taken?(changeset)
 
     conn
     |> render("mv_login.html",
-      default_mv_node: Application.fetch_env!(:darth, :default_mv_node),
+      default_mv_node: mv_node,
       changeset: changeset,
       username_taken: username_taken
     )
@@ -159,9 +164,9 @@ defmodule DarthWeb.UserSessionController do
     end
   end
 
-  defp error(conn, reason) do
+  defp error(conn, mv_node, reason) do
     conn
     |> put_flash(:error, "MediaVerse login failed due to: #{reason}")
-    |> redirect(to: Routes.user_session_path(conn, :mv_login))
+    |> redirect(to: Routes.user_session_path(conn, :mv_login, mv_node: mv_node))
   end
 end

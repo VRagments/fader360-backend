@@ -1,10 +1,9 @@
-## MediaVerse Fader
+# MediaVerse Fader
 
-Environment variables:
+## Login with MediaVerse
 
-- email sending
+* When user want to login with MediaVerse account. "mv_node" can be acquired from login url as a query parameter.
 
-```
-MAILGUN_API_KEY
-MAILGUN_DOMAIN
-```
+* If not provided in the url. The default mv_node is taken from the config file.
+
+* Format of login url is as follows: **<fader_backend_url>/users/mv-login?mv_node=<mv_node>**

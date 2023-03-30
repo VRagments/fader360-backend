@@ -55,7 +55,7 @@
                 </div>
 
                 <LoginPageLinkButton.render
-                    link={Routes.user_session_path(@conn, :mv_login)}
+                    link={Routes.user_session_path(@conn, :mv_login, mv_node: Application.fetch_env!(:darth, :default_mv_node))}
                     label="Login with MediaVerse"
                 />
             </div>
