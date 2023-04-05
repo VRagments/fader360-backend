@@ -4,7 +4,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Model.Asset, as: AssetStruct
-  alias DarthWeb.Components.{Header, IndexCard, IndexCardClickButton}
+  alias DarthWeb.Components.{Header, IndexCard, IndexCardClickButton, Pagination, EmptyState}
 
   alias Darth.{
     Controller.User,
@@ -43,13 +43,28 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(_params, _url, socket) do
+  def handle_params(params, _url, socket) do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
+    current_page = Map.get(params, "page", "1")
 
-    case MvApiClient.fetch_projects(mv_node, mv_token) do
-      {:ok, projects} ->
-        {:noreply, socket |> assign(mv_projects: projects)}
+    case MvApiClient.fetch_projects(mv_node, mv_token, current_page) do
+      {:ok,
+       %{
+         "projects" => projects,
+         "currentPage" => current_page,
+         "totalPages" => total_pages
+       }} ->
+        map_with_all_links = map_with_all_links(socket, total_pages)
+
+        {:noreply,
+         socket
+         |> assign(
+           mv_projects: projects,
+           current_page: current_page + 1,
+           total_pages: total_pages,
+           map_with_all_links: map_with_all_links
+         )}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
@@ -89,28 +104,28 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
 
         socket
         |> put_flash(:info, "Added Mediaverse project to Fader")
-        |> push_patch(to: Routes.mv_project_index_path(socket, :index))
+        |> push_patch(to: Routes.mv_project_index_path(socket, :index, page: socket.assigns.current_page))
       else
         {:ok, %{"message" => message}} ->
           Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
 
           socket
           |> put_flash(:error, message)
-          |> push_patch(to: Routes.mv_project_index_path(socket, :index))
+          |> push_patch(to: Routes.mv_project_index_path(socket, :index, page: socket.assigns.current_page))
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
 
           socket
           |> put_flash(:error, "Server response error")
-          |> push_patch(to: Routes.mv_project_index_path(socket, :index))
+          |> push_patch(to: Routes.mv_project_index_path(socket, :index, page: socket.assigns.current_page))
 
         {:error, reason} ->
           Logger.error("Error while handling event add_mv_project: #{inspect(reason)}")
 
           socket
           |> put_flash(:error, "Error while fetching MediaVerse project")
-          |> push_patch(to: Routes.mv_project_index_path(socket, :index))
+          |> push_patch(to: Routes.mv_project_index_path(socket, :index, page: socket.assigns.current_page))
       end
 
     {:noreply, socket}
@@ -230,6 +245,12 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
       else
         Downloader.add_download_params(create_params(socket, asset_lease.asset))
       end
+    end)
+  end
+
+  defp map_with_all_links(socket, total_pages) do
+    Map.new(1..total_pages, fn page ->
+      {page, Routes.mv_project_index_path(socket, :index, page: page)}
     end)
   end
 

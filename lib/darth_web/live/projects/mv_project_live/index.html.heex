@@ -1,12 +1,21 @@
 <Header.render heading="MediaVerse Projects"/>
+<%= if @total_pages == 0 do %>
+    <EmptyState.render label="Create Projects in MediaVerse"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for mv_project <- @mv_projects do %>
+                <.render_mv_project_card
+                    mv_project={mv_project}
+                    socket={@socket}
+                />
+            <% end %>
+        </ul>
+    </section>
 
-<section class="py-2 lg:pt-12 md:mx-auto lg:container">
-    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <%= for mv_project <- @mv_projects do %>
-            <.render_mv_project_card
-                mv_project={mv_project}
-                socket={@socket}
-            />
-        <% end %>
-    </ul>
-</section>
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+<% end %>

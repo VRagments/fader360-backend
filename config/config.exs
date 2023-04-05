@@ -62,7 +62,9 @@ config :tailwind,
 config :darth,
   default_mv_node: "https://dashboard.mediaverse.atc.gr/dam",
   upload_file_size: 80_000_000,
-  default_project_scene_duration: "60"
+  default_project_scene_duration: "60",
+  mv_asset_index_url: "/assets/paginated",
+  mv_project_index_url: "/project/userList/all/paginated"
 
 config :darth,
   reset_password_validity_in_days: 1,

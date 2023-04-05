@@ -27,9 +27,10 @@ defmodule Darth.MvApiClient do
 
   def fetch_assets(mv_node, mv_token, current_page) do
     int_current_page = String.to_integer(current_page)
-    url = mv_node <> "/assets/paginated?page=#{int_current_page - 1}"
+    url = mv_node <> Application.fetch_env!(:darth, :mv_asset_index_url)
+    params = [page: int_current_page - 1]
 
-    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, assets} when is_list(assets) <- Jason.decode(body) do
       {:ok, assets}
     else
@@ -50,10 +51,12 @@ defmodule Darth.MvApiClient do
     end
   end
 
-  def fetch_projects(mv_node, mv_token) do
-    url = mv_node <> "project/userList/all"
+  def fetch_projects(mv_node, mv_token, current_page) do
+    int_current_page = String.to_integer(current_page)
+    url = mv_node <> Application.fetch_env!(:darth, :mv_project_index_url)
+    params = [page: int_current_page - 1]
 
-    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, projects} when is_list(projects) <- Jason.decode(body) do
       {:ok, projects}
     else
