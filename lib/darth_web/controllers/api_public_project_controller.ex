@@ -20,7 +20,7 @@ defmodule DarthWeb.ApiPublicProjectController do
   end
 
   def index(conn, params) do
-    query = ProjectStruct |> where([p], p.visibility == "discoverable")
+    query = ProjectStruct |> where([p], p.visibility == :discoverable)
     assigns = Project.query(params, query)
     render(conn, "index.json", assigns)
   end

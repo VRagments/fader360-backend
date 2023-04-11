@@ -273,7 +273,6 @@ defmodule DarthWeb.ApiProjectSceneController do
          {:ok, project_scene} <- ProjectScene.read(project_scene_id),
          params =
            params
-           |> Map.put("last_updated_at", DateTime.utc_now())
            |> convert_primary_asset_id(project),
          {:ok, _updated_project_scene} <- ProjectScene.update(project_scene, params) do
       {:ok, updated_project_scene} = ProjectScene.read(project_scene.id)

@@ -67,12 +67,18 @@ defmodule DarthWeb.Router do
   scope "/api/public", DarthWeb do
     pipe_through([:api])
 
-    resources "/projects", ApiPublicProjectController, only: [:index, :show] do
+    resources "/projects", ApiPublicProjectController, only: [:index] do
       get("/recommendations", ApiPublicProjectController, :recommendations)
       resources("/assets", ApiPublicProjectAssetController, only: [:index, :show])
     end
 
     resources("/assets", ApiPublicAssetController, only: [:index, :show])
+  end
+
+  scope "/api/public", DarthWeb do
+    pipe_through([:api_auth])
+
+    resources "/projects", ApiPublicProjectController, only: [:show]
   end
 
   scope "/api/public/optimized", DarthWeb do

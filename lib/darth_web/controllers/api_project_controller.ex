@@ -303,7 +303,6 @@ defmodule DarthWeb.ApiProjectController do
     fun = fn _user, _is_owner, project ->
       params =
         params
-        |> Map.put("last_updated_at", DateTime.utc_now())
         |> convert_primary_asset_id(project)
 
       with {:ok, _updated_project} <- Project.update(project, params) do

@@ -26,7 +26,7 @@ defmodule DarthWeb.ApiPublicProjectView do
       custom_player_settings: p.custom_player_settings,
       data: p.data,
       id: p.id,
-      last_updated_at: render_date(p.last_updated_at),
+      last_updated_at: render_date(p.updated_at),
       name: p.name,
       preview_image: ApiProjectView.render_primary_asset(p, :preview_image),
       primary_asset_lease_id: p.primary_asset_lease_id,
