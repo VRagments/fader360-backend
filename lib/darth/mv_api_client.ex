@@ -1,4 +1,6 @@
 defmodule Darth.MvApiClient do
+  require Logger
+
   def authenticate(mv_node, email, password) do
     url = mv_node <> "/authentication/login"
 
@@ -85,6 +87,34 @@ defmodule Darth.MvApiClient do
   def download_preview_asset(mv_node, mv_token, previewlinkkey) do
     url = mv_node <> "/previewlink/" <> previewlinkkey <> "/download"
     HTTPoison.get(url, get_headers(mv_token), stream_to: self(), async: :once)
+  end
+
+  def asset_created_by_current_user?(mv_node, mv_token, mv_asset_key) do
+    with {:ok, %{"createdBy" => mv_asset_creator_id}} <- show_asset(mv_node, mv_token, mv_asset_key),
+         {:ok, %{"id" => mv_user_id}} <- fetch_user(mv_node, mv_token) do
+      mv_asset_creator_id == mv_user_id
+    else
+      {:ok, %{"message" => message}} ->
+        Logger.error(
+          "Custom error message from MediaVerse when checking for asset_created_by_current_user: #{inspect(message)}"
+        )
+
+        false
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error(
+          "Custom error message from MediaVerse when checking for asset_created_by_current_user: #{inspect(reason)}"
+        )
+
+        false
+
+      {:error, reason} ->
+        Logger.error(
+          "Custom error message from MediaVerse when checking for asset_created_by_current_user: #{inspect(reason)}"
+        )
+
+        false
+    end
   end
 
   defp get_headers(mv_token) do

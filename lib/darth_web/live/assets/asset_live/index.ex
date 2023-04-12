@@ -194,8 +194,9 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     socket =
       with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
            {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, socket.assigns.current_user),
-           :ok <- AssetLease.maybe_delete(asset_lease),
-           :ok <- Asset.delete(asset_lease.asset) do
+           :ok <- AssetLease.maybe_delete(asset_lease) do
+        maybe_delete_asset(asset_lease.asset)
+
         socket
         |> put_flash(:info, "Asset deleted successfully")
         |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
@@ -208,6 +209,15 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
           socket
           |> put_flash(:error, delete_message)
+          |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
+
+        {:error, :asset_has_leases} ->
+          Logger.info(
+            "Asset lease for the current user is deleted but the asset is not deleted as it has leases to other users"
+          )
+
+          socket
+          |> put_flash(:info, "Asset deleted successfully")
           |> push_navigate(to: Routes.asset_index_path(socket, :index, page: socket.assigns.current_page))
 
         {:error, reason} ->
@@ -333,6 +343,18 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
       nil ->
         "Asset not found"
+    end
+  end
+
+  defp maybe_delete_asset(asset) do
+    case Asset.delete(asset) do
+      :ok ->
+        :ok
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:asset_leases, _} = List.first(changeset.errors)
+        Logger.info("Asset cannot be deleted as it is being used by other users through leases")
+        :ok
     end
   end
 

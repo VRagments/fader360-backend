@@ -37,7 +37,7 @@ defmodule Darth.Model.Asset do
     # plug - browser uploaded filename and media type - json string
     # stat - file stats on original file - json string
     field(:raw_metadata, :map)
-    has_many(:asset_leases, AssetLease, on_delete: :delete_all)
+    has_many(:asset_leases, AssetLease)
 
     has_many(:projects, through: [:asset_leases, :projects])
     has_many(:users, through: [:asset_leases, :users])
@@ -68,7 +68,15 @@ defmodule Darth.Model.Asset do
   @valid_media_type ~r/^(audio|image|video|application\/png|application\/x-png|application\/bmp|application\/x-bmp|\
     application\/x-win-bitmap)\//
 
-  def delete_changeset(model), do: model |> common_changeset(%{}) |> Map.put(:action, :delete)
+  def delete_changeset(model),
+    do:
+      model
+      |> changeset()
+      |> foreign_key_constraint(:asset_leases,
+        name: :asset_leases_asset_id_fkey,
+        message: "Asset cannot be deleted as it is being used by other users through asset lease"
+      )
+      |> Map.put(:action, :delete)
 
   def changeset(model, params \\ %{}), do: common_changeset(model, params)
 

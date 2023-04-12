@@ -6,7 +6,7 @@ defmodule Darth.Model.AssetLease do
   alias Darth.Model.{Asset, Project, User}
 
   schema "asset_leases" do
-    field(:license, Ecto.Enum, values: [:owner, :link_share, :public])
+    field(:license, Ecto.Enum, values: [:owner, :creator, :public])
     field(:valid_since, :utc_datetime)
     # for read operations only the existence of a lease makes it valid
     # for assigning leases the validity is tied to the timeframe of a lease

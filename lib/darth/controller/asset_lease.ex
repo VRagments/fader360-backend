@@ -75,6 +75,24 @@ defmodule Darth.Controller.AssetLease do
     asset_lease_tuple
   end
 
+  def create_for_user_with_license(%Asset{id: asset_id}, %User{} = user, license) do
+    asset_lease_tuple =
+      asset_id
+      |> new(license)
+      |> Ecto.Changeset.put_assoc(:users, [user])
+      |> Repo.insert()
+
+    case asset_lease_tuple do
+      {:ok, asset_lease} ->
+        Phoenix.PubSub.broadcast(Darth.PubSub, "asset_leases", {:asset_lease_created, asset_lease})
+
+      _ ->
+        nil
+    end
+
+    asset_lease_tuple
+  end
+
   def has_project?(%AssetLease{} = lease, %Project{} = project) do
     lease = Repo.preload(lease, :projects)
 
@@ -360,6 +378,14 @@ defmodule Darth.Controller.AssetLease do
     |> where([al], al.id == ^lease_id)
     |> join(:inner, [al], p in assoc(al, :projects), on: p.id == ^project_id)
     |> preload([al], [:projects, :asset])
+    |> Repo.one()
+  end
+
+  def read_by_user_and_asset(user_id, asset_id) do
+    AssetLease
+    |> where([al], al.asset_id == ^asset_id)
+    |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
+    |> preload([al], [:asset])
     |> Repo.one()
   end
 

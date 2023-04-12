@@ -9,9 +9,11 @@ defmodule Darth.Controller.Asset do
   @svg_media_types ~w(image/svg image/svg+xml)s
 
   use Darth.Controller, include_crud: true
+  alias Darth.MvApiClient
   alias Darth.Controller.AssetLease
   alias Darth.Controller
-  alias Darth.Model.Asset, as: Assetstruct
+  alias Darth.Model.Asset, as: AssetStruct
+  alias Darth.Model.AssetLease, as: AssetLeaseStruct
 
   def model_mod(), do: Darth.Model.Asset
   def default_query_sort_by(), do: "updated_at"
@@ -365,10 +367,10 @@ defmodule Darth.Controller.Asset do
 
     case get_asset_with_mv_asset_key(mv_asset_key) do
       nil ->
-        create_asset_with_lease(user, params)
+        with {:ok, asset_struct} <- create(params), do: create_asset_lease(user, params, asset_struct)
 
       asset_struct = %Asset{} ->
-        {:ok, asset_struct}
+        ensure_user_asset_lease(asset_struct, user, params)
     end
   end
 
@@ -408,7 +410,7 @@ defmodule Darth.Controller.Asset do
 
   def asset_already_added?(mv_asset_key) do
     case get_asset_with_mv_asset_key(mv_asset_key) do
-      %Assetstruct{} = asset_struct -> asset_struct.status == "ready"
+      %AssetStruct{} = asset_struct -> asset_struct.status == "ready"
       _ -> false
     end
   end
@@ -545,6 +547,7 @@ defmodule Darth.Controller.Asset do
       "media_type" => params.media_type,
       "mv_asset_key" => params.mv_asset_key,
       "mv_asset_deeplink_key" => params.mv_asset_deeplink_key,
+      "mv_token" => params.mv_token,
       "data_path" => mv_asset_file_path
     }
   end
@@ -562,12 +565,64 @@ defmodule Darth.Controller.Asset do
     end
   end
 
-  defp create_asset_with_lease(user, params) do
-    with {:ok, asset_struct} <- create(params),
-         {:ok, _lease} <- AssetLease.create_for_user(asset_struct, user) do
-      {:ok, asset_struct}
+  defp create_asset_lease(user, params, asset_struct) do
+    license = decide_asset_lease_license(params)
+
+    case create_asset_lease_for_mv_asset(asset_struct, user, license) do
+      {:ok, asset_lease} ->
+        {:ok, asset_lease}
+
+      {:error, reason} ->
+        Logger.error("Unable to add MediaVerse asset to the databse: #{reason}")
+        {:error, reason}
+    end
+  end
+
+  defp create_asset_lease_for_mv_asset(asset_struct, user, license) do
+    case AssetLease.create_for_user_with_license(asset_struct, user, license) do
+      {:ok, asset_lease} ->
+        asset_lease = Repo.preload(asset_lease, :asset)
+        {:ok, asset_lease}
+
+      {:error, reason} ->
+        Logger.error("Error while creating the asset lease with license creator for mv_asset: #{inspect(reason)}")
+
+        {:error, reason}
+    end
+  end
+
+  defp ensure_user_asset_lease(asset_struct, user, params) do
+    with {:ok, asset_lease} <- check_asset_lease(asset_struct, user),
+         true <- AssetLease.has_user?(asset_lease, user) do
+      {:ok, asset_lease}
     else
-      {:error, reason} -> Logger.error("Unable to add MediaVerse asset to the databse: #{reason}")
+      nil ->
+        create_asset_lease(user, params, asset_struct)
+
+      false ->
+        create_asset_lease(user, params, asset_struct)
+
+      {:error, reason} ->
+        Logger.error("Unable to add user to the current asset lease: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  defp decide_asset_lease_license(params) do
+    mv_node = Map.get(params, "mv_node")
+    mv_token = Map.get(params, "mv_token")
+    mv_asset_key = Map.get(params, "mv_asset_key")
+
+    case MvApiClient.asset_created_by_current_user?(mv_node, mv_token, mv_asset_key) do
+      true -> :creator
+      false -> :owner
+    end
+  end
+
+  defp check_asset_lease(asset_struct, user) do
+    case AssetLease.read_by_user_and_asset(user.id, asset_struct.id) do
+      asset_lease = %AssetLeaseStruct{} -> {:ok, asset_lease}
+      _ -> nil
     end
   end
 end

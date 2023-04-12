@@ -7,6 +7,7 @@
             <%= for mv_project <- @mv_projects do %>
                 <.render_mv_project_card
                     mv_project={mv_project}
+                    mv_node={@mv_node}
                     socket={@socket}
                 />
             <% end %>

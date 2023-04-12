@@ -113,7 +113,7 @@ defmodule DarthWeb.ApiAssetController do
           properties do
             license(:string, "Asset License",
               required: true,
-              enum: [:owner, :link_share, :public]
+              enum: [:owner, :creator, :public]
             )
           end
 

@@ -63,7 +63,8 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
            mv_projects: projects,
            current_page: current_page + 1,
            total_pages: total_pages,
-           map_with_all_links: map_with_all_links
+           map_with_all_links: map_with_all_links,
+           mv_node: mv_node
          )}
 
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -160,8 +161,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
     with {:ok, mv_asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
          params = create_params(socket, mv_asset),
          database_params = Asset.build_asset_params(params),
-         {:ok, asset_struct} <- Asset.add_asset_to_database(database_params, current_user),
-         {:ok, asset_lease} <- AssetLease.read_by(%{asset_id: asset_struct.id}),
+         {:ok, asset_lease} <- Asset.add_asset_to_database(database_params, current_user),
          {:ok, asset_lease} <- AssetLease.assign_project(asset_lease, current_user, project_struct) do
       {:ok, asset_lease}
     else
@@ -257,7 +257,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
   defp render_mv_project_card(assigns) do
     ~H"""
     <IndexCard.render
-      show_path="#"
+      show_path={String.replace_suffix(@mv_node,"dam", "app/project/" ) <> Map.get(@mv_project, "id")}
       image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
       title={Map.get(@mv_project, "name" )}
       subtitle={Map.get(@mv_project, "createdBy")}
