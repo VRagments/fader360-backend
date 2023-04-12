@@ -408,9 +408,11 @@ defmodule Darth.Controller.Asset do
     |> Enum.sort_by(& &1.inserted_at)
   end
 
-  def asset_already_added?(mv_asset_key) do
-    case get_asset_with_mv_asset_key(mv_asset_key) do
-      %AssetStruct{} = asset_struct -> asset_struct.status == "ready"
+  def asset_already_added?(mv_asset_key, user_id) do
+    with %AssetStruct{} = asset_struct <- get_asset_with_mv_asset_key(mv_asset_key),
+         asset_lease = %AssetLeaseStruct{} <- AssetLease.read_by_user_and_asset(user_id, asset_struct.id) do
+      asset_lease.asset.status == "ready"
+    else
       _ -> false
     end
   end

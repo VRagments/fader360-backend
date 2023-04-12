@@ -185,8 +185,8 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
              current_user: socket.assigns.current_user
            },
            database_params = Asset.build_asset_params(download_params),
-           {:ok, asset_struct} <- Asset.add_asset_to_database(database_params, current_user),
-           params = Map.put(download_params, :asset_struct, asset_struct),
+           {:ok, asset_lease} <- Asset.add_asset_to_database(database_params, current_user),
+           params = Map.put(download_params, :asset_struct, asset_lease.asset),
            :ok <-
              Downloader.add_download_params(params) do
         socket

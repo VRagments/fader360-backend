@@ -11,7 +11,7 @@
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">
         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <%= for mv_asset <- @mv_assets do %>
-                <%= unless Asset.asset_already_added?(Map.get(mv_asset, "key")) do %>
+                <%= unless Asset.asset_already_added?(Map.get(mv_asset, "key"), @current_user.id) do %>
                     <.render_mv_asset_card
                         mv_asset={mv_asset}
                         socket={@socket}
