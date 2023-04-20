@@ -26,9 +26,10 @@ defmodule DarthWeb.UserSessionController do
         conn
         |> put_flash(:info, "Provided credentials are for MediaVerse account, login here")
         |> render("mv_login.html",
-          default_mv_node: Application.fetch_env!(:darth, :default_mv_node),
+          default_mv_node:
+            get_mv_api_endpoint(Map.get(user_params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))),
           changeset: changeset,
-          username_taken: false
+          username_error: false
         )
 
       _ ->
@@ -44,7 +45,8 @@ defmodule DarthWeb.UserSessionController do
   end
 
   def mv_login(conn, params) do
-    mv_node = Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))
+    mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
+
     changeset = User.change_user_registration(%UserModel{})
 
     with %UserModel{} = current_user <- conn.assigns.current_user,
@@ -58,7 +60,28 @@ defmodule DarthWeb.UserSessionController do
         |> render("mv_login.html",
           default_mv_node: mv_node,
           changeset: changeset,
-          username_taken: false
+          username_error: false
+        )
+    end
+  end
+
+  def mv_register(conn, params) do
+    mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
+
+    changeset = User.change_user_registration(%UserModel{})
+
+    with %UserModel{} = current_user <- conn.assigns.current_user,
+         false <- is_nil(current_user.mv_node),
+         %UserToken{} <- User.get_user_token_struct(current_user) do
+      conn
+      |> redirect(to: "/")
+    else
+      _ ->
+        conn
+        |> render("mv_login.html",
+          default_mv_node: mv_node,
+          changeset: changeset,
+          username_error: true
         )
     end
   end
@@ -112,7 +135,7 @@ defmodule DarthWeb.UserSessionController do
     email = Map.get(user_params, "email")
     mv_node = Map.get(user_params, "mediaverse_node")
     password = Map.get(user_params, "password")
-    username = get_username(mv_user, user_params)
+    username = Map.get(user_params, "username")
     firstname = Map.get(mv_user, "firstname")
     surname = Map.get(mv_user, "lastname")
     display_name = firstname <> " " <> surname
@@ -129,37 +152,29 @@ defmodule DarthWeb.UserSessionController do
       "mv_node" => mv_node
     }
 
-    with %UserModel{} = user_struct <- User.get_user_by_email_and_password(email, password) do
+    with %UserModel{} = user_struct <-
+           User.get_user_by_email_password_and_mv_node(email, password, mv_node) do
       {:ok, user_struct}
     else
       _ -> User.create(user_params)
     end
   end
 
-  defp get_username(mv_user, user_params) do
-    case Map.get(user_params, "username") do
-      nil ->
-        Map.get(mv_user, "username")
-
-      user_name ->
-        user_name
-    end
-  end
-
   defp database_error(conn, changeset, mv_node) do
-    username_taken = username_already_taken?(changeset)
+    username_error = username_error?(changeset)
 
     conn
     |> render("mv_login.html",
       default_mv_node: mv_node,
       changeset: changeset,
-      username_taken: username_taken
+      username_error: username_error
     )
   end
 
-  defp username_already_taken?(%Ecto.Changeset{} = changeset) do
+  defp username_error?(%Ecto.Changeset{} = changeset) do
     case changeset.errors[:username] do
       {"has already been taken", _} -> true
+      {"can't be blank", _} -> true
       _ -> false
     end
   end
@@ -168,5 +183,9 @@ defmodule DarthWeb.UserSessionController do
     conn
     |> put_flash(:error, "MediaVerse login failed due to: #{reason}")
     |> redirect(to: Routes.user_session_path(conn, :mv_login, mv_node: mv_node))
+  end
+
+  defp get_mv_api_endpoint(mv_node) do
+    Path.join([mv_node, Application.fetch_env!(:darth, :mv_api_endpoint)])
   end
 end

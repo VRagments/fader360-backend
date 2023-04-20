@@ -60,7 +60,9 @@ config :tailwind,
 
 # App configurations
 config :darth,
-  default_mv_node: "https://dashboard.mediaverse.atc.gr/dam",
+  default_mv_node: "https://dashboard.mediaverse.atc.gr",
+  # This is the extension that needs to be appended at the end of mv_node to make mv_node act as an API Endpoint.
+  mv_api_endpoint: "dam",
   upload_file_size: 80_000_000,
   default_project_scene_duration: "60",
   mv_asset_index_url: "/assets/paginated",

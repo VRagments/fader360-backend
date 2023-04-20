@@ -122,9 +122,9 @@ defmodule Darth.Model.User do
     |> validate_length(:username, min: 1)
     |> validate_length(:email, min: 1)
     |> validate_format(:email, @email_regex, message: "must have the @ sign and no spaces")
-    |> unsafe_validate_unique(:email, Darth.Repo)
+    |> unsafe_validate_unique([:email, :mv_node], Darth.Repo)
     |> unique_constraint(:username)
-    |> unique_constraint(:email)
+    |> unique_constraint([:email, :mv_node])
     |> validate_account_plan()
   end
 
@@ -208,7 +208,7 @@ defmodule Darth.Model.User do
     end
   end
 
-  @string_params ["email", :email, "username", :username]
+  @string_params ["email", :email]
   defp trim_string_params(params) do
     Enum.reduce(@string_params, params, fn p, acc ->
       if Map.has_key?(acc, p) do

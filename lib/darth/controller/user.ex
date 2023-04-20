@@ -306,7 +306,13 @@ defmodule Darth.Controller.User do
 
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
-    user = Repo.get_by(User, email: email)
+    user = get_user_by_email_and_mv_node(email, nil)
+    if User.valid_password?(user, password), do: user
+  end
+
+  def get_user_by_email_password_and_mv_node(email, password, mv_node)
+      when is_binary(email) and is_binary(password) do
+    user = get_user_by_email_and_mv_node(email, mv_node)
     if User.valid_password?(user, password), do: user
   end
 
@@ -566,5 +572,17 @@ defmodule Darth.Controller.User do
           Logger.error("Couldn't delete file #{path}: #{inspect(err)}")
       end
     end
+  end
+
+  defp get_user_by_email_and_mv_node(email, nil) do
+    User
+    |> where([u], u.email == ^email and is_nil(u.mv_node))
+    |> Repo.one()
+  end
+
+  defp get_user_by_email_and_mv_node(email, mv_node) do
+    User
+    |> where([u], u.email == ^email and u.mv_node == ^mv_node)
+    |> Repo.one()
   end
 end

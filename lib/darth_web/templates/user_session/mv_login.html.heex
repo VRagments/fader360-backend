@@ -14,21 +14,21 @@
                     </div>
                     <div> <%= error_tag f, :mediaverse_node %> </div>
 
-                    <%= if @username_taken do %>
+                    <%= if @username_error do %>
                     <div class="mb-6">
-                        <%= text_input f, :username, required: true, type: "text", placeholder: "Username", autocomplete: "username", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                        <%= text_input f, :username, required: true, type: "text", placeholder: "Username for Fader", autocomplete: "username", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
                     </div>
                     <div> <%= error_tag f, :username %> </div>
                     <%end%>
 
                     <div class="mb-6">
-                        <%= email_input f, :email, required: true, type: "email", autocomplete: "email", placeholder: "Email",  class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                        <%= email_input f, :email, required: true, type: "email", autocomplete: "email", placeholder: "MediaVerse Email",  class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
                     </div>
                     <div> <%= error_tag f, :email %> </div>
 
                     <!-- Password input -->
                     <div class="mb-6">
-                        <%= password_input f, :password, required: true, type: "password", autocomplete: "password", placeholder: "Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+                        <%= password_input f, :password, required: true, type: "password", autocomplete: "password", placeholder: "MediaVerse Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
                     </div>
                     <div> <%= error_tag f, :password %> </div>
 
@@ -44,7 +44,7 @@
                 </.form>
                 <LoginPageLinkButton.render
                     link={String.replace_suffix(@default_mv_node, "dam", "create-account")}
-                    label="Register with MediaVerse"
+                    label="Register at MediaVerse node"
                 />
             </div>
         </div>

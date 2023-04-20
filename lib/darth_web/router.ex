@@ -133,6 +133,7 @@ defmodule DarthWeb.Router do
   scope "/", DarthWeb do
     pipe_through [:browser, :redirect_if_user_is_mv_authenticated]
     get "/users/mv-login", UserSessionController, :mv_login
+    get "/users/mv-register", UserSessionController, :mv_register
     post "/users/mv-login", UserSessionController, :mv_login_post
   end
 
