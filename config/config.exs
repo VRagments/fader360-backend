@@ -64,9 +64,10 @@ config :darth,
   # This is the extension that needs to be appended at the end of mv_node to make mv_node act as an API Endpoint.
   mv_api_endpoint: "dam",
   upload_file_size: 80_000_000,
-  default_project_scene_duration: "60",
+  default_project_scene_duration: "12",
   mv_asset_index_url: "/assets/paginated",
-  mv_project_index_url: "/project/userList/all/paginated"
+  mv_project_index_url: "/project/userList/all/paginated",
+  editor_url: "/editor/edit/"
 
 config :darth,
   reset_password_validity_in_days: 1,

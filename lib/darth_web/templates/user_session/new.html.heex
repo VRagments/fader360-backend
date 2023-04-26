@@ -36,7 +36,8 @@
                     </div>
 
                     <!-- Submit button -->
-                    <LoginPageSubmitButton.render
+                    <LoginPageButton.render
+                        action={:submit}
                         label="Login"
                     />
                 </.form>
@@ -44,9 +45,10 @@
                     class="flex items-center my-4 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
                 </div>
 
-                <LoginPageLinkButton.render
-                    link={Routes.user_session_path(@conn, :mv_login, mv_node: Application.fetch_env!(:darth, :default_mv_node))}
-                    label="Login with MediaVerse"
+                <LoginPageButton.render
+                    action={:link}
+                    path={Routes.user_session_path(@conn, :mv_new, mv_node: Application.fetch_env!(:darth, :default_mv_node))}
+                    label={"Login with MediaVerse"}
                 />
 
                 <div
@@ -54,18 +56,20 @@
                     <p class="text-center font-semibold mx-4 mb-0">OR</p>
                 </div>
 
-                <LoginPageLinkButton.render
-                    label="Register"
-                    link={Routes.user_registration_path(@conn, :new)}
+                <LoginPageButton.render
+                    action={:link}
+                    path={Routes.user_registration_path(@conn, :new)}
+                    label={"Register"}
                 />
 
                 <div
                     class="flex items-center my-4 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
                 </div>
 
-                <LoginPageLinkButton.render
-                    link={Routes.user_session_path(@conn, :mv_register, mv_node: Application.fetch_env!(:darth, :default_mv_node))}
-                    label="Register with MediaVerse"
+                <LoginPageButton.render
+                    action={:link}
+                    path={Routes.user_session_path(@conn, :mv_register, mv_node: Application.fetch_env!(:darth, :default_mv_node))}
+                    label={"Register with MediaVerse"}
                 />
             </div>
         </div>

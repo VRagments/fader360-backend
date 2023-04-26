@@ -7,19 +7,38 @@
 
 <%= if User.is_mediaverse_account?(@current_user) do %>
 <Header.render heading="Assets">
-    <LinkUploadButtonGroup.render
-        button_one_label="Add from MediaVerse"
-        button_one_link={Routes.mv_asset_index_path(@socket, :index)}
-        button_one_action="add"
-        button_two_action="Upload"
-        uploads={@uploads}
+    <HeaderButtons.render
+        buttons={[
+           {
+                :add,
+                level: :primary,
+                type: :link,
+                path: Routes.mv_asset_index_path(@socket, :index),
+                label: "Add from MediaVerse"
+            },
+            nil,
+            {
+                :uploads,
+                uploads: @uploads,
+                level: :primary,
+                type: :submit,
+                label: "Upload"
+            }
+        ]}
     />
 </Header.render>
 <% else %>
 <Header.render heading="Assets">
-    <FormUpload.render
-        action="Upload"
-        uploads={@uploads}
+    <HeaderButtons.render
+        buttons={[
+            {
+                :uploads,
+                uploads: @uploads,
+                level: :primary,
+                type: :submit,
+                label: "Upload"
+            }
+        ]}
     />
 </Header.render>
 <% end %>
@@ -37,10 +56,16 @@
 </section>
 
 <Header.render heading="Projects">
-    <LinkButton.render
-        link={Routes.project_form_path(@socket, :new)}
-        action="add"
-        label="Create"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add,
+                level: :primary,
+                type: :link,
+                path: Routes.project_form_path(@socket, :new),
+                label: "Create"
+            }
+        ]}
     />
 </Header.render>
 
@@ -65,22 +90,22 @@
     <div class="flow-root">
         <ul role="list" class="-mb-8">
             <%= for entry <- @sorted_combined_entries do%>
-            <%= if Map.has_key?(entry, :author) do %>
-            <Activity.render
-                action="activity_done"
-                type="Project" name={entry.name}
-                inserted_at={entry.inserted_at}
-                show_path={Routes.project_show_path(@socket, :show, entry.id)}
-            />
-            <%else%>
-            <Activity.render
-                action="activity_done"
-                type="Asset"
-                name={entry.asset.name}
-                inserted_at={entry.inserted_at}
-                show_path={Routes.asset_show_path(@socket, :show, entry.id)}
-            />
-            <%end%>
+                <%= if Map.has_key?(entry, :author) do %>
+                    <Activity.render
+                        action="activity_done"
+                        type="Project" name={entry.name}
+                        inserted_at={entry.inserted_at}
+                        show_path={Routes.project_show_path(@socket, :show, entry.id)}
+                    />
+                <%else%>
+                    <Activity.render
+                        action="activity_done"
+                        type="Asset"
+                        name={entry.asset.name}
+                        inserted_at={entry.inserted_at}
+                        show_path={Routes.asset_show_path(@socket, :show, entry.id)}
+                    />
+                <%end%>
             <% end %>
         </ul>
     </div>

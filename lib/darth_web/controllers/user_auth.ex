@@ -46,7 +46,7 @@ defmodule DarthWeb.UserAuth do
     end
   end
 
-  def mv_login_user(conn, user, mv_token, params \\ %{}) do
+  def mv_create_user(conn, user, mv_token, params \\ %{}) do
     token = User.generate_user_token(user, mv_token, "session")
     user_return_to = get_session(conn, :user_return_to)
 
@@ -131,8 +131,8 @@ defmodule DarthWeb.UserAuth do
   end
 
   def ensure_user_login(conn, _opts) do
-    with {:ok, user_token} <- get_token(conn),
-         %UserStruct{} = user <- User.get_user_by_token(user_token, "api") do
+    with {:ok, user_token, context} <- get_token(conn),
+         %UserStruct{} = user <- User.get_user_by_token(user_token, context) do
       conn
       |> assign(:current_api_user, user)
       |> assign(:api_user_token, user_token)
@@ -146,8 +146,28 @@ defmodule DarthWeb.UserAuth do
 
   defp get_token(conn) do
     case get_req_header(conn, "authorization") do
-      ["Bearer " <> token] -> Base.decode64(token)
+      ["Bearer " <> token] ->
+        get_api_token(token)
+
+      _ ->
+        get_session_token(conn)
+    end
+  end
+
+  defp get_api_token(user_token) do
+    case Base.decode64(user_token) do
+      {:ok, user_token} -> {:ok, user_token, "api"}
       _ -> :error
+    end
+  end
+
+  defp get_session_token(conn) do
+    case get_session(conn, :user_token) do
+      nil ->
+        :error
+
+      user_token ->
+        {:ok, user_token, "session"}
     end
   end
 
@@ -214,7 +234,7 @@ defmodule DarthWeb.UserAuth do
     else
       _ ->
         conn
-        |> redirect(to: Routes.user_session_path(conn, :mv_login))
+        |> redirect(to: Routes.user_session_path(conn, :mv_create))
         |> halt()
     end
   end

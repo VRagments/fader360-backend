@@ -1,7 +1,14 @@
 <Header.render heading="Assets">
-    <FormUpload.render
-        action="Upload"
-        uploads={@uploads}
+    <HeaderButtons.render
+        buttons={[
+            {
+                :uploads,
+                label: "Upload",
+                uploads: @uploads,
+                level: :primary,
+                type: :submit
+            }
+        ]}
     />
 </Header.render>
 

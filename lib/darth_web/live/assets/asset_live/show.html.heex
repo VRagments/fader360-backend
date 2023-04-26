@@ -1,8 +1,22 @@
 <Header.render heading={@asset_lease.asset.name}>
-    <LinkButton.render
-        link={Routes.asset_form_projects_path(@socket, :index, @asset_lease.id)}
-        action="manage"
-        label="Manage Asset Projects"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :manage,
+                level: :primary,
+                type: :link,
+                path: Routes.asset_form_projects_path(@socket, :index, @asset_lease.id),
+                label: "Manage Asset Projects"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.asset_index_path(@socket, :index),
+                label: "Back"
+            }
+        ]}
     />
 </Header.render>
 

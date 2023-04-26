@@ -10,12 +10,12 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
   alias DarthWeb.Components.{
     Header,
-    FormUpload,
     EmptyState,
     UploadProgress,
     IndexCard,
-    IndexCardClickButtonGroup,
-    Pagination
+    Pagination,
+    HeaderButtons,
+    CardButtons
   }
 
   @impl Phoenix.LiveView
@@ -366,23 +366,29 @@ defmodule DarthWeb.Assets.AssetLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      info={@asset_lease.asset.status}
-    >
-      <IndexCardClickButtonGroup.render
-        button_one_action="re_transcode"
-        button_one_phx_value_ref={@asset_lease.asset.id}
-        button_one_label="Re-Transcode"
-        button_two_action="delete"
-        button_two_phx_value_ref={@asset_lease.id}
-        button_two_label="Delete"
-        confirm_message="Do you really want to delete this asset? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        info={@asset_lease.asset.status}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :re_transcode,
+              phx_value_ref: @asset_lease.asset.id,
+              label: "Re-Transcode"
+            },
+            {
+              :delete,
+              phx_value_ref: @asset_lease.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this asset? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
@@ -395,14 +401,20 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         subtitle={@asset_lease.asset.media_type}
         info={@asset_lease.asset.status}
       >
-        <IndexCardClickButtonGroup.render
-          button_one_action="re_transcode"
-          button_one_phx_value_ref={@asset_lease.asset.id}
-          button_one_label="Re-Transcode"
-          button_two_action="delete"
-          button_two_phx_value_ref={@asset_lease.id}
-          button_two_label="Delete"
-          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        <CardButtons.render
+          buttons={[
+            {
+              :re_transcode,
+              phx_value_ref: @asset_lease.asset.id,
+              label: "Re-Transcode"
+            },
+            {
+              :delete,
+              phx_value_ref: @asset_lease.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this asset? This action cannot be reverted."
+            }
+          ]}
         />
       </IndexCard.render>
     """
@@ -417,14 +429,20 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         subtitle={@asset_lease.asset.media_type}
         info={@asset_lease.asset.status}
       >
-        <IndexCardClickButtonGroup.render
-          button_one_action="re_transcode"
-          button_one_phx_value_ref={@asset_lease.asset.id}
-          button_one_label="Re-Transcode"
-          button_two_action="delete"
-          button_two_phx_value_ref={@asset_lease.id}
-          button_two_label="Delete"
-          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        <CardButtons.render
+          buttons={[
+            {
+              :re_transcode,
+              phx_value_ref: @asset_lease.asset.id,
+              label: "Re-Transcode"
+            },
+            {
+              :delete,
+              phx_value_ref: @asset_lease.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this asset? This action cannot be reverted."
+            }
+          ]}
         />
       </IndexCard.render>
     """
@@ -439,14 +457,20 @@ defmodule DarthWeb.Assets.AssetLive.Index do
         subtitle={@asset_lease.asset.media_type}
         info={@asset_lease.asset.status}
       >
-        <IndexCardClickButtonGroup.render
-          button_one_action="download"
-          button_one_phx_value_ref={@asset_lease.asset.id}
-          button_one_label="Download"
-          button_two_action="delete"
-          button_two_phx_value_ref={@asset_lease.id}
-          button_two_label="Delete"
-          confirm_message="Do you really want to delete this asset? This action cannot be reverted."
+        <CardButtons.render
+          buttons={[
+            {
+              :download,
+              phx_value_ref: @asset_lease.asset.id,
+              label: "Download"
+            },
+            {
+              :delete,
+              phx_value_ref: @asset_lease.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this asset? This action cannot be reverted."
+            }
+          ]}
         />
       </IndexCard.render>
     """

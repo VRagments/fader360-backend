@@ -8,14 +8,14 @@ defmodule DarthWeb.Components.FormCheckBox do
 
   def render(assigns) do
     ~H"""
-    <div class="col-span-6 sm:col-span-3">
-      <div class="ml-3 text-sm leading-6">
-        <%= checkbox @form, @input_name, checked_value: true, unchecked_value: false,
-        class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" %>
-        <%= label @input_name, @title, class: "font-medium text-gray-900"%>
-        <p class="text-gray-500"><%=@subtitle%></p>
+      <div class="col-span-6 sm:col-span-3">
+        <div class="ml-3 text-sm leading-6">
+          <%= checkbox @form, @input_name, checked_value: true, unchecked_value: false,
+          class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" %>
+          <%= label @input_name, @title, class: "font-medium text-gray-900"%>
+          <p class="text-gray-500"><%=@subtitle%></p>
+        </div>
       </div>
-    </div>
     """
   end
 end

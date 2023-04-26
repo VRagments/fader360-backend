@@ -1,12 +1,22 @@
 <Header.render heading={@project_scene.name}>
-    <LinkButtonGroup.render
-        button_one_link={Routes.project_form_scenes_path(@socket, :edit,
-            @project.id, @project_scene.id)}
-        button_one_action="edit"
-        button_one_label="Edit Scene"
-        button_two_link={Routes.project_show_path(@socket, :show, @project.id)}
-        button_two_action="back"
-        button_two_label="Back"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :edit,
+                level: :primary,
+                type: :link,
+                path: Routes.project_form_scenes_path(@socket, :edit, @project.id, @project_scene.id),
+                label: "Edit Scene"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_show_path(@socket, :show, @project.id),
+                label: "Back"
+            }
+        ]}
     />
 </Header.render>
 

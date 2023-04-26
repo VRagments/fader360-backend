@@ -1,10 +1,22 @@
 <Header.render heading={"Manage assets of #{@project.name}"}>
-    <LinkUploadButtonGroup.render
-        button_one_label="Back"
-        button_one_link={Routes.project_show_path(@socket, :show, @project.id)}
-        button_one_action="back"
-        button_two_action="Upload"
-        uploads={@uploads}
+    <HeaderButtons.render
+        buttons={[
+            {
+                :uploads,
+                uploads: @uploads,
+                level: :primary,
+                type: :submit,
+                label: "Upload"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_show_path(@socket, :show, @project.id),
+                label: "Back"
+            }
+        ]}
     />
 </Header.render>
 

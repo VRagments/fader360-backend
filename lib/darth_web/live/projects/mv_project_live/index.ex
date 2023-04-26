@@ -4,7 +4,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Model.Asset, as: AssetStruct
-  alias DarthWeb.Components.{Header, IndexCard, IndexCardClickButton, Pagination, EmptyState}
+  alias DarthWeb.Components.{Header, IndexCard, Pagination, EmptyState, CardButtons}
 
   alias Darth.{
     Controller.User,
@@ -256,19 +256,23 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
 
   defp render_mv_project_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={String.replace_suffix(@mv_node,"dam", "app/project/" ) <> Map.get(@mv_project, "id")}
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
-      title={Map.get(@mv_project, "name" )}
-      subtitle={Map.get(@mv_project, "createdBy")}
-    >
-      <IndexCardClickButton.render
-        action="add_mv_project"
-        phx_value_ref={Map.get(@mv_project, "id" )}
-        label="Add to Fader"
-        class="-mt-px flex divide-x divide-gray-200"
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={String.replace_suffix(@mv_node,"dam", "app/project/" ) <> Map.get(@mv_project, "id")}
+        image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
+        title={Map.get(@mv_project, "name" )}
+        subtitle={Map.get(@mv_project, "createdBy")}
+        info={Map.get(@mv_project, "ownUserRole")}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_project,
+              phx_value_ref: Map.get(@mv_project, "id" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 end

@@ -1,7 +1,13 @@
 <Header.render heading="MediaVerse Assets">
-    <ClickButton.render
-        action="add_all_mv_assets"
-        label="Add all Assets from this page to Fader"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add_all_mv_assets,
+                label: "Add all Assets from this page to Fader",
+                level: :primary,
+                type: :click
+            }
+        ]}
     />
 </Header.render>
 

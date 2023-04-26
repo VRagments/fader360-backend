@@ -4,7 +4,7 @@ defmodule Darth.Model.User do
   use Darth.Model
 
   alias Darth.{AccountPlan}
-  alias Darth.Model.{AssetLease, Project, User}
+  alias Darth.Model.{AssetLease, Project, User, UserToken}
 
   schema "users" do
     field(:email, :string)
@@ -33,6 +33,8 @@ defmodule Darth.Model.User do
     )
 
     has_many(:assets, through: [:asset_leases, :asset])
+
+    has_many(:user_tokens, UserToken)
 
     timestamps()
   end

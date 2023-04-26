@@ -8,11 +8,11 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
 
   alias DarthWeb.Components.{
     Header,
-    ClickButton,
+    HeaderButtons,
     Pagination,
     EmptyState,
     IndexCard,
-    IndexCardClickButton
+    CardButtons
   }
 
   @impl Phoenix.LiveView
@@ -226,91 +226,106 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
-        Map.get(@mv_asset, "key")}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      audio_source={Path.join([@asset_preview_static_url,
-        Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
-      title={Map.get(@mv_asset, "originalFilename" )}
-      subtitle={Map.get(@mv_asset, "createdBy")}
-      info={Map.get(@mv_asset, "contentType" )}
-    >
-      <IndexCardClickButton.render
-        action="add_mv_asset"
-        phx_value_ref={Map.get(@mv_asset, "key" )}
-        label="Add to Fader"
-        class="-mt-px flex divide-x divide-gray-200"
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
+          Map.get(@mv_asset, "key")}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+        audio_source={Path.join([@asset_preview_static_url,
+          Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+        title={Map.get(@mv_asset, "originalFilename" )}
+        subtitle={Map.get(@mv_asset, "createdBy")}
+        info={Map.get(@mv_asset, "contentType" )}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_asset,
+              phx_value_ref: Map.get(@mv_asset, "key" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_video_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/video/")<>
-        Map.get(@mv_asset, "key")}
-      image_source={Path.join([@asset_preview_static_url,
-        Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
-      title={Map.get(@mv_asset, "originalFilename" )}
-      subtitle={Map.get(@mv_asset, "createdBy")}
-      info={Map.get(@mv_asset, "contentType" )}
-    >
-      <IndexCardClickButton.render
-        action="add_mv_asset"
-        phx_value_ref={Map.get(@mv_asset, "key" )}
-        label="Add to Fader"
-        class="-mt-px flex divide-x divide-gray-200"
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/video/")<>
+          Map.get(@mv_asset, "key")}
+        image_source={Path.join([@asset_preview_static_url,
+          Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+        title={Map.get(@mv_asset, "originalFilename" )}
+        subtitle={Map.get(@mv_asset, "createdBy")}
+        info={Map.get(@mv_asset, "contentType" )}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_asset,
+              phx_value_ref: Map.get(@mv_asset, "key" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
-        Map.get(@mv_asset, "key")}
-      image_source={Path.join([@asset_preview_static_url,
-        Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
-      title={Map.get(@mv_asset, "originalFilename" )}
-      subtitle={Map.get(@mv_asset, "createdBy")}
-      info={Map.get(@mv_asset, "contentType" )}
-    >
-      <IndexCardClickButton.render
-        action="add_mv_asset"
-        phx_value_ref={Map.get(@mv_asset, "key" )}
-        label="Add to Fader"
-        class="-mt-px flex divide-x divide-gray-200"
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
+          Map.get(@mv_asset, "key")}
+        image_source={Path.join([@asset_preview_static_url,
+          Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+        title={Map.get(@mv_asset, "originalFilename" )}
+        subtitle={Map.get(@mv_asset, "createdBy")}
+        info={Map.get(@mv_asset, "contentType" )}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_asset,
+              phx_value_ref: Map.get(@mv_asset, "key" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
-        Map.get(@mv_asset, "key")}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      title={Map.get(@mv_asset, "originalFilename" )}
-      subtitle={Map.get(@mv_asset, "createdBy")}
-      info={Map.get(@mv_asset, "contentType" )}
-    >
-      <IndexCardClickButton.render
-        action="add_mv_asset"
-        phx_value_ref={Map.get(@mv_asset, "key" )}
-        label="Add to Fader"
-        class="-mt-px flex divide-x divide-gray-200"
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
+          Map.get(@mv_asset, "key")}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
+        title={Map.get(@mv_asset, "originalFilename" )}
+        subtitle={Map.get(@mv_asset, "createdBy")}
+        info={Map.get(@mv_asset, "contentType" )}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_asset,
+              phx_value_ref: Map.get(@mv_asset, "key" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_mv_asset_card(assigns) do
     if File.exists?(
-         asset_file_path(Map.get(assigns.mv_asset, "previewLinkKey"), Map.get(assigns.mv_asset, "originalFilename"))
+         asset_file_path(
+           Map.get(assigns.mv_asset, "previewLinkKey"),
+           Map.get(assigns.mv_asset, "originalFilename")
+         )
        ) do
       render_mv_asset_media_card(assigns)
     else

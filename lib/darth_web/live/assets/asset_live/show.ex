@@ -5,7 +5,17 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
-  alias DarthWeb.Components.{ShowAudio, ShowVideo, ShowImage, Stat, Icons, LinkButton, Header, EmptyState}
+
+  alias DarthWeb.Components.{
+    ShowAudio,
+    ShowVideo,
+    ShowImage,
+    Stat,
+    Icons,
+    Header,
+    EmptyState,
+    HeaderButtons
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -167,29 +177,29 @@ defmodule DarthWeb.Assets.AssetLive.Show do
     case normalised_media_type do
       :audio ->
         ~H"""
-        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
-        <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
-        <Stat.render title="Status" value={@asset.status} />
-        <Stat.render title="Media Type" value= {@asset.media_type} />
+          <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+          <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
+          <Stat.render title="Status" value={@asset.status} />
+          <Stat.render title="Media Type" value= {@asset.media_type} />
         """
 
       :video ->
         ~H"""
-        <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
-        <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
-        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
-        <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
-        <Stat.render title="Status" value={@asset.status} />
-        <Stat.render title="Media Type" value= {@asset.media_type} />
+          <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
+          <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
+          <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+          <Stat.render title="Duration" value= {get_duration(@asset.attributes)} unit="Sec"/>
+          <Stat.render title="Status" value={@asset.status} />
+          <Stat.render title="Media Type" value= {@asset.media_type} />
         """
 
       :image ->
         ~H"""
-        <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
-        <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
-        <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
-        <Stat.render title="Status" value={@asset.status} />
-        <Stat.render title="Media Type" value= {@asset.media_type} />
+          <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
+          <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
+          <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+          <Stat.render title="Status" value={@asset.status} />
+          <Stat.render title="Media Type" value= {@asset.media_type} />
         """
     end
   end

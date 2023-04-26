@@ -11,13 +11,15 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   alias DarthWeb.Components.{
     Header,
     ShowCard,
-    LinkUploadButtonGroup,
     EmptyState,
     UploadProgress,
-    Pagination
+    Pagination,
+    CardButtons,
+    HeaderButtons
   }
 
   @impl Phoenix.LiveView
+  @spec mount(any, map, any) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, %{"user_token" => user_token}, socket) do
     upload_file_size = Application.fetch_env!(:darth, :upload_file_size)
 
@@ -323,82 +325,121 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
   defp render_added_audio_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="unassign"
-      button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id}
-      state="Asset added to Project"
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+        subtitle={@asset_lease.asset.media_type}
+        status="Asset added to Project"
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :unassign,
+              phx_value_ref: @asset_lease.id,
+              label: "Remove"
+            }
+          ]}
+        />
+      </ShowCard.render>
     """
   end
 
   defp render_added_audio_card_with_two_buttons(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="unassign"
-      button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id}
-      button_two_action="make_primary"
-      button_two_label="Make primary"
-      button_two_phx_value_ref={@asset_lease.id}
-      state="Asset added to Project"
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+        subtitle={@asset_lease.asset.media_type}
+        status="Asset added to Project"
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :unassign,
+              phx_value_ref: @asset_lease.id,
+              label: "Remove"
+            },
+            {
+              :make_primary,
+              phx_value_ref: @asset_lease.id,
+              label: "Make Primary"
+            }
+          ]}
+        />
+      </ShowCard.render>
     """
   end
 
   defp render_added_asset_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="unassign"
-      button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id}
-      state="Asset added to Project"
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={@asset_lease.asset.thumbnail_image}
+        subtitle={@asset_lease.asset.media_type}
+        status="Asset added to Project"
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :unassign,
+                phx_value_ref: @asset_lease.id,
+                label: "Remove"
+              }
+            ]}
+          />
+      </ShowCard.render>
     """
   end
 
   defp render_added_asset_card_with_two_buttons(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="unassign"
-      button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id}
-      button_two_action="make_primary"
-      button_two_label="Make primary"
-      button_two_phx_value_ref={@asset_lease.id}
-      state="Asset added to Project"
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={@asset_lease.asset.thumbnail_image}
+        subtitle={@asset_lease.asset.media_type}
+        status= "Asset added to Project"
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :unassign,
+                phx_value_ref: @asset_lease.id,
+                label: "Remove"
+              },
+              {
+                :make_primary,
+                phx_value_ref: @asset_lease.id,
+                label: "Make Primary"
+              }
+            ]}
+          />
+      </ShowCard.render>
     """
   end
 
   defp render_available_audio_card_with_one_button(assigns) do
     if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
       ~H"""
-      <ShowCard.render
-        title={@asset_lease.asset.name}
-        subtitle={@asset_lease.asset.media_type}
-        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-        button_one_action="assign"
-        button_one_label="Add"
-        button_one_phx_value_ref={@asset_lease.id}
-      />
+        <ShowCard.render
+          title={@asset_lease.asset.name}
+          path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+          source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
+          subtitle={@asset_lease.asset.media_type}
+        >
+          <CardButtons.render
+            buttons={[
+              {
+                :assign,
+                phx_value_ref: @asset_lease.id,
+                label: "Add"
+              }
+            ]}
+          />
+        </ShowCard.render>
       """
     else
       ~H"""
@@ -409,15 +450,22 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   defp render_available_asset_card_with_one_button(assigns) do
     if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
       ~H"""
-      <ShowCard.render
-        title={@asset_lease.asset.name}
-        subtitle={@asset_lease.asset.media_type}
-        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-        image_source={@asset_lease.asset.thumbnail_image}
-        button_one_action="assign"
-        button_one_label="Add"
-        button_one_phx_value_ref={@asset_lease.id}
-      />
+        <ShowCard.render
+          title={@asset_lease.asset.name}
+          path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+          source={@asset_lease.asset.thumbnail_image}
+          subtitle={@asset_lease.asset.media_type}
+        >
+          <CardButtons.render
+            buttons={[
+              {
+                :assign,
+                phx_value_ref: @asset_lease.id,
+                label: "Add"
+              }
+            ]}
+          />
+        </ShowCard.render>
       """
     else
       ~H"""

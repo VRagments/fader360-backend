@@ -1,8 +1,14 @@
 <Header.render heading="Projects">
-    <LinkButton.render
-        link={Routes.project_form_path(@socket, :new)}
-        action="add"
-        label="Create"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add,
+                level: :primary,
+                type: :link,
+                path: Routes.project_form_path(@socket, :new),
+                label: "Create"
+            }
+        ]}
     />
 </Header.render>
 

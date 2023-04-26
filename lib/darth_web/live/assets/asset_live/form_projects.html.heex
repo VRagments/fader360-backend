@@ -1,11 +1,22 @@
 <Header.render heading={"Manage projects of #{@asset_lease.asset.name}"}>
-    <LinkButtonGroup.render
-        button_two_link={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-        button_two_action="back"
-        button_two_label="Back"
-        button_one_link={Routes.project_form_path(@socket, :new, @asset_lease.id)}
-        button_one_action="add"
-        button_one_label="Create Project"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add,
+                level: :primary,
+                type: :link,
+                path: Routes.project_form_path(@socket, :new, @asset_lease.id),
+                label: "Create Project"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.asset_show_path(@socket, :show, @asset_lease.id),
+                label: "Back"
+            }
+        ]}
     />
 </Header.render>
 

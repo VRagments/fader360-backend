@@ -15,13 +15,12 @@ defmodule DarthWeb.PageLive.Page do
     Header,
     IndexCard,
     HyperLink,
-    LinkUploadButtonGroup,
-    FormUpload,
-    LinkButton,
+    HeaderButtons,
     UploadProgress
   }
 
   @impl Phoenix.LiveView
+  @spec mount(any, map, any) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, %{"user_token" => user_token}, socket) do
     upload_file_size = Application.fetch_env!(:darth, :upload_file_size)
 
@@ -33,7 +32,11 @@ defmodule DarthWeb.PageLive.Page do
        socket
        |> assign(current_user: user)
        |> assign(:uploaded_files, [])
-       |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
+       |> allow_upload(:media,
+         accept: ~w(audio/* video/* image/*),
+         max_entries: 1,
+         max_file_size: upload_file_size
+       )}
     else
       {:error, reason} ->
         Logger.error("Error while reading user information: #{inspect(reason)}")
@@ -67,10 +70,14 @@ defmodule DarthWeb.PageLive.Page do
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
 
         asset_leases_list =
-          Asset.get_sorted_asset_lease_list(asset_leases_map) |> Enum.sort_by(& &1.updated_at, :desc)
+          Asset.get_sorted_asset_lease_list(asset_leases_map)
+          |> Enum.sort_by(& &1.updated_at, :desc)
 
         projects_map = Map.new(projects, fn up -> {up.id, up} end)
-        projects_list = Project.get_sorted_user_project_list(projects_map) |> Enum.sort_by(& &1.updated_at, :desc)
+
+        projects_list =
+          Project.get_sorted_user_project_list(projects_map)
+          |> Enum.sort_by(& &1.updated_at, :desc)
 
         sorted_combined_entries =
           Enum.concat(asset_leases, projects)
@@ -104,6 +111,7 @@ defmodule DarthWeb.PageLive.Page do
   @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
     asset_leases_map = socket.assigns.asset_leases_map
+
     asset_lease_tuple = asset_leases_map |> Enum.find(fn {_, value} -> asset.id == value.asset.id end)
 
     socket =
@@ -112,12 +120,18 @@ defmodule DarthWeb.PageLive.Page do
       else
         {_, asset_lease} = asset_lease_tuple
         updated_asset_lease = Map.put(asset_lease, :asset, asset)
+
         updated_asset_leases_map = Map.put(asset_leases_map, updated_asset_lease.id, updated_asset_lease)
 
         asset_leases_list =
-          Asset.get_sorted_asset_lease_list(updated_asset_leases_map) |> Enum.sort_by(& &1.updated_at, :desc)
+          Asset.get_sorted_asset_lease_list(updated_asset_leases_map)
+          |> Enum.sort_by(& &1.updated_at, :desc)
 
-        socket |> assign(asset_leases_list: asset_leases_list, asset_leases_map: updated_asset_leases_map)
+        socket
+        |> assign(
+          asset_leases_list: asset_leases_list,
+          asset_leases_map: updated_asset_leases_map
+        )
       end
 
     {:noreply, socket}
@@ -203,10 +217,14 @@ defmodule DarthWeb.PageLive.Page do
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
 
         asset_leases_list =
-          Asset.get_sorted_asset_lease_list(asset_leases_map) |> Enum.sort_by(& &1.updated_at, :desc)
+          Asset.get_sorted_asset_lease_list(asset_leases_map)
+          |> Enum.sort_by(& &1.updated_at, :desc)
 
         projects_map = Map.new(projects, fn up -> {up.id, up} end)
-        projects_list = Project.get_sorted_user_project_list(projects_map) |> Enum.sort_by(& &1.updated_at, :desc)
+
+        projects_list =
+          Project.get_sorted_user_project_list(projects_map)
+          |> Enum.sort_by(& &1.updated_at, :desc)
 
         sorted_combined_entries =
           Enum.concat(asset_leases, projects)
@@ -240,15 +258,15 @@ defmodule DarthWeb.PageLive.Page do
 
   defp render_asset_audio_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
-      title={@card.asset.name}
-      info={@card.asset.status}
-      subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
-    >
-      <%=%>
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show,@card.id)}
+        title={@card.asset.name}
+        info={@card.asset.status}
+        subtitle={@card.asset.media_type}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+      >
+        <%=%>
+      </IndexCard.render>
     """
   end
 
@@ -268,71 +286,71 @@ defmodule DarthWeb.PageLive.Page do
 
   defp render_asset_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.asset_show_path(@socket, :show,@card.id)}
-      title={@card.asset.name}
-      info={@card.asset.status}
-      subtitle={@card.asset.media_type}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
-    >
-      <%=%>
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show,@card.id)}
+        title={@card.asset.name}
+        info={@card.asset.status}
+        subtitle={@card.asset.media_type}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
+      >
+        <%=%>
+      </IndexCard.render>
     """
   end
 
   defp render_project_audio_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @card.id)}
-      title={@card.name}
-      info={@card.visibility}
-      subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
-    >
-      <%=%>
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @card.id)}
+        title={@card.name}
+        info={@card.visibility}
+        subtitle={@card.author}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+      >
+        <%=%>
+      </IndexCard.render>
     """
   end
 
   defp render_project_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @card.id)}
-      title={@card.name}
-      info={@card.visibility}
-      subtitle={@card.author}
-      image_source={@card.primary_asset.thumbnail_image}
-    >
-      <%=%>
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @card.id)}
+        title={@card.name}
+        info={@card.visibility}
+        subtitle={@card.author}
+        image_source={@card.primary_asset.thumbnail_image}
+      >
+        <%=%>
+      </IndexCard.render>
     """
   end
 
   defp render_project_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @card.id)}
-      title={@card.name}
-      info={@card.visibility}
-      subtitle={@card.author}
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
-    >
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @card.id)}
+        title={@card.name}
+        info={@card.visibility}
+        subtitle={@card.author}
+        image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
+      >
+      </IndexCard.render>
     """
   end
 
   defp render_place_holder_card(assigns) do
     ~H"""
-    <div class="opacity-40">
-      <IndexCard.render
-        title="Name"
-        info={@visibility}
-        subtitle={@subtitle}
-        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
-      >
-        <%=%>
-      </IndexCard.render>
-    </div>
+      <div class="opacity-40">
+        <IndexCard.render
+          title="Name"
+          info={@visibility}
+          subtitle={@subtitle}
+          image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
+        >
+          <%=%>
+        </IndexCard.render>
+      </div>
     """
   end
 

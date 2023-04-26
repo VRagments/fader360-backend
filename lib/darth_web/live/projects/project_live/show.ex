@@ -15,12 +15,12 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     Icons,
     Stat,
     StatSelectField,
-    LinkButtonGroup,
-    LinkButton,
     Pagination,
     EmptyState,
     IndexCard,
-    IndexCardLinkClickButtonGroup
+    StatLinkButton,
+    HeaderButtons,
+    CardButtons
   }
 
   @impl Phoenix.LiveView
@@ -253,84 +253,103 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          normalised_media_type = Asset.normalized_media_type(primary_asset_lease.asset.media_type),
          true <- normalised_media_type == :audio do
       ~H"""
-      <ShowImage.render source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}/>
+        <ShowImage.render source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}/>
       """
     else
       nil ->
         ~H"""
-        <ShowImage.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
+          <ShowImage.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
         """
 
       false ->
         ~H"""
-        <ShowImage.render source={@project.primary_asset.thumbnail_image}/>
+          <ShowImage.render source={@project.primary_asset.thumbnail_image}/>
         """
     end
   end
 
   defp render_project_stats(assigns) do
     ~H"""
-    <Stat.render
-      title="Author"
-      value={@project.author}
-    />
-    <StatSelectField.render
-      title="Visibility"
-      form_chnage_name="update_visibility"
-      input_name={:visibility}
-      select_options={@select_options}
-      changeset={@changeset}
-    />
-    <Stat.render
-      title="Last Updated at"
-      value={NaiveDateTime.to_date(@project.updated_at)}
-    />
+      <Stat.render
+        title="Author"
+        value={@project.author}
+      />
+      <StatSelectField.render
+        title="Visibility"
+        form_chnage_name="update_visibility"
+        input_name={:visibility}
+        select_options={@select_options}
+        changeset={@changeset}
+      />
+      <Stat.render
+        title="Last Updated at"
+        value={NaiveDateTime.to_date(@project.updated_at)}
+      />
+      <StatLinkButton.render
+        action={:launch}
+        level= {:primary}
+        path={DarthWeb.Endpoint.url()<>Application.fetch_env!(:darth, :editor_url)
+          <> "?project_id=#{@project.id}"}
+        label={"Open in Editor"}
+        type={:link}
+      />
     """
   end
 
   defp render_scene_with_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
-      title={@project_scene.name}
-      info={@project_scene.navigatable}
-      subtitle={@project_scene.duration <> " Sec"}
-      image_source={@project_scene.primary_asset.thumbnail_image}
-    >
-      <IndexCardLinkClickButtonGroup.render
-        link_button_action="edit"
-        link_button_route={Routes.project_form_scenes_path(@socket, :edit,
-          @user_project.id, @project_scene.id)}
-        link_button_label="Edit"
-        click_button_action="delete"
-        click_button_label="Delete"
-        phx_value_ref={@project_scene.id}
-        confirm_message="Do you really want to delete this project scene? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
+        title={@project_scene.name}
+        info={@project_scene.navigatable}
+        subtitle={@project_scene.duration <> " Sec"}
+        image_source={@project_scene.primary_asset.thumbnail_image}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_scenes_path(@socket, :edit, @user_project.id, @project_scene.id),
+              label: "Edit"
+            },
+            {
+              :delete,
+              phx_value_ref: @project_scene.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project scene? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_scene_with_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
-      title={@project_scene.name}
-      info={@project_scene.navigatable}
-      subtitle={@project_scene.duration <> " Sec"}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
-    >
-      <IndexCardLinkClickButtonGroup.render
-        link_button_action="edit"
-        link_button_route={Routes.project_form_scenes_path(@socket, :edit,
-          @user_project.id, @project_scene.id)}
-        link_button_label="Edit"
-        click_button_action="delete"
-        click_button_label="Delete"
-        phx_value_ref={@project_scene.id}
-        confirm_message="Do you really want to delete this project scene? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
+        title={@project_scene.name}
+        info={@project_scene.navigatable}
+        subtitle={@project_scene.duration <> " Sec"}
+        image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_scenes_path(@socket, :edit, @user_project.id, @project_scene.id),
+              label: "Edit",
+              type: :link
+            },
+            {
+              :delete,
+              phx_value_ref: @project_scene.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project scene? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 

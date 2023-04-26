@@ -1,11 +1,30 @@
 <Header.render heading={@project.name}>
-    <LinkButtonGroup.render
-        button_one_link={Routes.project_form_path(@socket, :edit, @project.id)}
-        button_one_action="edit"
-        button_one_label="Edit Project"
-        button_two_link={Routes.project_form_assets_path(@socket, :index,@project.id)}
-        button_two_action="manage"
-        button_two_label="Manage Project Assets"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :edit,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_form_path(@socket, :edit, @project.id),
+                label: "Edit Project"
+            },
+            nil,
+            {
+                :manage,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_form_assets_path(@socket, :index,@project.id),
+                label: "Manage Project Assets"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_index_path(@socket, :index),
+                label: "Back"
+            }
+        ]}
     />
 </Header.render>
 
@@ -25,10 +44,16 @@
 </div>
 
 <Header.render heading="Project Scenes">
-    <LinkButton.render
-        link={Routes.project_form_scenes_path(@socket, :new, @project.id)}
-        action="add"
-        label="Create"
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add,
+                level: :secondary,
+                type: :link,
+                path: Routes.project_form_scenes_path(@socket, :new, @project.id),
+                label: "Create"
+            }
+        ]}
     />
 </Header.render>
 

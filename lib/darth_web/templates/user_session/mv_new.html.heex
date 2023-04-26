@@ -6,7 +6,7 @@
                     alt="Phone image" />
             </div>
             <div class="md:w-8/12 lg:w-5/12 lg:ml-20">
-                <.form let={f} for={@changeset} action={Routes.user_session_path(@conn, :mv_login)}
+                <.form let={f} for={@changeset} action={Routes.user_session_path(@conn, :mv_create)}
                     as={:user}>
                     <!-- Email input -->
                     <div class="mb-6">
@@ -33,7 +33,8 @@
                     <div> <%= error_tag f, :password %> </div>
 
                     <!-- Submit button -->
-                    <LoginPageSubmitButton.render
+                    <LoginPageButton.render
+                        action={:submit}
                         label="Login"
                     />
 
@@ -42,9 +43,10 @@
                         <p class="text-center font-semibold mx-4 mb-0">OR</p>
                     </div>
                 </.form>
-                <LoginPageLinkButton.render
-                    link={String.replace_suffix(@default_mv_node, "dam", "create-account")}
-                    label="Register at MediaVerse node"
+                <LoginPageButton.render
+                    action={:link}
+                    path={String.replace_suffix(@default_mv_node, "dam", "create-account")}
+                    label={"Register at MediaVerse node"}
                 />
             </div>
         </div>

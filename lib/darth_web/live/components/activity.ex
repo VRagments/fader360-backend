@@ -10,21 +10,21 @@ defmodule DarthWeb.Components.Activity do
 
   def render(assigns) do
     ~H"""
-    <li>
-      <div class="relative pb-8">
-        <div class="relative flex space-x-3">
-          <div> <.render_svg action={@action} /></div>
-        <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-        <.link href={@show_path}>
-        <div> <p class="text-sm text-gray-500">Created <b><%= @type %></b> with title <b><%= @name %></b></p></div>
-        </.link>
-        <div class="whitespace-nowrap text-right text-sm text-gray-500">
-          <time datetime="2020-09-28"><%=@inserted_at%></time>
+      <li>
+        <div class="relative pb-8">
+          <div class="relative flex space-x-3">
+            <div> <.render_svg action={@action} /></div>
+          <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+          <.link href={@show_path}>
+          <div> <p class="text-sm text-gray-500">Created <b><%= @type %></b> with title <b><%= @name %></b></p></div>
+          </.link>
+          <div class="whitespace-nowrap text-right text-sm text-gray-500">
+            <time datetime="2020-09-28"><%=@inserted_at%></time>
+          </div>
+          </div>
+          </div>
         </div>
-        </div>
-        </div>
-      </div>
-    </li>
+      </li>
     """
   end
 

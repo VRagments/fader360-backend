@@ -5,7 +5,6 @@ defmodule DarthWeb.UserSessionController do
 
   alias Darth.MvApiClient
   alias Darth.Model.User, as: UserModel
-  alias Darth.Model.UserToken
   alias Darth.Controller.User
   alias DarthWeb.UserAuth
 
@@ -25,7 +24,7 @@ defmodule DarthWeb.UserSessionController do
       false ->
         conn
         |> put_flash(:info, "Provided credentials are for MediaVerse account, login here")
-        |> render("mv_login.html",
+        |> render("mv_new.html",
           default_mv_node:
             get_mv_api_endpoint(Map.get(user_params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))),
           changeset: changeset,
@@ -44,49 +43,35 @@ defmodule DarthWeb.UserSessionController do
     |> UserAuth.logout_user()
   end
 
-  def mv_login(conn, params) do
+  def mv_new(conn, params) do
     mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
 
     changeset = User.change_user_registration(%UserModel{})
 
-    with %UserModel{} = current_user <- conn.assigns.current_user,
-         false <- is_nil(current_user.mv_node),
-         %UserToken{} <- User.get_user_token_struct(current_user) do
-      conn
-      |> redirect(to: "/")
-    else
-      _ ->
-        conn
-        |> render("mv_login.html",
-          default_mv_node: mv_node,
-          changeset: changeset,
-          username_error: false
-        )
-    end
+    conn
+    |> render("mv_new.html",
+      default_mv_node: mv_node,
+      changeset: changeset,
+      username_error: false
+    )
   end
 
+  # Reusing the mv_login page by making user_name error as true.
+  #  As there will be no changeset errors just the username field is displayed
   def mv_register(conn, params) do
     mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
 
     changeset = User.change_user_registration(%UserModel{})
 
-    with %UserModel{} = current_user <- conn.assigns.current_user,
-         false <- is_nil(current_user.mv_node),
-         %UserToken{} <- User.get_user_token_struct(current_user) do
-      conn
-      |> redirect(to: "/")
-    else
-      _ ->
-        conn
-        |> render("mv_login.html",
-          default_mv_node: mv_node,
-          changeset: changeset,
-          username_error: true
-        )
-    end
+    conn
+    |> render("mv_new.html",
+      default_mv_node: mv_node,
+      changeset: changeset,
+      username_error: true
+    )
   end
 
-  def mv_login_post(conn, params) do
+  def mv_create(conn, params) do
     user_params = Map.get(params, "user")
     email = Map.get(user_params, "email")
     mv_node = Map.get(user_params, "mediaverse_node")
@@ -94,10 +79,10 @@ defmodule DarthWeb.UserSessionController do
 
     with {:ok, %{"token" => mv_token}} <- MvApiClient.authenticate(mv_node, email, password),
          {:ok, mv_user} <- MvApiClient.fetch_user(mv_node, mv_token),
-         {:ok, user} <- get_user_struct(mv_user, user_params),
+         {:ok, user} <- create_mv_user_struct(mv_user, user_params),
          false <- is_nil(user.mv_node) do
       conn
-      |> UserAuth.mv_login_user(user, mv_token)
+      |> UserAuth.mv_create_user(user, mv_token)
     else
       # Databse error
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -131,7 +116,7 @@ defmodule DarthWeb.UserSessionController do
     end
   end
 
-  def get_user_struct(mv_user, user_params) do
+  def create_mv_user_struct(mv_user, user_params) do
     email = Map.get(user_params, "email")
     mv_node = Map.get(user_params, "mediaverse_node")
     password = Map.get(user_params, "password")
@@ -164,7 +149,7 @@ defmodule DarthWeb.UserSessionController do
     username_error = username_error?(changeset)
 
     conn
-    |> render("mv_login.html",
+    |> render("mv_new.html",
       default_mv_node: mv_node,
       changeset: changeset,
       username_error: username_error
@@ -182,7 +167,7 @@ defmodule DarthWeb.UserSessionController do
   defp error(conn, mv_node, reason) do
     conn
     |> put_flash(:error, "MediaVerse login failed due to: #{reason}")
-    |> redirect(to: Routes.user_session_path(conn, :mv_login, mv_node: mv_node))
+    |> redirect(to: Routes.user_session_path(conn, :mv_new, mv_node: mv_node))
   end
 
   defp get_mv_api_endpoint(mv_node) do

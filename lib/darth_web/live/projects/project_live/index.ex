@@ -12,9 +12,9 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     IndexCard,
     Header,
     Pagination,
-    LinkButton,
     EmptyState,
-    IndexCardLinkClickButtonGroup
+    HeaderButtons,
+    CardButtons
   }
 
   @impl Phoenix.LiveView
@@ -163,67 +163,88 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
 
   defp render_audio_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      title={@user_project.name}
-      info={@user_project.visibility}
-      subtitle={@user_project.author}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
-    >
-      <IndexCardLinkClickButtonGroup.render
-        link_button_action="edit"
-        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-        link_button_label="Edit"
-        click_button_action="delete"
-        click_button_label="Delete"
-        phx_value_ref={@user_project.id}
-        confirm_message="Do you really want to delete this project? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        title={@user_project.name}
+        info={@user_project.visibility}
+        subtitle={@user_project.author}
+        image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg")}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_path(@socket, :edit, @user_project.id),
+              label: "Edit",
+              type: :link
+            },
+            {
+              :delete,
+              phx_value_ref: @user_project.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_image_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      title={@user_project.name}
-      info={@user_project.visibility}
-      subtitle={@user_project.author}
-      image_source={@user_project.primary_asset.thumbnail_image}
-    >
-      <IndexCardLinkClickButtonGroup.render
-        link_button_action="edit"
-        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-        link_button_label="Edit"
-        click_button_action="delete"
-        click_button_label="Delete"
-        phx_value_ref={@user_project.id}
-        confirm_message="Do you really want to delete this project? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        title={@user_project.name}
+        info={@user_project.visibility}
+        subtitle={@user_project.author}
+        image_source={@user_project.primary_asset.thumbnail_image}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_path(@socket, :edit, @user_project.id),
+              label: "Edit",
+              type: :link
+            },
+            {
+              :delete,
+              phx_value_ref: @user_project.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project? This action cannot be reverted.",
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 
   defp render_default_card(assigns) do
     ~H"""
-    <IndexCard.render
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      title={@user_project.name}
-      info={@user_project.visibility}
-      subtitle={@user_project.author}
-      image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
-    >
-      <IndexCardLinkClickButtonGroup.render
-        link_button_action="edit"
-        link_button_route={Routes.project_form_path(@socket, :edit, @user_project.id)}
-        link_button_label="Edit"
-        click_button_action="delete"
-        click_button_label="Delete"
-        phx_value_ref={@user_project.id}
-        confirm_message="Do you really want to delete this project? This action cannot be reverted."
-      />
-    </IndexCard.render>
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        title={@user_project.name}
+        info={@user_project.visibility}
+        subtitle={@user_project.author}
+        image_source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg")}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_path(@socket, :edit, @user_project.id),
+              label: "Edit",
+              type: :link
+            },
+            {
+              :delete,
+              phx_value_ref: @user_project.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
     """
   end
 

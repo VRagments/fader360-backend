@@ -9,7 +9,15 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
   alias Darth.Controller.AssetLease
   alias Darth.Controller.Project
   alias Darth.Controller.Asset
-  alias DarthWeb.Components.{Header, ShowCard, Pagination, LinkButtonGroup, EmptyState}
+
+  alias DarthWeb.Components.{
+    Header,
+    ShowCard,
+    Pagination,
+    EmptyState,
+    CardButtons,
+    HeaderButtons
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -21,7 +29,11 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
        socket
        |> assign(current_user: user)
        |> assign(:uploaded_files, [])
-       |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
+       |> allow_upload(:media,
+         accept: ~w(audio/* video/* image/*),
+         max_entries: 1,
+         max_file_size: upload_file_size
+       )}
     else
       {:error, reason} ->
         Logger.error("Error while reading user information: #{inspect(reason)}")
@@ -116,7 +128,11 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     user_project = Map.get(socket.assigns.user_projects_map, user_project_id)
 
     socket =
-      case AssetLease.assign_project(socket.assigns.asset_lease, socket.assigns.current_user, user_project) do
+      case AssetLease.assign_project(
+             socket.assigns.asset_lease,
+             socket.assigns.current_user,
+             user_project
+           ) do
         {:ok, _asset_lease} ->
           socket
           |> put_flash(:info, "Asset added to project")
@@ -149,7 +165,11 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
 
     socket =
       with {:ok, asset_lease} <-
-             AssetLease.unassign_project(socket.assigns.asset_lease, socket.assigns.current_user, user_project),
+             AssetLease.unassign_project(
+               socket.assigns.asset_lease,
+               socket.assigns.current_user,
+               user_project
+             ),
            {:ok, _project} <- Project.unassign_primary_asset_lease(user_project, asset_lease) do
         socket
         |> put_flash(:info, "Asset removed from project")
@@ -255,14 +275,21 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     ~H"""
     <ShowCard.render
       title={@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="unassign"
-      button_one_label="Remove from Project"
-      button_one_phx_value_ref={@user_project.id}
-      state="Asset added to Project"
-    />
+      status="Asset added to Project"
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :unassign,
+            phx_value_ref: @user_project.id,
+            label: "Remove Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 
@@ -270,29 +297,43 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     ~H"""
     <ShowCard.render
       title={@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={@user_project.primary_asset.thumbnail_image}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={@user_project.primary_asset.thumbnail_image}
-      button_one_action="unassign"
-      button_one_label="Remove from Project"
-      button_one_phx_value_ref={@user_project.id}
-      state="Asset added to Project"
-    />
+      status="Asset added to Project"
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :unassign,
+            phx_value_ref: @user_project.id,
+            label: "Remove Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 
   defp render_added_default_project_card(assigns) do
     ~H"""
     <ShowCard.render
-      title={@user_project.name}
+      title = {@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      button_one_action="unassign"
-      button_one_label="Remove from Project"
-      button_one_phx_value_ref={@user_project.id}
-      state="Asset added to Project"
-    />
+      status="Asset added to Project"
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :unassign,
+            phx_value_ref: @user_project.id,
+            label: "Remove Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 
@@ -300,13 +341,20 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     ~H"""
     <ShowCard.render
       title={@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
-      button_one_action="assign"
-      button_one_label="Add to Project"
-      button_one_phx_value_ref={@user_project.id}
-    />
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :assign,
+            phx_value_ref: @user_project.id,
+            label: "Add to Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 
@@ -314,13 +362,20 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     ~H"""
     <ShowCard.render
       title={@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={@user_project.primary_asset.thumbnail_image}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={@user_project.primary_asset.thumbnail_image}
-      button_one_action="assign"
-      button_one_label="Add to Project"
-      button_one_phx_value_ref={@user_project.id}
-    />
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :assign,
+            phx_value_ref: @user_project.id,
+            label: "Add to Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 
@@ -328,13 +383,20 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     ~H"""
     <ShowCard.render
       title={@user_project.name}
+      path={Routes.project_show_path(@socket, :show, @user_project.id)}
+      source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
       subtitle={@user_project.visibility}
-      show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
-      image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
-      button_one_action="assign"
-      button_one_label="Add to Project"
-      button_one_phx_value_ref={@user_project.id}
-    />
+    >
+      <CardButtons.render
+        buttons={[
+          {
+            :assign,
+            phx_value_ref: @user_project.id,
+            label: "Add to Project"
+          }
+        ]}
+      />
+    </ShowCard.render>
     """
   end
 

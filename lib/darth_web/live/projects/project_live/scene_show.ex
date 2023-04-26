@@ -4,7 +4,16 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.{User, Project, ProjectScene, Asset, AssetLease}
-  alias DarthWeb.Components.{Header, ShowCard, Icons, ShowImage, Stat, LinkButtonGroup}
+
+  alias DarthWeb.Components.{
+    Header,
+    ShowCard,
+    Icons,
+    ShowImage,
+    Stat,
+    CardButtons,
+    HeaderButtons
+  }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
@@ -276,47 +285,61 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
 
   defp render_scene_stats(assigns) do
     ~H"""
-    <Stat.render title="Duration"
-      value={@project_scene.duration}
-      unit="Sec"
-    />
-    <Stat.render
-      title="Navigatable?"
-      value={@project_scene.navigatable}
-    />
-    <Stat.render
-      title="Last Updated at"
-      value={NaiveDateTime.to_date(@project_scene.updated_at)}
-    />
+      <Stat.render title="Duration"
+        value={@project_scene.duration}
+        unit="Sec"
+      />
+      <Stat.render
+        title="Navigatable?"
+        value={@project_scene.navigatable}
+      />
+      <Stat.render
+        title="Last Updated at"
+        value={NaiveDateTime.to_date(@project_scene.updated_at)}
+      />
     """
   end
 
   defp render_added_asset_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="unassign"
-      button_one_label="Remove"
-      button_one_phx_value_ref={@asset_lease.id}
-      state="Added to Project Scene"
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={@asset_lease.asset.thumbnail_image}
+        subtitle={@asset_lease.asset.media_type}
+        status= "Added to Project Scene"
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :unassign,
+              phx_value_ref: @asset_lease.id,
+              label: "Remove"
+            }
+          ]}
+        />
+      </ShowCard.render>
     """
   end
 
   defp render_available_asset_card_with_one_button(assigns) do
     ~H"""
-    <ShowCard.render
-      title={@asset_lease.asset.name}
-      subtitle={@asset_lease.asset.media_type}
-      show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
-      image_source={@asset_lease.asset.thumbnail_image}
-      button_one_action="assign"
-      button_one_label="Add"
-      button_one_phx_value_ref={@asset_lease.id}
-    />
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        source={@asset_lease.asset.thumbnail_image}
+        subtitle={@asset_lease.asset.media_type}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :assign,
+              phx_value_ref: @asset_lease.id,
+              label: "Add"
+            }
+          ]}
+        />
+      </ShowCard.render>
     """
   end
 end

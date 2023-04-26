@@ -452,16 +452,6 @@ defmodule Darth.Controller.User do
     end
   end
 
-  def get_user_token_struct(current_user) do
-    case Repo.preload(current_user, [:user_token]).user_token do
-      nil ->
-        nil
-
-      user_token ->
-        user_token
-    end
-  end
-
   def is_mediaverse_account?(user), do: not is_nil(user.mv_node)
 
   #
