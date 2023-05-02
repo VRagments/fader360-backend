@@ -147,6 +147,14 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
     {:noreply, socket}
   end
 
+  def handle_event("done", _, socket) do
+    socket =
+      socket
+      |> put_flash(:info, "Asset already added to Fader")
+
+    {:noreply, socket}
+  end
+
   defp add_to_preview_downloader(assets, mv_node, mv_token) do
     for asset <- assets do
       filename = Map.get(asset, "originalFilename")
@@ -236,14 +244,9 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         subtitle={Map.get(@mv_asset, "createdBy")}
         info={Map.get(@mv_asset, "contentType" )}
       >
-        <CardButtons.render
-          buttons={[
-            {
-              :add_mv_asset,
-              phx_value_ref: Map.get(@mv_asset, "key" ),
-              label: "Add to Fader"
-            }
-          ]}
+        <.render_buttons
+          mv_asset={@mv_asset}
+          current_user={@current_user}
         />
       </IndexCard.render>
     """
@@ -260,14 +263,9 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         subtitle={Map.get(@mv_asset, "createdBy")}
         info={Map.get(@mv_asset, "contentType" )}
       >
-        <CardButtons.render
-          buttons={[
-            {
-              :add_mv_asset,
-              phx_value_ref: Map.get(@mv_asset, "key" ),
-              label: "Add to Fader"
-            }
-          ]}
+        <.render_buttons
+          mv_asset={@mv_asset}
+          current_user={@current_user}
         />
       </IndexCard.render>
     """
@@ -284,14 +282,9 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         subtitle={Map.get(@mv_asset, "createdBy")}
         info={Map.get(@mv_asset, "contentType" )}
       >
-        <CardButtons.render
-          buttons={[
-            {
-              :add_mv_asset,
-              phx_value_ref: Map.get(@mv_asset, "key" ),
-              label: "Add to Fader"
-            }
-          ]}
+        <.render_buttons
+          mv_asset={@mv_asset}
+          current_user={@current_user}
         />
       </IndexCard.render>
     """
@@ -307,14 +300,9 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         subtitle={Map.get(@mv_asset, "createdBy")}
         info={Map.get(@mv_asset, "contentType" )}
       >
-        <CardButtons.render
-          buttons={[
-            {
-              :add_mv_asset,
-              phx_value_ref: Map.get(@mv_asset, "key" ),
-              label: "Add to Fader"
-            }
-          ]}
+        <.render_buttons
+          mv_asset={@mv_asset}
+          current_user={@current_user}
         />
       </IndexCard.render>
     """
@@ -346,6 +334,31 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
       :image ->
         render_image_card(assigns)
     end
+  end
+
+  defp render_buttons(assigns) do
+    ~H"""
+      <%= if Asset.asset_already_added?(Map.get(@mv_asset, "key"), @current_user.id) do %>
+        <CardButtons.render
+          buttons={[
+            {
+              :done,
+              label: "Added to Fader"
+            }
+          ]}
+        />
+      <%else%>
+        <CardButtons.render
+          buttons={[
+            {
+              :add_mv_asset,
+              phx_value_ref: Map.get(@mv_asset, "key" ),
+              label: "Add to Fader"
+            }
+          ]}
+        />
+      <% end %>
+    """
   end
 
   defp asset_file_path(preview_link_key, original_filename) do

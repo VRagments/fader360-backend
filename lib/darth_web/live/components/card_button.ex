@@ -81,4 +81,5 @@ defmodule DarthWeb.Components.CardButton do
   defp render_svg(%{action: :assign} = assigns), do: Icons.add_mv_asset_plus(assigns)
   defp render_svg(%{action: :unassign} = assigns), do: Icons.remove_minus(assigns)
   defp render_svg(%{action: :make_primary} = assigns), do: Icons.make_primary_star(assigns)
+  defp render_svg(%{action: :done} = assigns), do: Icons.done_check(assigns)
 end

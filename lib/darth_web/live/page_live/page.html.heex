@@ -45,15 +45,23 @@
 
 <UploadProgress.render uploads={@uploads} />
 
-<section class="py-2 lg:pt-12 md:mx-auto lg:container">
-    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <%= for i <- 0..3 do %>
-            <.render_card socket={@socket} card={Enum.at(@asset_leases_list, i)} visibility="status"
-                subtitle="type" />
+<%= if Enum.empty?(@asset_leases_list) do %>
+    <EmptyState.render label="Upload Assets to Fader"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for i <- 0..3 do %>
+                <.render_card socket={@socket} card={Enum.at(@asset_leases_list, i)} />
+            <% end %>
+        </ul>
+        <%= if Enum.count(@asset_leases_list) > 4 do %>
+            <HyperLink.render
+                link_text="Show all Assets"
+                link_route={Routes.asset_index_path(@socket, :index)}
+            />
         <% end %>
-    </ul>
-    <HyperLink.render link_text="Show all Assets" link_route={Routes.asset_index_path(@socket, :index)} />
-</section>
+    </section>
+<% end %>
 
 <Header.render heading="Projects">
     <HeaderButtons.render
@@ -69,18 +77,24 @@
     />
 </Header.render>
 
-<section class="py-2 lg:pt-12 md:mx-auto lg:container">
-    <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <%= for i <- 0..3 do %>
-            <.render_card socket={@socket} card={Enum.at(@projects_list, i)} visibility="visibility"
-                subtitle="author" />
+<%= if Enum.empty?(@projects_list) do %>
+    <EmptyState.render label="Create Projects in Fader"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for i <- 0..3 do %>
+                <.render_card socket={@socket} card={Enum.at(@projects_list, i)} />
+            <% end %>
+        </ul>
+        <%= if Enum.count(@projects_list) > 4 do %>
+            <HyperLink.render
+                link_text="Show all Projects"
+                link_route={Routes.project_index_path(@socket, :index)}
+            />
         <% end %>
-    </ul>
-    <HyperLink.render
-        link_text="Show all Projects"
-        link_route={Routes.project_index_path(@socket, :index)}
-    />
-</section>
+    </section>
+<% end %>
+
 <div
     class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight flex items-center my-4 before:flex-1 after:flex-1 container mx-auto lg:pt-12 lg:px-32">
     Activity
@@ -93,7 +107,8 @@
                 <%= if Map.has_key?(entry, :author) do %>
                     <Activity.render
                         action="activity_done"
-                        type="Project" name={entry.name}
+                        type="Project"
+                        name={entry.name}
                         inserted_at={entry.inserted_at}
                         show_path={Routes.project_show_path(@socket, :show, entry.id)}
                     />

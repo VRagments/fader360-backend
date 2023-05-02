@@ -16,7 +16,8 @@ defmodule DarthWeb.PageLive.Page do
     IndexCard,
     HyperLink,
     HeaderButtons,
-    UploadProgress
+    UploadProgress,
+    EmptyState
   }
 
   @impl Phoenix.LiveView
@@ -339,21 +340,6 @@ defmodule DarthWeb.PageLive.Page do
     """
   end
 
-  defp render_place_holder_card(assigns) do
-    ~H"""
-      <div class="opacity-40">
-        <IndexCard.render
-          title="Name"
-          info={@visibility}
-          subtitle={@subtitle}
-          image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
-        >
-          <%=%>
-        </IndexCard.render>
-      </div>
-    """
-  end
-
   defp get_asset_card(assigns) do
     if Asset.is_asset_status_ready?(assigns.card.asset.status) do
       if Asset.is_audio_asset?(assigns.card.asset.media_type) do
@@ -387,7 +373,7 @@ defmodule DarthWeb.PageLive.Page do
         get_asset_card(assigns)
 
       nil ->
-        render_place_holder_card(assigns)
+        ~H""
     end
   end
 end
