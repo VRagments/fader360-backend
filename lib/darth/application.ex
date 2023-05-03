@@ -15,7 +15,8 @@ defmodule Darth.Application do
       Darth.Scheduler,
       Darth.AssetProcessor,
       Darth.AssetProcessor.Downloader,
-      Darth.AssetProcessor.PreviewDownloader
+      Darth.AssetProcessor.PreviewDownloader,
+      Darth.AssetProcessor.AssetSubtitleDownloader
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

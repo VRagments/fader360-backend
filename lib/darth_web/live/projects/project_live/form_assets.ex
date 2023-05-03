@@ -212,7 +212,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
     socket =
       with :ok <- UploadProcessor.create_uploads_base_path(),
-           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket),
+           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket, :media),
            {:ok, asset_details} <- UploadProcessor.get_asset_details(socket, uploaded_file_path),
            :ok <- UploadProcessor.check_for_uploaded_asset_media_type(asset_details),
            {:ok, asset_struct} <- Asset.create(asset_details),

@@ -3,7 +3,7 @@ defmodule Darth.Model.Asset do
 
   use Darth.Model
 
-  alias Darth.Model.{AssetLease}
+  alias Darth.Model.{AssetLease, AssetSubtitle}
 
   schema "assets" do
     field(:data_filename, :string)
@@ -41,6 +41,7 @@ defmodule Darth.Model.Asset do
 
     has_many(:projects, through: [:asset_leases, :projects])
     has_many(:users, through: [:asset_leases, :users])
+    has_many(:asset_subtitles, AssetSubtitle)
 
     timestamps()
   end

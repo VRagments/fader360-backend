@@ -117,6 +117,25 @@ defmodule Darth.MvApiClient do
     end
   end
 
+  def fetch_asset_subtitles(mv_node, mv_token, mv_asset_key) do
+    url = mv_node <> "/assets/" <> mv_asset_key <> "/subtitles"
+
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
+         {:ok, asset_subtitles} when is_list(asset_subtitles) <- Jason.decode(body) do
+      {:ok, asset_subtitles}
+    else
+      {:ok, %{"message" => message}} ->
+        {:error, message}
+
+      error ->
+        error
+    end
+  end
+
+  def download_asset_subtitle(mv_token, ext_file_url) do
+    HTTPoison.get(ext_file_url, get_headers(mv_token), stream_to: self(), async: :once)
+  end
+
   defp get_headers(mv_token) do
     [
       {"Content-type", "application/json"},

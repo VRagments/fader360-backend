@@ -336,32 +336,6 @@ defmodule Darth.Controller.Asset do
     end
   end
 
-  def save_file(file, response) do
-    save_file = fn response, file, download_file ->
-      response_id = response.id
-
-      receive do
-        %HTTPoison.AsyncStatus{code: _status_code, id: ^response_id} ->
-          HTTPoison.stream_next(response)
-          download_file.(response, file, download_file)
-
-        %HTTPoison.AsyncHeaders{headers: _headers, id: ^response_id} ->
-          HTTPoison.stream_next(response)
-          download_file.(response, file, download_file)
-
-        %HTTPoison.AsyncChunk{chunk: chunk, id: ^response_id} ->
-          IO.binwrite(file, chunk)
-          HTTPoison.stream_next(response)
-          download_file.(response, file, download_file)
-
-        %HTTPoison.AsyncEnd{id: ^response_id} ->
-          File.close(file)
-      end
-    end
-
-    save_file.(response, file, save_file)
-  end
-
   def add_asset_to_database(params, user) do
     mv_asset_key = Map.get(params, "mv_asset_key")
 
@@ -374,26 +348,11 @@ defmodule Darth.Controller.Asset do
     end
   end
 
-  def is_audio_asset?(media_type) do
-    case normalized_media_type(media_type) do
-      :audio -> true
-      _ -> false
-    end
-  end
+  def is_audio_asset?(media_type), do: normalized_media_type(media_type) == :audio
 
-  def is_video_asset?(media_type) do
-    case normalized_media_type(media_type) do
-      :video -> true
-      _ -> false
-    end
-  end
+  def is_video_asset?(media_type), do: normalized_media_type(media_type) == :video
 
-  def is_image_asset?(media_type) do
-    case normalized_media_type(media_type) do
-      :image -> true
-      _ -> false
-    end
-  end
+  def is_image_asset?(media_type), do: normalized_media_type(media_type) == :image
 
   def is_asset_status_ready?(asset_status), do: asset_status == "ready"
 
@@ -416,6 +375,9 @@ defmodule Darth.Controller.Asset do
       _ -> false
     end
   end
+
+  def is_audio_or_video_asset?(media_type),
+    do: is_audio_asset?(media_type) or is_video_asset?(media_type)
 
   #
   # INTERNAL FUNCTIONS

@@ -2,6 +2,8 @@ defmodule Darth.AssetProcessor.Downloader do
   use GenServer
   require Logger
   alias Darth.{Controller.Asset, MvApiClient}
+  alias Darth.AssetProcessor.AssetSubtitleDownloader
+  alias DarthWeb.SaveFile
 
   @name {:global, __MODULE__}
   # Client
@@ -53,17 +55,21 @@ defmodule Darth.AssetProcessor.Downloader do
   end
 
   def download(download_params) do
-    with {:ok, response} <-
-           MvApiClient.download_asset(
-             download_params.mv_node,
-             download_params.mv_token,
-             download_params.mv_asset_deeplink_key
-           ),
+    mv_node = download_params.mv_node
+    mv_token = download_params.mv_token
+    mv_asset_deeplink_key = download_params.mv_asset_deeplink_key
+
+    with {:ok, response} <- MvApiClient.download_asset(mv_node, mv_token, mv_asset_deeplink_key),
          {:ok, file} <- Asset.create_file(download_params.mv_asset_filename),
-         :ok <- Asset.save_file(file, response),
+         :ok <- SaveFile.save_file(file, response),
          {:ok, mv_asset_file_path} = Asset.create_current_asset_path(download_params.mv_asset_filename),
          params = Asset.build_asset_params(download_params, mv_asset_file_path),
          {:ok, asset_struct} <- Asset.init(download_params.asset_struct, params, true) do
+      AssetSubtitleDownloader.add_asset_subtitle_download_params(%{
+        mv_token: mv_token,
+        asset_struct: asset_struct
+      })
+
       update_asset_status(download_params.asset_struct.id, "downloaded_successfully")
       {:ok, asset_struct}
     else
@@ -104,7 +110,11 @@ defmodule Darth.AssetProcessor.Downloader do
         :ok
 
       {:error, reason} ->
-        Logger.error(:error, "Error while updating the asset status when asset download failed: #{inspect(reason)}")
+        Logger.error(
+          :error,
+          "Error while updating the asset status when asset download failed: #{inspect(reason)}"
+        )
+
         {:error, reason}
     end
   end

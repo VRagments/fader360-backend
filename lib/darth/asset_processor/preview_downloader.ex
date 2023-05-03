@@ -2,6 +2,7 @@ defmodule Darth.AssetProcessor.PreviewDownloader do
   use GenServer
   require Logger
   alias Darth.{Controller.Asset, MvApiClient}
+  alias DarthWeb.SaveFile
 
   @name {:global, __MODULE__}
   # Client
@@ -62,7 +63,7 @@ defmodule Darth.AssetProcessor.PreviewDownloader do
              download_params.mv_asset_previewlink_key
            ),
          {:ok, file} <- Asset.create_preview_file(mv_asset_filename, mv_asset_previewlink_key),
-         :ok <- Asset.save_file(file, response),
+         :ok <- SaveFile.save_file(file, response),
          :ok <- Phoenix.PubSub.broadcast(Darth.PubSub, "asset_previews", {:asset_preview_downloaded}) do
       :ok
     else

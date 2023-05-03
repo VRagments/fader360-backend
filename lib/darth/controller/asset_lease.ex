@@ -29,7 +29,7 @@ defmodule Darth.Controller.AssetLease do
     )a
   end
 
-  def new(asset_id, license \\ :owner, valid_since \\ nil, valid_until \\ nil) do
+  def new(asset_id, license \\ :creator, valid_since \\ nil, valid_until \\ nil) do
     valid_since = if valid_since, do: valid_since, else: DateTime.utc_now()
 
     params = %{
@@ -553,6 +553,9 @@ defmodule Darth.Controller.AssetLease do
     |> Ecto.Changeset.put_assoc(:users, [user | Map.get(lease, :users)])
     |> Repo.update()
   end
+
+  def has_subtitle_edit_access?(asset_lease),
+    do: (asset_lease.license == :creator or asset_lease.license == :owner) and not is_nil(asset_lease.asset.mv_node)
 
   defp delete_repo({:ok, _}), do: :ok
   defp delete_repo(err), do: err

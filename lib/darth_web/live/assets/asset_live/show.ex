@@ -5,6 +5,9 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   alias Darth.Controller.User
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
+  alias Darth.Controller.AssetSubtitle
+  alias Darth.Model.AssetSubtitle, as: AssetSubtitleStruct
+  alias DarthWeb.UploadProcessor
 
   alias DarthWeb.Components.{
     ShowAudio,
@@ -14,16 +17,27 @@ defmodule DarthWeb.Assets.AssetLive.Show do
     Icons,
     Header,
     EmptyState,
-    HeaderButtons
+    HeaderButtons,
+    SubtitlesTable
   }
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
+         upload_subtitle_file_size = Application.fetch_env!(:darth, :upload_subtitle_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases"),
-         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects") do
-      {:ok, socket |> assign(current_user: user)}
+         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects"),
+         :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_subtitles") do
+      {:ok,
+       socket
+       |> assign(current_user: user)
+       |> assign(:uploaded_files, [])
+       |> allow_upload(:subtitle,
+         accept: ~w(.srt),
+         max_entries: 1,
+         max_file_size: upload_subtitle_file_size
+       )}
     else
       {:error, reason} ->
         Logger.error("Error while reading user information: #{inspect(reason)}")
@@ -49,9 +63,18 @@ defmodule DarthWeb.Assets.AssetLive.Show do
 
   @impl Phoenix.LiveView
   def handle_params(%{"asset_lease_id" => asset_lease_id}, _url, socket) do
+    select_options = Ecto.Enum.mappings(AssetSubtitleStruct, :language)
+
     with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
-         true <- AssetLease.has_user?(asset_lease, socket.assigns.current_user.id) do
-      {:noreply, socket |> assign(asset_lease: asset_lease)}
+         true <- AssetLease.has_user?(asset_lease, socket.assigns.current_user.id),
+         asset_subtitles <- AssetSubtitle.query_by_asset(asset_lease.asset.id) do
+      {:noreply,
+       socket
+       |> assign(
+         asset_lease: asset_lease,
+         asset_subtitles: asset_subtitles,
+         asset_subtitle_language_select_options: select_options
+       )}
     else
       false ->
         Logger.error("Error message: Current user don't have access to this Asset")
@@ -86,6 +109,80 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("delete", %{"ref" => asset_subtitle_id}, socket) do
+    socket =
+      with {:ok, asset_subtitle} <- AssetSubtitle.read(asset_subtitle_id),
+           :ok <- AssetSubtitle.delete(asset_subtitle) do
+        socket
+        |> put_flash(:info, "Subtitle file deleted")
+      else
+        _ ->
+          socket
+          |> put_flash(:error, "Unable to delete the subtitle file")
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :subtitle, ref)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("save", _params, socket) do
+    asset_id = socket.assigns.asset_lease.asset.id
+
+    socket =
+      with :ok <- UploadProcessor.create_uploads_base_path(),
+           {:ok, uploaded_file_path} <- UploadProcessor.get_uploaded_entries(socket, :subtitle),
+           {:ok, subtitle_file_details} <-
+             UploadProcessor.get_subtitle_file_details(socket, uploaded_file_path),
+           :ok <- UploadProcessor.check_for_uploaded_subtitle_file_type(subtitle_file_details),
+           subtitle_file_dest = AssetSubtitle.asset_subtitle_base_path(asset_id),
+           subtitle_file = Path.join([subtitle_file_dest, subtitle_file_details["name"]]),
+           {:ok, _} <-
+             AssetSubtitle.write_data_file(
+               subtitle_file_details["file_path"],
+               subtitle_file,
+               subtitle_file_dest
+             ),
+           asset_subtitle_params =
+             subtitle_file_details
+             |> Map.put("static_path", subtitle_file)
+             |> Map.put("asset_id", asset_id),
+           {:ok, _asset_subtitle_struct} <- AssetSubtitle.create(asset_subtitle_params) do
+        socket
+        |> put_flash(:info, "Uploaded Successfully")
+      else
+        {:error, reason} ->
+          Logger.error("Error while uploading the asset subtitle file: #{inspect(reason)}")
+
+          socket
+          |> put_flash(:error, inspect(reason))
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("update_language", %{"asset_subtitle" => asset_subtitle_map}, socket) do
+    {asset_subtitle_id, asset_subtitle_params} = Map.pop(asset_subtitle_map, "id")
+
+    case AssetSubtitle.update(asset_subtitle_id, asset_subtitle_params) do
+      {:ok, _updated_asset_subtitle} ->
+        {:noreply, socket}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
     socket =
       if socket.assigns.asset_lease.asset.id == asset.id do
@@ -111,6 +208,33 @@ defmodule DarthWeb.Assets.AssetLive.Show do
       else
         socket
       end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:asset_subtitle_created, asset_subtitle}, socket) do
+    asset_subtitles = AssetSubtitle.query_by_asset(asset_subtitle.asset_id)
+    {:noreply, socket |> assign(asset_subtitles: asset_subtitles)}
+  end
+
+  def handle_info({:asset_subtitle_updated, asset_subtitle}, socket) do
+    asset_subtitles = AssetSubtitle.query_by_asset(asset_subtitle.asset_id)
+
+    socket =
+      socket
+      |> put_flash(:info, "Asset subtitle updated successfully")
+      |> assign(asset_subtitles: asset_subtitles)
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:asset_subtitle_deleted, asset_subtitle}, socket) do
+    asset_subtitles = AssetSubtitle.query_by_asset(asset_subtitle.asset_id)
+
+    socket =
+      socket
+      |> put_flash(:info, "Asset subtitle deleted successfully")
+      |> assign(asset_subtitles: asset_subtitles)
 
     {:noreply, socket}
   end

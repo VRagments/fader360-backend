@@ -15,6 +15,8 @@ defmodule DarthWeb.Components.Button do
   attr :path, :string, default: nil
   # Text to render on the button
   attr :label, :string, required: true
+  # Value to be sent when clicked on the button
+  attr :phx_value_ref, :string, default: nil
   # Map will upload file information for LiveFormUpload
   attr :uploads, :map, default: nil
 
@@ -22,6 +24,7 @@ defmodule DarthWeb.Components.Button do
     ~H"""
       <button
         phx-click= {@action}
+        phx-value-ref={@phx_value_ref}
         class={button_class(@level)}
       >
         <.render_svg action={@action} />
@@ -38,7 +41,7 @@ defmodule DarthWeb.Components.Button do
         phx-submit="save"
         phx-change="validate"
       >
-        <.live_file_input upload={@uploads.media} />
+        <.live_file_input upload={@uploads} />
         <button type={@type}
           class={button_class(@level)}
         >
@@ -127,4 +130,5 @@ defmodule DarthWeb.Components.Button do
   defp render_svg(%{action: :back} = assigns), do: Icons.back_curved_arrow(assigns)
   defp render_svg(%{action: :add_all_mv_assets} = assigns), do: Icons.add_mv_asset_plus(assigns)
   defp render_svg(%{action: :uploads} = assigns), do: Icons.arrow_up_tray(assigns)
+  defp render_svg(%{action: :delete} = assigns), do: Icons.delete_trash(assigns)
 end
