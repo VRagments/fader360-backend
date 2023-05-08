@@ -49,6 +49,7 @@ defmodule DarthWeb.UserSessionController do
     changeset = User.change_user_registration(%UserModel{})
 
     conn
+    |> maybe_store_return_to(params)
     |> render("mv_new.html",
       default_mv_node: mv_node,
       changeset: changeset,
@@ -172,5 +173,15 @@ defmodule DarthWeb.UserSessionController do
 
   defp get_mv_api_endpoint(mv_node) do
     Path.join([mv_node, Application.fetch_env!(:darth, :mv_api_endpoint)])
+  end
+
+  defp maybe_store_return_to(conn, params) do
+    case params do
+      %{"mv_project_id" => mv_project_id} ->
+        put_session(conn, :user_return_to, Routes.mv_project_show_path(conn, :show, mv_project_id))
+
+      _ ->
+        conn
+    end
   end
 end

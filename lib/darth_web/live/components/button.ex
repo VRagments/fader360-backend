@@ -131,4 +131,5 @@ defmodule DarthWeb.Components.Button do
   defp render_svg(%{action: :add_all_mv_assets} = assigns), do: Icons.add_mv_asset_plus(assigns)
   defp render_svg(%{action: :uploads} = assigns), do: Icons.arrow_up_tray(assigns)
   defp render_svg(%{action: :delete} = assigns), do: Icons.delete_trash(assigns)
+  defp render_svg(%{action: :add_mv_project} = assigns), do: Icons.add_mv_asset_plus(assigns)
 end

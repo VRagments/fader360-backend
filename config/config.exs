@@ -68,7 +68,7 @@ config :darth,
   default_project_scene_duration: "12",
   mv_asset_index_url: "/assets/paginated",
   mv_project_index_url: "/project/userList/all/paginated",
-  editor_url: "/editor/edit/"
+  editor_url: "/editor/edit"
 
 config :darth,
   reset_password_validity_in_days: 1,

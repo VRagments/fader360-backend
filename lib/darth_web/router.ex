@@ -137,6 +137,7 @@ defmodule DarthWeb.Router do
     pipe_through [:browser, :required_mv_authenticated_user]
     live "/users/mv-assets", Assets.MvAssetLive.Index, :index
     live "/users/mv-projects", Projects.MvProjectLive.Index, :index
+    live "/users/mv-projects/:mv_project_id", Projects.MvProjectLive.Show, :show
   end
 
   scope "/", DarthWeb do

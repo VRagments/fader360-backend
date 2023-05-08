@@ -203,7 +203,7 @@ defmodule DarthWeb.UserAuth do
     with %UserStruct{} = current_user <- conn.assigns[:current_user],
          false <- is_nil(current_user.mv_node) do
       conn
-      |> redirect(to: signed_in_path(conn))
+      |> redirect(to: redirect_path(conn))
       |> halt()
     else
       _ -> conn
@@ -246,4 +246,14 @@ defmodule DarthWeb.UserAuth do
   defp maybe_store_return_to(conn), do: conn
 
   defp signed_in_path(_conn), do: "/"
+
+  defp redirect_path(conn) do
+    case URI.decode_query(conn.query_string) do
+      %{"mv_project_id" => mv_project_id} ->
+        Routes.mv_project_show_path(conn, :show, mv_project_id)
+
+      %{} ->
+        "/"
+    end
+  end
 end

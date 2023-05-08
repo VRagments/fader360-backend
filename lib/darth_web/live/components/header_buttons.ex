@@ -29,6 +29,7 @@ defmodule DarthWeb.Components.HeaderButtons do
         path={@path}
         label={@label}
         type={@type}
+        phx_value_ref={@phx_value_ref}
         uploads={@uploads}
       />
     """
@@ -43,6 +44,7 @@ defmodule DarthWeb.Components.HeaderButtons do
       type: Keyword.get(opts, :type),
       path: Keyword.get(opts, :path),
       label: Keyword.get(opts, :label),
+      phx_value_ref: Keyword.get(opts, :phx_value_ref),
       uploads: Keyword.get(opts, :uploads)
     }
   end

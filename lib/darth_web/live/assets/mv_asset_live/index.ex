@@ -241,7 +241,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         audio_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
         title={Map.get(@mv_asset, "originalFilename" )}
-        subtitle={Map.get(@mv_asset, "createdBy")}
+        subtitle={Map.get(@mv_asset, "author")}
         info={Map.get(@mv_asset, "contentType" )}
       >
         <.render_buttons
@@ -260,7 +260,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         image_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
         title={Map.get(@mv_asset, "originalFilename" )}
-        subtitle={Map.get(@mv_asset, "createdBy")}
+        subtitle={Map.get(@mv_asset, "author")}
         info={Map.get(@mv_asset, "contentType" )}
       >
         <.render_buttons
@@ -279,7 +279,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         image_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
         title={Map.get(@mv_asset, "originalFilename" )}
-        subtitle={Map.get(@mv_asset, "createdBy")}
+        subtitle={Map.get(@mv_asset, "author")}
         info={Map.get(@mv_asset, "contentType" )}
       >
         <.render_buttons
@@ -297,7 +297,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
           Map.get(@mv_asset, "key")}
         image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
         title={Map.get(@mv_asset, "originalFilename" )}
-        subtitle={Map.get(@mv_asset, "createdBy")}
+        subtitle={Map.get(@mv_asset, "author")}
         info={Map.get(@mv_asset, "contentType" )}
       >
         <.render_buttons

@@ -1,0 +1,64 @@
+<Header.render heading={@mv_project["name"]}>
+    <HeaderButtons.render
+        buttons={[
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.mv_project_index_path(@socket, :index),
+                label: "Back"
+            }
+        ]}
+    />
+</Header.render>
+
+<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+    <div class="relative sm:py-16 lg:py-0">
+        <Icons.dots_pattern />
+        <ShowImage.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
+    </div>
+    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+        <div class="mt-10">
+            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                <.render_project_stats
+                    project={@mv_project}
+                    updated_at={@updated_at}
+                />
+            </dl>
+        </div>
+    </div>
+</div>
+
+<Header.render heading="Projects created in Fader from this MediaVerse Project">
+    <HeaderButtons.render
+        buttons={[
+            {
+                :add_mv_project,
+                level: :primary,
+                type: :click,
+                phx_value_ref: Map.get(@mv_project, "id" ),
+                label: "Add to Fader"
+            }
+        ]}
+    />
+</Header.render>
+
+<%= if Enum.empty?(@fader_projects) do %>
+    <EmptyState.render label="No projects are created in Fader with this MediaVerse project"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for user_project <- @fader_projects do %>
+                <.render_project_card
+                    user_project={user_project}
+                    socket={@socket}
+                />
+            <%end%>
+        </ul>
+    </section>
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+<% end %>

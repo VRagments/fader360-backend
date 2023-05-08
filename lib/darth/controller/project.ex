@@ -4,6 +4,9 @@ defmodule Darth.Controller.Project do
   use Darth.Controller, include_crud: true
 
   alias Darth.Controller
+  alias Darth.Model.Asset
+  alias Darth.MvApiClient
+  alias Darth.AssetProcessor.Downloader
 
   def model_mod, do: Darth.Model.Project
   def default_query_sort_by, do: "updated_at"
@@ -212,5 +215,122 @@ defmodule Darth.Controller.Project do
 
   def load_virtual_field(model, "custom_player_settings") do
     Controller.User.player_settings(model.user)
+  end
+
+  def build_params_create_new_project(current_user, mv_project) do
+    project_params = %{
+      "author" => current_user.display_name,
+      "name" => Map.get(mv_project, "name"),
+      "user_id" => current_user.id,
+      "visibility" => "private",
+      "mv_project_id" => Map.get(mv_project, "id")
+    }
+
+    case create(project_params) do
+      {:ok, %Project{} = project_struct} ->
+        {:ok, project_struct}
+
+      {:error, reason} ->
+        Logger.error("Project creation failed while adding mv_project: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  def add_project_to_fader(user_params, mv_project_asset_key_list, project_struct) do
+    result =
+      Enum.map(mv_project_asset_key_list, fn mv_asset_key ->
+        create_and_assign(user_params, mv_asset_key, project_struct)
+      end)
+      |> Enum.split_with(fn
+        {:ok, _} -> true
+        {:error, _} -> false
+      end)
+
+    case result do
+      {ok_tuples, []} ->
+        asset_leases = Enum.map(ok_tuples, fn {:ok, asset_lease} -> asset_lease end)
+        {:ok, asset_leases}
+
+      {_, errors} ->
+        Enum.each(errors, fn {:error, reason} ->
+          Logger.error("Custom error message in mv_projects: #{inspect(reason)}")
+        end)
+
+        {:error, "Error adding project to Fader"}
+    end
+  end
+
+  def download_project_assets(user_params, asset_leases) do
+    Enum.each(asset_leases, fn asset_lease ->
+      if asset_lease.asset.status == "ready" do
+        :ok
+      else
+        Downloader.add_download_params(create_params(user_params, asset_lease.asset))
+      end
+    end)
+  end
+
+  defp create_and_assign(user_params, mv_asset_key, project_struct) do
+    current_user = user_params.current_user
+    mv_node = user_params.mv_node
+    mv_token = user_params.mv_token
+
+    with {:ok, mv_asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
+         params = create_params(user_params, mv_asset),
+         database_params = Controller.Asset.build_asset_params(params),
+         {:ok, asset_lease} <-
+           Controller.Asset.add_asset_to_database(database_params, current_user),
+         {:ok, asset_lease} <-
+           Controller.AssetLease.assign_project(asset_lease, current_user, project_struct) do
+      {:ok, asset_lease}
+    else
+      {:ok, %{"message" => message}} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
+
+        {:error, message}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
+        {:error, reason}
+
+      {:error, reason} ->
+        Logger.error("Error while adding asset lease to project while adding mv_project: #{inspect(reason)}")
+
+        {:error, reason}
+    end
+  end
+
+  defp create_params(user_params, asset_struct = %Asset{}) do
+    current_user = user_params.current_user
+    mv_node = user_params.mv_node
+    mv_token = user_params.mv_token
+
+    %{
+      media_type: asset_struct.media_type,
+      mv_asset_key: asset_struct.mv_asset_key,
+      mv_asset_deeplink_key: asset_struct.mv_asset_deeplink_key,
+      mv_node: mv_node,
+      mv_token: mv_token,
+      mv_asset_filename: asset_struct.name,
+      current_user: current_user,
+      asset_struct: asset_struct
+    }
+  end
+
+  defp create_params(user_params, mv_asset) do
+    current_user = user_params.current_user
+    mv_node = current_user.mv_node
+    mv_token = user_params.mv_token
+
+    %{
+      media_type: Map.get(mv_asset, "contentType"),
+      mv_asset_key: Map.get(mv_asset, "key"),
+      mv_asset_deeplink_key: Map.get(mv_asset, "deepLinkKey"),
+      mv_node: mv_node,
+      mv_token: mv_token,
+      mv_asset_filename: Map.get(mv_asset, "originalFilename"),
+      current_user: current_user
+    }
   end
 end
