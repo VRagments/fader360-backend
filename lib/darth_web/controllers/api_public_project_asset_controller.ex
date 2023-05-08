@@ -2,6 +2,7 @@ defmodule DarthWeb.ApiPublicProjectAssetController do
   use DarthWeb, :controller
   alias DarthWeb.QueryParameters
   alias Darth.Controller.AssetLease
+  alias Darth.Model.AssetLease, as: AssetLeaseStruct
   alias Darth.Controller.Project
 
   swagger_path(:index) do
@@ -30,12 +31,13 @@ defmodule DarthWeb.ApiPublicProjectAssetController do
   end
 
   def index(conn, %{"api_public_project_id" => project_id} = params) do
-    fun = fn _user ->
+    with {:ok, project} <- Project.read(project_id),
+         true <- project.visibility != :private do
       assigns = AssetLease.query_by_public_project(project_id, params)
       render(conn, "index.json", assigns)
+    else
+      _ -> {:error, :not_found}
     end
-
-    ensure_project_allowed(project_id, fun)
   end
 
   swagger_path(:show) do
@@ -64,28 +66,15 @@ defmodule DarthWeb.ApiPublicProjectAssetController do
   end
 
   def show(conn, %{"api_public_project_id" => project_id, "id" => id}) do
-    fun = fn ->
-      case AssetLease.read_by_project(project_id, id) do
-        nil ->
-          {:error, :not_found}
-
-        asset_lease ->
-          conn
-          |> put_status(:ok)
-          |> render("show.json", object: asset_lease)
-      end
-    end
-
-    ensure_project_allowed(project_id, fun)
-  end
-
-  defp ensure_project_allowed(project_id, fun) do
-    with {:ok, project} <- Project.read(project_id) do
-      if project.visibility != :private do
-        fun.()
-      else
+    with {:ok, project} <- Project.read(project_id),
+         true <- project.visibility != :private,
+         %AssetLeaseStruct{} = asset_lease <- AssetLease.read_by_project(project_id, id) do
+      conn
+      |> put_status(:ok)
+      |> render("show.json", object: asset_lease)
+    else
+      _ ->
         {:error, :not_found}
-      end
     end
   end
 end

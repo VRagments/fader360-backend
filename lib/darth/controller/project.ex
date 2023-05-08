@@ -117,7 +117,7 @@ defmodule Darth.Controller.Project do
   def query_recommendations(%Project{id: id, user: user}, params \\ %{}) do
     custom_query =
       Project
-      |> where([p], p.visibility == "discoverable")
+      |> where([p], p.visibility == :discoverable)
       |> where([p], p.id != ^id)
       |> join(:inner, [p], u in assoc(p, :user), on: u.id == ^user.id)
 

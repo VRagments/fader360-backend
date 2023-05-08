@@ -33,7 +33,6 @@ defmodule DarthWeb.ApiPublicProjectController do
                    Only allowed for public projects.))
 
     produces("application/json")
-    security([%{Bearer: []}])
 
     parameters do
       id(:path, :string, "Project ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
@@ -44,17 +43,14 @@ defmodule DarthWeb.ApiPublicProjectController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, project} <- Project.read(id) do
-      user = conn.assigns.current_api_user
-
-      # We show the project if the user is the owner or the project is not private
-      if project.visibility != :private or (not is_nil(user) and project.user_id == user.id) do
-        conn
-        |> put_status(:ok)
-        |> render("show.json", object: project)
-      else
-        {:error, :not_found}
-      end
+    # We show the project if the user is the owner or the project is not private
+    with {:ok, project} <- Project.read(id),
+         true <- project.visibility != :private do
+      conn
+      |> put_status(:ok)
+      |> render("show.json", object: project)
+    else
+      _ -> {:error, :not_found}
     end
   end
 
