@@ -62,6 +62,7 @@ defmodule DarthWeb.Router do
       delete("/users", ApiAssetController, :remove_user)
       put("/projects", ApiAssetController, :assign_project)
       delete("/projects", ApiAssetController, :remove_project)
+      resources("/asset_subtitles", ApiAssetSubtitleController, only: [:index, :show])
     end
   end
 
@@ -70,7 +71,11 @@ defmodule DarthWeb.Router do
 
     resources "/projects", ApiPublicProjectController, only: [:index, :show] do
       get("/recommendations", ApiPublicProjectController, :recommendations)
-      resources("/assets", ApiPublicProjectAssetController, only: [:index, :show])
+
+      resources("/assets", ApiPublicProjectAssetController, only: [:index, :show]) do
+        resources("/asset_subtitles", ApiPublicProjectAssetSubtitleController, only: [:index, :show])
+      end
+
       resources("/project_scenes", ApiPublicProjectSceneController, only: [:index, :show])
     end
 

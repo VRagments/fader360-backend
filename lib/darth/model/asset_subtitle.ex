@@ -8,6 +8,7 @@ defmodule Darth.Model.AssetSubtitle do
     field(:static_url, :string)
     field(:language, Ecto.Enum, values: [:-, :EN, :ES, :DE, :PL, :SL, :IT])
     field(:version, :string)
+    field(:mv_asset_subtitle_key, :string)
 
     belongs_to(:asset, Asset)
 
@@ -21,7 +22,7 @@ defmodule Darth.Model.AssetSubtitle do
      )
   end
 
-  @allowed_fields ~w(asset_id static_path static_url language name version)a
+  @allowed_fields ~w(asset_id static_path static_url language name version mv_asset_subtitle_key)a
 
   @required_fields ~w(asset_id static_path static_url name version)a
 

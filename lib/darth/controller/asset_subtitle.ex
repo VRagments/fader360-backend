@@ -13,6 +13,7 @@ defmodule Darth.Controller.AssetSubtitle do
   def default_select_fields do
     ~w(
       asset_id
+      mv_asset_subtitle_key
       static_path
       static_url
       id
@@ -46,7 +47,13 @@ defmodule Darth.Controller.AssetSubtitle do
   end
 
   def create(params) do
-    with {:ok, as} <- params |> new() |> Repo.insert(),
+    with {:ok, as} <-
+           params
+           |> new()
+           |> Repo.insert(
+             on_conflict: {:replace_all_except, [:id, :inserted_at]},
+             conflict_target: [:asset_id, :mv_asset_subtitle_key]
+           ),
          :ok <- broadcast("asset_subtitles", {:asset_subtitle_created, as}) do
       read(as.id)
     end
@@ -92,6 +99,17 @@ defmodule Darth.Controller.AssetSubtitle do
     AssetSubtitleStruct
     |> where([as], as.asset_id == ^asset_id)
     |> Repo.all()
+  end
+
+  def query_by_asset_mv_key_and_version(asset_id, mv_asset_subtitle_key, version) do
+    query =
+      AssetSubtitleStruct
+      |> where(
+        [as],
+        as.asset_id == ^asset_id and as.mv_asset_subtitle_key == ^mv_asset_subtitle_key and as.version == ^version
+      )
+
+    Repo.one(query)
   end
 
   def normalized_media_type(media_type) when media_type in @srt_media_types, do: :srt

@@ -3,6 +3,7 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
   require Logger
   alias Darth.MvApiClient
   alias Darth.Controller.{Asset, AssetSubtitle}
+  alias Darth.Model.AssetSubtitle, as: AssetSubtitleStruct
   alias DarthWeb.SaveFile
 
   @name {:global, __MODULE__}
@@ -70,7 +71,7 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
         :ok
 
       {:ok, asset_subtitles} ->
-        download_asset_subtitles(mv_token, asset_subtitles, asset_struct)
+        add_and_download_asset_subtitles(mv_token, asset_subtitles, asset_struct)
 
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Custom error message from MediaVerse while fetching subtitles: #{inspect(reason)}")
@@ -80,7 +81,7 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
     end
   end
 
-  defp download_asset_subtitles(mv_token, asset_subtitles, asset_struct) do
+  defp add_and_download_asset_subtitles(mv_token, asset_subtitles, asset_struct) do
     asset_subtitle_base_path = AssetSubtitle.asset_subtitle_base_path(asset_struct.id)
 
     if create_asset_subtitle_base_path(asset_subtitle_base_path) == :ok do
@@ -93,41 +94,52 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
         asset_subtitle_language = Map.get(asset_subtitle, "language")
         version = Map.get(asset_subtitle, "version")
         download_url = Map.get(asset_subtitle, "externalFileUrl")
+        mv_asset_subtitle_key = Map.get(asset_subtitle, "key")
         mv_token = mv_token
         asset_subtitle_file_path = Path.join([asset_subtitle_base_path, asset_subtitle_filename])
 
-        with {:ok, response} <- MvApiClient.download_asset_subtitle(mv_token, download_url),
-             {:ok, file} <- File.open(asset_subtitle_file_path, [:write, :binary]),
-             :ok <- SaveFile.save_file(file, response),
-             asset_subtitle_params = %{
-               "name" => asset_subtitle_filename,
-               "version" => version,
-               "static_path" => asset_subtitle_file_path,
-               "language" => asset_subtitle_language,
-               "asset_id" => asset_id
-             },
-             {:ok, _asset_subtitle_struct} <- AssetSubtitle.create(asset_subtitle_params) do
-          :ok
-        else
-          {:error, %HTTPoison.Error{reason: reason}} ->
-            Logger.error("Custom error message from MediaVerse when downloading asset subtitle
-                (HTTPoison error): #{inspect(reason)}")
+        asset_subtitle_params = %{
+          "name" => asset_subtitle_filename,
+          "version" => version,
+          "static_path" => asset_subtitle_file_path,
+          "language" => asset_subtitle_language,
+          "asset_id" => asset_id,
+          "mv_asset_subtitle_key" => mv_asset_subtitle_key
+        }
 
-            delete_incomplete_download(asset_subtitle_file_path)
-            {:error, "MediaVerse API error"}
-
-          # File creation error
-          {:error, :enoent} ->
-            Logger.error("Custom error message from MediaVerse: Cannot open file")
-            {:error, "Cannot create file"}
-
-          # General error handling
-          {:error, reason} ->
-            Logger.error("Custom error message from MediaVerse (General error): #{inspect(reason)}")
-
-            {:error, inspect(reason)}
+        if is_nil(AssetSubtitle.query_by_asset_mv_key_and_version(asset_id, mv_asset_subtitle_key, version)) do
+          download_asset_subtitles(asset_subtitle_params, mv_token, download_url)
         end
       end)
+    end
+  end
+
+  defp download_asset_subtitles(asset_subtitle_params, mv_token, download_url) do
+    asset_subtitle_file_path = Map.get(asset_subtitle_params, "static_path")
+
+    with {:ok, response} <- MvApiClient.download_asset_subtitle(mv_token, download_url),
+         {:ok, file} <- File.open(asset_subtitle_file_path, [:write, :binary]),
+         :ok <- SaveFile.save_file(file, response),
+         {:ok, _asset_subtitle_struct} <- AssetSubtitle.create(asset_subtitle_params) do
+      :ok
+    else
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("Custom error message from MediaVerse when downloading asset subtitle
+                (HTTPoison error): #{inspect(reason)}")
+
+        delete_incomplete_download(asset_subtitle_file_path)
+        {:error, "MediaVerse API error"}
+
+      # File creation error
+      {:error, :enoent} ->
+        Logger.error("Custom error message from MediaVerse: Cannot open file")
+        {:error, "Cannot create file"}
+
+      # General error handling
+      {:error, reason} ->
+        Logger.error("Custom error message from MediaVerse (General error): #{inspect(reason)}")
+
+        {:error, inspect(reason)}
     end
   end
 
