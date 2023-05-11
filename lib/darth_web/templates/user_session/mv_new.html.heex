@@ -45,7 +45,7 @@
                 </.form>
                 <LoginPageButton.render
                     action={:link}
-                    path={String.replace_suffix(@default_mv_node, "dam", "create-account")}
+                    path={@default_mv_node <> "/create-account"}
                     label={"Register at MediaVerse node"}
                 />
             </div>

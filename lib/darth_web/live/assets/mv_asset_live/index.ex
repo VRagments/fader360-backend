@@ -235,8 +235,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   defp render_audio_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/audio/" )<>
-          Map.get(@mv_asset, "key")}
+        show_path={@current_user.mv_node <> "/app/audio/" <> Map.get(@mv_asset, "key")}
         image_source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}
         audio_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
@@ -255,8 +254,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   defp render_video_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/video/")<>
-          Map.get(@mv_asset, "key")}
+        show_path={@current_user.mv_node <> "/app/video/" <> Map.get(@mv_asset, "key")}
         image_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
         title={Map.get(@mv_asset, "originalFilename" )}
@@ -274,8 +272,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   defp render_image_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
-          Map.get(@mv_asset, "key")}
+        show_path={@current_user.mv_node <> "/app/image/" <> Map.get(@mv_asset, "key")}
         image_source={Path.join([@asset_preview_static_url,
           Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
         title={Map.get(@mv_asset, "originalFilename" )}
@@ -293,8 +290,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   defp render_default_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={String.replace_suffix(@current_user.mv_node,"dam", "app/image/" )<>
-          Map.get(@mv_asset, "key")}
+        show_path={@current_user.mv_node <> "/app/image/" <> Map.get(@mv_asset, "key")}
         image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg" )}
         title={Map.get(@mv_asset, "originalFilename" )}
         subtitle={Map.get(@mv_asset, "author")}

@@ -3,7 +3,7 @@ defmodule Darth.Repo do
     otp_app: :darth,
     adapter: Ecto.Adapters.Postgres
 
-  use Scrivener, page_size: 10
+  use Scrivener, page_size: 12
   import Ecto.Query
 
   @default_query_sort_by "updated_at"

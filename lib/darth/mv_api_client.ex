@@ -2,7 +2,7 @@ defmodule Darth.MvApiClient do
   require Logger
 
   def authenticate(mv_node, email, password) do
-    url = mv_node <> "/authentication/login"
+    url = mv_node <> "/dam/authentication/login"
 
     headers = [
       {"Content-type", "application/json"}
@@ -16,7 +16,7 @@ defmodule Darth.MvApiClient do
   end
 
   def fetch_user(mv_node, mv_token) do
-    url = mv_node <> "/user"
+    url = mv_node <> "/dam/user"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
          {:ok, response} <- Jason.decode(body) do
@@ -29,8 +29,8 @@ defmodule Darth.MvApiClient do
 
   def fetch_assets(mv_node, mv_token, current_page) do
     int_current_page = String.to_integer(current_page)
-    url = mv_node <> Application.fetch_env!(:darth, :mv_asset_index_url)
-    params = [page: int_current_page - 1]
+    url = mv_node <> "/dam/assets/paginated"
+    params = [page: int_current_page - 1, per_page: 12]
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, assets} when is_list(assets) <- Jason.decode(body) do
@@ -45,7 +45,7 @@ defmodule Darth.MvApiClient do
   end
 
   def show_asset(mv_node, mv_token, key) do
-    url = mv_node <> "/assets/" <> key
+    url = mv_node <> "/dam/assets/" <> key
 
     case HTTPoison.get(url, get_headers(mv_token)) do
       {:ok, %{body: body}} -> Jason.decode(body)
@@ -55,8 +55,8 @@ defmodule Darth.MvApiClient do
 
   def fetch_projects(mv_node, mv_token, current_page) do
     int_current_page = String.to_integer(current_page)
-    url = mv_node <> Application.fetch_env!(:darth, :mv_project_index_url)
-    params = [page: int_current_page - 1]
+    url = mv_node <> "/dam/project/userList/all/paginated"
+    params = [page: int_current_page - 1, per_page: 12]
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, projects} when is_list(projects) <- Jason.decode(body) do
@@ -71,7 +71,7 @@ defmodule Darth.MvApiClient do
   end
 
   def show_project(mv_node, mv_token, mv_project_id) do
-    url = mv_node <> "/project/" <> mv_project_id
+    url = mv_node <> "/dam/project/" <> mv_project_id
 
     case HTTPoison.get(url, get_headers(mv_token)) do
       {:ok, %{body: body}} -> Jason.decode(body)
@@ -80,12 +80,12 @@ defmodule Darth.MvApiClient do
   end
 
   def download_asset(mv_node, mv_token, deeplinkkey) do
-    url = mv_node <> "/deeplink/" <> deeplinkkey <> "/download"
+    url = mv_node <> "/dam/deeplink/" <> deeplinkkey <> "/download"
     HTTPoison.get(url, get_headers(mv_token), stream_to: self(), async: :once)
   end
 
   def download_preview_asset(mv_node, mv_token, previewlinkkey) do
-    url = mv_node <> "/previewlink/" <> previewlinkkey <> "/download"
+    url = mv_node <> "/dam/previewlink/" <> previewlinkkey <> "/download"
     HTTPoison.get(url, get_headers(mv_token), stream_to: self(), async: :once)
   end
 
@@ -118,7 +118,7 @@ defmodule Darth.MvApiClient do
   end
 
   def fetch_asset_subtitles(mv_node, mv_token, mv_asset_key) do
-    url = mv_node <> "/assets/" <> mv_asset_key <> "/subtitles"
+    url = mv_node <> "/dam/assets/" <> mv_asset_key <> "/subtitles"
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token)),
          {:ok, asset_subtitles} when is_list(asset_subtitles) <- Jason.decode(body) do

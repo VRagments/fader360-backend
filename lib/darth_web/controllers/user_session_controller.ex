@@ -25,8 +25,7 @@ defmodule DarthWeb.UserSessionController do
         conn
         |> put_flash(:info, "Provided credentials are for MediaVerse account, login here")
         |> render("mv_new.html",
-          default_mv_node:
-            get_mv_api_endpoint(Map.get(user_params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))),
+          default_mv_node: Map.get(user_params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)),
           changeset: changeset,
           username_error: false
         )
@@ -44,7 +43,7 @@ defmodule DarthWeb.UserSessionController do
   end
 
   def mv_new(conn, params) do
-    mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
+    mv_node = Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))
 
     changeset = User.change_user_registration(%UserModel{})
 
@@ -60,7 +59,7 @@ defmodule DarthWeb.UserSessionController do
   # Reusing the mv_login page by making user_name error as true.
   #  As there will be no changeset errors just the username field is displayed
   def mv_register(conn, params) do
-    mv_node = get_mv_api_endpoint(Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node)))
+    mv_node = Map.get(params, "mv_node", Application.fetch_env!(:darth, :default_mv_node))
 
     changeset = User.change_user_registration(%UserModel{})
 
@@ -169,10 +168,6 @@ defmodule DarthWeb.UserSessionController do
     conn
     |> put_flash(:error, "MediaVerse login failed due to: #{reason}")
     |> redirect(to: Routes.user_session_path(conn, :mv_new, mv_node: mv_node))
-  end
-
-  defp get_mv_api_endpoint(mv_node) do
-    Path.join([mv_node, Application.fetch_env!(:darth, :mv_api_endpoint)])
   end
 
   defp maybe_store_return_to(conn, params) do

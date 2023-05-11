@@ -7,6 +7,14 @@
                 type: :link,
                 path: Routes.mv_project_index_path(@socket, :index),
                 label: "Back"
+            },
+            nil,
+            {
+                :launch,
+                level: :secondary,
+                type: :link,
+                path: @current_user.mv_node <> "/app/project/" <> @mv_project["id"],
+                label: "View in MediaVerse"
             }
         ]}
     />

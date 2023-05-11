@@ -66,8 +66,6 @@ config :darth,
   upload_file_size: 80_000_000,
   upload_subtitle_file_size: 80_000,
   default_project_scene_duration: "12",
-  mv_asset_index_url: "/assets/paginated",
-  mv_project_index_url: "/project/userList/all/paginated",
   editor_url: "/editor/edit"
 
 config :darth,
