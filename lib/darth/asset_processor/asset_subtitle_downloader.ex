@@ -3,7 +3,6 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
   require Logger
   alias Darth.MvApiClient
   alias Darth.Controller.{Asset, AssetSubtitle}
-  alias Darth.Model.AssetSubtitle, as: AssetSubtitleStruct
   alias DarthWeb.SaveFile
 
   @name {:global, __MODULE__}
