@@ -379,6 +379,23 @@ defmodule Darth.Controller.Asset do
   def is_audio_or_video_asset?(media_type),
     do: is_audio_asset?(media_type) or is_video_asset?(media_type)
 
+  def ensure_user_asset_lease(asset_struct, user, params) do
+    with {:ok, asset_lease} <- check_asset_lease(asset_struct, user),
+         true <- AssetLease.has_user?(asset_lease, user) do
+      {:ok, asset_lease}
+    else
+      nil ->
+        create_asset_lease(user, params, asset_struct)
+
+      false ->
+        create_asset_lease(user, params, asset_struct)
+
+      {:error, reason} ->
+        Logger.error("Unable to add user to the current asset lease: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
@@ -551,23 +568,6 @@ defmodule Darth.Controller.Asset do
       {:error, reason} ->
         Logger.error("Error while creating the asset lease with license creator for mv_asset: #{inspect(reason)}")
 
-        {:error, reason}
-    end
-  end
-
-  defp ensure_user_asset_lease(asset_struct, user, params) do
-    with {:ok, asset_lease} <- check_asset_lease(asset_struct, user),
-         true <- AssetLease.has_user?(asset_lease, user) do
-      {:ok, asset_lease}
-    else
-      nil ->
-        create_asset_lease(user, params, asset_struct)
-
-      false ->
-        create_asset_lease(user, params, asset_struct)
-
-      {:error, reason} ->
-        Logger.error("Unable to add user to the current asset lease: #{inspect(reason)}")
         {:error, reason}
     end
   end

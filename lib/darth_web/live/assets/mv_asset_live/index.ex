@@ -134,12 +134,19 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   @impl Phoenix.LiveView
   def handle_event("add_all_mv_assets", _, socket) do
     mv_assets = socket.assigns.mv_assets
+    user = socket.assigns.current_user
+    mv_node = user.mv_node
+    mv_token = socket.assigns.mv_token
 
     for mv_asset <- mv_assets do
       mv_asset_key = Map.get(mv_asset, "key")
 
-      case Asset.read_by(%{mv_asset_key: mv_asset_key}) do
-        {:ok, _} -> :ok
+      params = %{"mv_node" => mv_node, "mv_token" => mv_token, "mv_asset_key" => mv_asset_key}
+
+      with {:ok, asset} <- Asset.read_by(%{mv_asset_key: mv_asset_key}),
+           {:ok, _asset_lease} <- Asset.ensure_user_asset_lease(asset, user, params) do
+        :ok
+      else
         {:error, _} -> add_to_fader(socket, mv_asset_key)
       end
     end

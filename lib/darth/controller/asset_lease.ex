@@ -301,7 +301,7 @@ defmodule Darth.Controller.AssetLease do
   def query_by_public_project(project_id, params, only_ready \\ true) do
     custom_query =
       AssetLease
-      |> base_query(only_ready)
+      |> query_ready(only_ready)
       |> join(:inner, [al], p in assoc(al, :projects), on: p.id == ^project_id)
 
     query(params, custom_query, true, Darth.Model.Asset)
@@ -323,7 +323,7 @@ defmodule Darth.Controller.AssetLease do
   def query_by_accessible_project(project_id, params, only_ready \\ true) do
     custom_query =
       AssetLease
-      |> base_query(only_ready)
+      |> query_ready(only_ready)
       |> join(:inner, [al], p in assoc(al, :projects), on: p.id == ^project_id)
 
     query(params, custom_query, true, Darth.Model.Asset)
@@ -332,7 +332,7 @@ defmodule Darth.Controller.AssetLease do
   def query_by_user(user_id, params, only_ready \\ true) do
     custom_query =
       AssetLease
-      |> base_query(only_ready)
+      |> query_ready(only_ready)
       |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
 
     query(params, custom_query, true, Darth.Model.Asset)
@@ -341,7 +341,7 @@ defmodule Darth.Controller.AssetLease do
   def query_by_license(license, params, only_ready \\ true, valid_now \\ true) do
     custom_query =
       AssetLease
-      |> base_query(only_ready)
+      |> query_ready(only_ready)
       |> where([al], al.license == ^license)
 
     custom_query =
@@ -359,7 +359,7 @@ defmodule Darth.Controller.AssetLease do
 
     custom_query =
       AssetLease
-      |> base_query()
+      |> query_ready(true)
       |> where([al], al.license == ^license)
       |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
       |> join(:inner, [al, u], a in assoc(al, :asset), on: ilike(a.media_type, ^type_check))
@@ -462,15 +462,6 @@ defmodule Darth.Controller.AssetLease do
           end
         end).()
     |> (fn q ->
-          if is_nil(opts[:owner_username]) do
-            q
-          else
-            q
-            |> join(:left, [al, a], o in subquery(owner_subquery()), on: o.asset_id == al.asset_id)
-            |> where([al, a, o], o.owner_username == ^opts[:owner_username])
-          end
-        end).()
-    |> (fn q ->
           if is_nil(opts[:project]) do
             q
           else
@@ -559,18 +550,4 @@ defmodule Darth.Controller.AssetLease do
 
   defp delete_repo({:ok, _}), do: :ok
   defp delete_repo(err), do: err
-
-  defp base_query(query, only_ready \\ true) do
-    query
-    |> query_ready(only_ready)
-    |> join(:left, [al, a], o in subquery(owner_subquery()), on: o.asset_id == al.asset_id)
-    |> select_merge([al, a, o], %{owner_username: o.owner_username})
-  end
-
-  defp owner_subquery do
-    AssetLease
-    |> where([al], al.license == :owner)
-    |> join(:inner, [al], u in assoc(al, :users))
-    |> select([al, u], %{asset_id: al.asset_id, owner_username: u.username})
-  end
 end
