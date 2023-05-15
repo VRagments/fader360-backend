@@ -359,7 +359,7 @@ defmodule Darth.Controller.Asset do
   def is_asset_download_failed?(asset_status, asset_mv_node),
     do: is_mv_asset?(asset_mv_node) and (asset_status == "created" or asset_status == "download_failed")
 
-  def is_mv_asset?(asset_mv_node), do: asset_mv_node != nil
+  def is_mv_asset?(asset_mv_node), do: not is_nil(asset_mv_node)
 
   def get_sorted_asset_lease_list(asset_leases_map) do
     asset_leases_map

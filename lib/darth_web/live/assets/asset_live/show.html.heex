@@ -36,19 +36,9 @@
     </div>
     <%= if Asset.is_audio_or_video_asset?(@asset_lease.asset.media_type) do %>
         <Header.render heading="Asset Subtitles">
-            <%= unless AssetLease.has_subtitle_edit_access?(@asset_lease) do %>
-                <HeaderButtons.render
-                    buttons={[
-                        {
-                            :uploads,
-                            label: "Upload",
-                            uploads: @uploads.subtitle,
-                            level: :secondary,
-                            type: :submit
-                        }
-                    ]}
-                />
-            <% end %>
+            <HeaderButtons.render
+                buttons={render_subtitle_header_buttons(@asset_lease.asset.mv_asset_key, @uploads)}
+            />
         </Header.render>
         <%= if Enum.empty?(@asset_subtitles) do %>
             <EmptyState.render label="Subtitles are not available for this Asset" />
@@ -56,7 +46,7 @@
             <section class="py-2 lg:pt-12 md:mx-auto lg:container">
                 <SubtitlesTable.render
                     entries={@asset_subtitles}
-                    subtitle_edit_access={AssetLease.has_subtitle_edit_access?(@asset_lease)}
+                    subtitle_edit_access={Asset.is_mv_asset?(@asset_lease.asset.mv_node)}
                     select_options={@asset_subtitle_language_select_options}
                 />
             </section>

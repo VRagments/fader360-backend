@@ -6,6 +6,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   alias Darth.Controller.Asset
   alias Darth.Controller.AssetLease
   alias Darth.Controller.AssetSubtitle
+  alias Darth.AssetProcessor.AssetSubtitleDownloader
   alias Darth.Model.AssetSubtitle, as: AssetSubtitleStruct
   alias DarthWeb.UploadProcessor
 
@@ -22,7 +23,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   }
 
   @impl Phoenix.LiveView
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          upload_subtitle_file_size = Application.fetch_env!(:darth, :upload_subtitle_file_size),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "assets"),
@@ -31,7 +32,7 @@ defmodule DarthWeb.Assets.AssetLive.Show do
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_subtitles") do
       {:ok,
        socket
-       |> assign(current_user: user)
+       |> assign(current_user: user, mv_token: mv_token)
        |> assign(:uploaded_files, [])
        |> allow_upload(:subtitle,
          accept: ~w(.srt),
@@ -183,6 +184,15 @@ defmodule DarthWeb.Assets.AssetLive.Show do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("sync_with_mv_asset", _, socket) do
+    asset_struct = socket.assigns.asset_lease.asset
+    mv_token = socket.assigns.mv_token
+    download_params = %{asset_struct: asset_struct, mv_token: mv_token}
+    AssetSubtitleDownloader.add_asset_subtitle_download_params(download_params)
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:asset_updated, asset}, socket) do
     socket =
       if socket.assigns.asset_lease.asset.id == asset.id do
@@ -326,5 +336,23 @@ defmodule DarthWeb.Assets.AssetLive.Show do
           <Stat.render title="Media Type" value= {@asset.media_type} />
         """
     end
+  end
+
+  defp render_subtitle_header_buttons(nil, uploads) do
+    [
+      {
+        :uploads,
+        label: "Upload", uploads: uploads.subtitle, level: :secondary, type: :submit
+      }
+    ]
+  end
+
+  defp render_subtitle_header_buttons(_mv_asset_key, _) do
+    [
+      {
+        :sync_with_mv_asset,
+        label: "Sync with MediaVerse", level: :secondary, type: :click
+      }
+    ]
   end
 end

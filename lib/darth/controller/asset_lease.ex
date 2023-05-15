@@ -545,9 +545,6 @@ defmodule Darth.Controller.AssetLease do
     |> Repo.update()
   end
 
-  def has_subtitle_edit_access?(asset_lease),
-    do: (asset_lease.license == :creator or asset_lease.license == :owner) and not is_nil(asset_lease.asset.mv_node)
-
   defp delete_repo({:ok, _}), do: :ok
   defp delete_repo(err), do: err
 end
