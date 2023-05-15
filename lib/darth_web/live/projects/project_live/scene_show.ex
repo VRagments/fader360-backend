@@ -2,7 +2,6 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   use DarthWeb, :live_navbar_view
   require Logger
   alias Darth.Model.User, as: UserStruct
-  alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.{User, Project, ProjectScene, Asset, AssetLease}
 
   alias DarthWeb.Components.{
@@ -52,7 +51,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   def handle_params(%{"project_id" => project_id, "project_scene_id" => project_scene_id}, _url, socket) do
     with {:ok, project} <- fetch_project(socket, project_id),
          {:ok, project_scene} <- fetch_project_scene(socket, project_scene_id, project_id),
-         {:ok, project_asset_leases} <- fetch_project_assts_leases(project) do
+         {:ok, project_asset_leases} <- Project.fetch_project_asset_leases(project) do
       filtered_project_asset_leases = filter_video_and_image_asset_leases(project_asset_leases)
       project_asset_leases_map = Map.new(filtered_project_asset_leases, fn pal -> {pal.id, pal} end)
       project_asset_leases_list = Asset.get_sorted_asset_lease_list(project_asset_leases_map)
@@ -229,20 +228,9 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
     end
   end
 
-  defp fetch_project_assts_leases(project) do
-    case Project.pre_load_asset_leases_and_assets_into_project(project) do
-      pre_loaded_project = %ProjectStruct{} ->
-        {:ok, pre_loaded_project.asset_leases}
-
-      error ->
-        Logger.error("Error while preloading asset_lease of a project: #{inspect(error)}")
-        {:error, "Error while fetching assets from this project"}
-    end
-  end
-
   defp get_updated_asset_list(socket) do
     socket =
-      case fetch_project_assts_leases(socket.assigns.project) do
+      case Project.fetch_project_asset_leases(socket.assigns.project) do
         {:ok, project_asset_leases} ->
           filtered_project_asset_leases = filter_video_and_image_asset_leases(project_asset_leases)
           project_asset_leases_map = Map.new(filtered_project_asset_leases, fn pal -> {pal.id, pal} end)

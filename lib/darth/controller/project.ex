@@ -24,6 +24,7 @@ defmodule Darth.Controller.Project do
       custom_icon_video
       custom_logo
       custom_player_settings
+      mv_project_id
       name
       primary_asset_lease_id
       updated_at
@@ -152,6 +153,17 @@ defmodule Darth.Controller.Project do
     Repo.preload(project, asset_leases: :asset)
   end
 
+  def fetch_project_asset_leases(project) do
+    case pre_load_asset_leases_and_assets_into_project(project) do
+      pre_loaded_project = %Project{} ->
+        {:ok, pre_loaded_project.asset_leases}
+
+      error ->
+        Logger.error("Error while preloading asset_lease of a project: #{inspect(error)}")
+        {:error, "Error while fetching assets from this project"}
+    end
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
@@ -236,7 +248,7 @@ defmodule Darth.Controller.Project do
     end
   end
 
-  def add_project_to_fader(user_params, mv_project_asset_key_list, project_struct) do
+  def add_project_assets_to_fader(user_params, mv_project_asset_key_list, project_struct) do
     result =
       Enum.map(mv_project_asset_key_list, fn mv_asset_key ->
         create_and_assign(user_params, mv_asset_key, project_struct)

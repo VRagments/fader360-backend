@@ -92,7 +92,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
            {:ok, project_struct} <-
              Project.build_params_create_new_project(current_user, mv_project),
            {:ok, asset_leases} <-
-             Project.add_project_to_fader(user_params, mv_project_asset_key_list, project_struct) do
+             Project.add_project_assets_to_fader(user_params, mv_project_asset_key_list, project_struct) do
         Project.download_project_assets(user_params, asset_leases)
 
         socket

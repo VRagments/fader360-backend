@@ -1,22 +1,8 @@
 <Header.render heading={"Manage assets of #{@project.name}"}>
     <HeaderButtons.render
-        buttons={[
-            {
-                :uploads,
-                uploads: @uploads.media,
-                level: :primary,
-                type: :submit,
-                label: "Upload"
-            },
-            nil,
-            {
-                :back,
-                level: :secondary,
-                type: :link,
-                path: Routes.project_show_path(@socket, :show, @project.id),
-                label: "Back"
-            }
-        ]}
+        buttons={
+            render_buttons(@project.mv_project_id, @uploads, @project.id, @socket)
+        }
     />
 </Header.render>
 

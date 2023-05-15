@@ -6,6 +6,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   alias Darth.Controller.Asset
   alias Darth.Controller.Project
   alias Darth.Model.User, as: UserStruct
+  alias Darth.MvApiClient
   alias DarthWeb.UploadProcessor
 
   alias DarthWeb.Components.{
@@ -19,15 +20,14 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   }
 
   @impl Phoenix.LiveView
-  @spec mount(any, map, any) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
     upload_file_size = Application.fetch_env!(:darth, :upload_file_size)
 
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects") do
       {:ok,
        socket
-       |> assign(current_user: user)
+       |> assign(current_user: user, mv_token: mv_token)
        |> assign(:uploaded_files, [])
        |> allow_upload(:media, accept: ~w(audio/* video/* image/*), max_entries: 1, max_file_size: upload_file_size)}
     else
@@ -141,9 +141,10 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
   @impl Phoenix.LiveView
   def handle_event("unassign", %{"ref" => asset_lease_id}, socket) do
+    asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id)
+
     socket =
-      with asset_lease = Map.get(socket.assigns.asset_leases_map, asset_lease_id),
-           {:ok, asset_lease} <-
+      with {:ok, asset_lease} <-
              AssetLease.unassign_project(asset_lease, socket.assigns.current_user, socket.assigns.project),
            {:ok, project} <- Project.unassign_primary_asset_lease(socket.assigns.project, asset_lease) do
         socket
@@ -233,6 +234,74 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
 
           socket
           |> put_flash(:error, inspect(reason))
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("sync_with_mv_project", %{"ref" => mv_project_id}, socket) do
+    fader_project = socket.assigns.project
+    current_user = socket.assigns.current_user
+    mv_node = current_user.mv_node
+    mv_token = socket.assigns.mv_token
+    user_params = %{mv_node: mv_node, mv_token: mv_token, current_user: current_user}
+
+    socket =
+      with {:ok, %{"assetIds" => mv_project_asset_key_list}} <-
+             MvApiClient.show_project(mv_node, mv_token, mv_project_id),
+           {:ok, fader_project_asset_leases} <- Project.fetch_project_asset_leases(fader_project),
+           fader_project_asset_mv_keys =
+             Enum.map(fader_project_asset_leases, fn asset_lease -> asset_lease.asset.mv_asset_key end),
+           asset_key_list_to_add = mv_project_asset_key_list -- fader_project_asset_mv_keys,
+           {:ok, asset_leases} <-
+             Project.add_project_assets_to_fader(user_params, asset_key_list_to_add, fader_project) do
+        Project.download_project_assets(user_params, asset_leases)
+
+        socket
+        |> put_flash(:info, "Synced Assets from Mediaverse project to Fader project")
+        |> push_patch(
+          to:
+            Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
+              page: socket.assigns.current_page
+            )
+        )
+      else
+        {:ok, %{"message" => message}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(message)}")
+
+          socket
+          |> put_flash(:error, message)
+          |> push_patch(
+            to:
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
+          socket
+          |> put_flash(:error, "Server response error")
+          |> push_patch(
+            to:
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
+
+        {:error, reason} ->
+          Logger.error("Error while handling event add_mv_project: #{inspect(reason)}")
+
+          socket
+          |> put_flash(:error, "Error while fetching MediaVerse project")
+          |> push_patch(
+            to:
+              Routes.project_form_assets_path(socket, :index, socket.assigns.project.id,
+                page: socket.assigns.current_page
+              )
+          )
       end
 
     {:noreply, socket}
@@ -515,5 +584,38 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
       :image -> render_available_asset_card_with_one_button(assigns)
       :video -> render_available_asset_card_with_one_button(assigns)
     end
+  end
+
+  defp render_buttons(nil, uploads, project_id, socket) do
+    [
+      {
+        :uploads,
+        uploads: uploads.media, level: :primary, type: :submit, label: "Upload"
+      },
+      nil,
+      {
+        :back,
+        level: :secondary, type: :link, path: Routes.project_show_path(socket, :show, project_id), label: "Back"
+      }
+    ]
+  end
+
+  defp render_buttons(mv_project_id, uploads, project_id, socket) do
+    [
+      {
+        :uploads,
+        uploads: uploads.media, level: :secondary, type: :submit, label: "Upload"
+      },
+      nil,
+      {
+        :sync_with_mv_project,
+        phx_value_ref: mv_project_id, label: "Sync with MediaVerse", level: :primary, type: :click
+      },
+      nil,
+      {
+        :back,
+        level: :secondary, type: :link, path: Routes.project_show_path(socket, :show, project_id), label: "Back"
+      }
+    ]
   end
 end
