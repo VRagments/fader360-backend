@@ -8,42 +8,59 @@
             <div class="md:w-8/12 lg:w-5/12 lg:ml-20">
                 <.form let={f} for={@changeset} action={Routes.user_registration_path(@conn,
                     :create)} as={:user}>
-                    <!-- Email input -->
-                    <div class="mb-6">
-                        <%= text_input f, :surname, required: true, type: "text", autocomplete: "surname", placeholder: "Surname", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :surname %> </div>
 
-                    <div class="mb-6">
-                        <%= text_input f, :firstname, required: true, type: "text", autocomplete: "firstname", placeholder: "First Name", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :firstname %> </div>
-
-                    <div class="mb-6">
-                        <%= text_input f, :display_name, required: true, type: "text", autocomplete: "display_name", placeholder: "Display Name", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :display_name %> </div>
-
-                    <div class="mb-6">
-                        <%= text_input f, :username, required: true, type: "text", autocomplete: "username", placeholder: "Username", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :username %> </div>
-
-                    <div class="mb-6">
-                        <%= email_input f, :email, required: true, type: "email", autocomplete: "email", placeholder: "Email",  class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :email %> </div>
-
-                    <!-- Password input -->
-                    <div class="mb-6">
-                        <%= password_input f, :password, required: true, type: "password", autocomplete: "password", placeholder: "Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :password %> </div>
-
-                    <div class="mb-6">
-                        <%= password_input f, :password_confirmation, required: true, type: "password", autocomplete: "password", placeholder: "Confirm Password", class: "form-control block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
-                    </div>
-                    <div> <%= error_tag f, :password_confirmation %> </div>
+                    <LoginPageInputs.render
+                        input_fields={[
+                            {
+                                :text,
+                                name: :surname,
+                                placeholder: "Last Name for Fader",
+                                label: "Last Name",
+                                autocomplete: "surname",
+                                form: f
+                            },
+                            {
+                                :text,
+                                name: :firstname,
+                                placeholder: "First Name for Fader",
+                                label: "First Name",
+                                autocomplete: "firstname",
+                                form: f
+                            },
+                            {
+                                :text,
+                                name: :display_name,
+                                placeholder: "Diaplay Name for Fader",
+                                label: "Display Name",
+                                autocomplete: "display_name",
+                                form: f
+                            },
+                            {
+                                :text,
+                                name: :username,
+                                placeholder: "Username for Fader",
+                                label: "Username",
+                                autocomplete: "username",
+                                form: f
+                            },
+                            {
+                                :email,
+                                name: :email,
+                                placeholder: "Email address used to register in Fader",
+                                label: "Email",
+                                autocomplete: "email",
+                                form: f
+                            },
+                            {
+                                :password,
+                                name: :password,
+                                placeholder: "Password used to register in Fader",
+                                label: "Password",
+                                autocomplete: "password",
+                                form: f
+                            }
+                        ]}
+                    />
 
                     <!-- Submit button -->
                     <LoginPageButton.render
