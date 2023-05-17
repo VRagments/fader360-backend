@@ -354,6 +354,14 @@ defmodule Darth.Controller.Asset do
 
   def is_image_asset?(media_type), do: normalized_media_type(media_type) == :image
 
+  def is_audio_or_video_asset?(media_type),
+    do: is_audio_asset?(media_type) or is_video_asset?(media_type)
+
+  def is_media_asset?(mv_asset_media_type),
+    do:
+      is_audio_asset?(mv_asset_media_type) or is_video_asset?(mv_asset_media_type) or
+        is_image_asset?(mv_asset_media_type)
+
   def is_asset_status_ready?(asset_status), do: asset_status == "ready"
 
   def is_asset_download_failed?(asset_status, asset_mv_node),
@@ -375,9 +383,6 @@ defmodule Darth.Controller.Asset do
       _ -> false
     end
   end
-
-  def is_audio_or_video_asset?(media_type),
-    do: is_audio_asset?(media_type) or is_video_asset?(media_type)
 
   def ensure_user_asset_lease(asset_struct, user, params) do
     with {:ok, asset_lease} <- check_asset_lease(asset_struct, user),

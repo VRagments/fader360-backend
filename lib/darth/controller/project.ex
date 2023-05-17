@@ -248,10 +248,10 @@ defmodule Darth.Controller.Project do
     end
   end
 
-  def add_project_assets_to_fader(user_params, mv_project_asset_key_list, project_struct) do
+  def add_project_assets_to_fader(user_params, mv_asset_list, project_struct) do
     result =
-      Enum.map(mv_project_asset_key_list, fn mv_asset_key ->
-        create_and_assign(user_params, mv_asset_key, project_struct)
+      Enum.map(mv_asset_list, fn mv_asset ->
+        create_and_assign(user_params, mv_asset, project_struct)
       end)
       |> Enum.split_with(fn
         {:ok, _} -> true
@@ -282,15 +282,35 @@ defmodule Darth.Controller.Project do
     end)
   end
 
-  defp create_and_assign(user_params, mv_asset_key, project_struct) do
-    current_user = user_params.current_user
-    mv_node = user_params.mv_node
-    mv_token = user_params.mv_token
+  def fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id) do
+    case MvApiClient.fetch_project_assets(mv_node, mv_token, mv_project_id) do
+      {:ok, []} ->
+        {:ok, []}
 
-    with {:ok, mv_asset} <- MvApiClient.show_asset(mv_node, mv_token, mv_asset_key),
-         params = create_params(user_params, mv_asset),
-         database_params = Controller.Asset.build_asset_params(params),
-         {:ok, asset_lease} <-
+      {:ok, mv_project_asset_list} ->
+        filter_mv_project_asset_list(mv_project_asset_list)
+
+      {:error, reason} ->
+        Logger.error("Custom error message from MediaVerse while fetching subtitles: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  defp filter_mv_project_asset_list(filter_mv_project_asset_list) do
+    filtered_mv_assets =
+      Enum.filter(filter_mv_project_asset_list, fn asset ->
+        Controller.Asset.is_media_asset?(Map.get(asset, "contentType"))
+      end)
+
+    {:ok, filtered_mv_assets}
+  end
+
+  defp create_and_assign(user_params, mv_asset, project_struct) do
+    current_user = user_params.current_user
+    params = create_params(user_params, mv_asset)
+    database_params = Controller.Asset.build_asset_params(params)
+
+    with {:ok, asset_lease} <-
            Controller.Asset.add_asset_to_database(database_params, current_user),
          {:ok, asset_lease} <-
            Controller.AssetLease.assign_project(asset_lease, current_user, project_struct) do

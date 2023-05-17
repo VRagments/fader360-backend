@@ -136,6 +136,26 @@ defmodule Darth.MvApiClient do
     HTTPoison.get(ext_file_url, get_headers(mv_token), stream_to: self(), async: :once)
   end
 
+  def fetch_project_assets(mv_node, mv_token, mv_project_id) do
+    url = mv_node <> "/dam/project/" <> mv_project_id <> "/assets"
+
+    # TODO: Ask for the new API endpoint without the pagination information
+    #       or with the more pagination information and update accordingly.
+    # Task: https://hive.vrgmnts.net/T2982
+    params = [per_page: 1000]
+
+    with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
+         {:ok, project_assets} when is_list(project_assets) <- Jason.decode(body) do
+      {:ok, project_assets}
+    else
+      {:ok, %{"message" => message}} ->
+        {:error, message}
+
+      error ->
+        error
+    end
+  end
+
   defp get_headers(mv_token) do
     [
       {"Content-type", "application/json"},

@@ -87,12 +87,11 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
     user_params = %{mv_node: mv_node, mv_token: mv_token, current_user: current_user}
 
     socket =
-      with {:ok, %{"assetIds" => mv_project_asset_key_list} = mv_project} <-
-             MvApiClient.show_project(mv_node, mv_token, mv_project_id),
-           {:ok, project_struct} <-
-             Project.build_params_create_new_project(current_user, mv_project),
+      with {:ok, mv_project} <- MvApiClient.show_project(mv_node, mv_token, mv_project_id),
+           {:ok, project_struct} <- Project.build_params_create_new_project(current_user, mv_project),
+           {:ok, mv_asset_list} <- Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id),
            {:ok, asset_leases} <-
-             Project.add_project_assets_to_fader(user_params, mv_project_asset_key_list, project_struct) do
+             Project.add_project_assets_to_fader(user_params, mv_asset_list, project_struct) do
         Project.download_project_assets(user_params, asset_leases)
 
         socket

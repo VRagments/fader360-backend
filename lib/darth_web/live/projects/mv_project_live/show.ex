@@ -58,8 +58,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
       |> where([p], p.user_id == ^user_id and p.mv_project_id == ^mv_project_id)
 
     socket =
-      with {:ok, %{"assetIds" => mv_project_asset_key_list} = mv_project} <-
-             MvApiClient.show_project(mv_node, mv_token, mv_project_id),
+      with {:ok, mv_project} <- MvApiClient.show_project(mv_node, mv_token, mv_project_id),
            %{query_page: current_page, total_pages: total_pages, entries: fader_projects} <-
              Project.query(params, query, true) do
         user_projects_map = Map.new(fader_projects, fn up -> {up.id, up} end)
@@ -72,7 +71,6 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
           mv_project: mv_project,
           updated_at: updated_at,
           fader_projects: fader_projects_list,
-          mv_project_asset_key_list: mv_project_asset_key_list,
           current_page: current_page,
           total_pages: total_pages,
           map_with_all_links: map_with_all_links
@@ -114,8 +112,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("add_mv_project", %{"ref" => _mv_project_id}, socket) do
-    mv_project_asset_key_list = socket.assigns.mv_project_asset_key_list
+  def handle_event("add_mv_project", %{"ref" => mv_project_id}, socket) do
     mv_project = socket.assigns.mv_project
     current_user = socket.assigns.current_user
     mv_node = current_user.mv_node
@@ -124,12 +121,8 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
 
     socket =
       with {:ok, project_struct} <- Project.build_params_create_new_project(current_user, mv_project),
-           {:ok, asset_leases} <-
-             Project.add_project_assets_to_fader(
-               user_params,
-               mv_project_asset_key_list,
-               project_struct
-             ) do
+           {:ok, mv_asset_list} <- Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id),
+           {:ok, asset_leases} <- Project.add_project_assets_to_fader(user_params, mv_asset_list, project_struct) do
         Project.download_project_assets(user_params, asset_leases)
 
         socket

@@ -254,8 +254,13 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
            fader_project_asset_mv_keys =
              Enum.map(fader_project_asset_leases, fn asset_lease -> asset_lease.asset.mv_asset_key end),
            asset_key_list_to_add = mv_project_asset_key_list -- fader_project_asset_mv_keys,
+           {:ok, mv_asset_list} <- Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id),
+           mv_asset_list_to_add =
+             Enum.filter(mv_asset_list, fn mv_asset ->
+               Enum.member?(asset_key_list_to_add, Map.get(mv_asset, "key"))
+             end),
            {:ok, asset_leases} <-
-             Project.add_project_assets_to_fader(user_params, asset_key_list_to_add, fader_project) do
+             Project.add_project_assets_to_fader(user_params, mv_asset_list_to_add, fader_project) do
         Project.download_project_assets(user_params, asset_leases)
 
         socket
