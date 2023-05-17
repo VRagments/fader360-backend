@@ -10,7 +10,6 @@ defmodule Darth.Model.Asset do
     field(:media_type, :string)
     field(:name, :string)
     field(:static_filename, :string)
-    field(:static_path, :string)
     field(:static_url, :string)
     field(:mv_asset_key, :string)
     field(:mv_asset_deeplink_key, :string)
@@ -60,7 +59,7 @@ defmodule Darth.Model.Asset do
      )a
   end
 
-  @allowed_fields ~w(name media_type status attributes static_url lowres_image midres_image static_path
+  @allowed_fields ~w(name media_type status attributes static_url lowres_image midres_image
                      data_filename static_filename preview_image raw_metadata squared_image
                      thumbnail_image mv_asset_key mv_asset_deeplink_key mv_node)a
 

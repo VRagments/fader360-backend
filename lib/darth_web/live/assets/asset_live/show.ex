@@ -155,7 +155,6 @@ defmodule DarthWeb.Assets.AssetLive.Show do
              ),
            asset_subtitle_params =
              subtitle_file_details
-             |> Map.put("static_path", subtitle_file)
              |> Map.put("asset_id", asset_id),
            {:ok, _asset_subtitle_struct} <- AssetSubtitle.create(asset_subtitle_params) do
         socket

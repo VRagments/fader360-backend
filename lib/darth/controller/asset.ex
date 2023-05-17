@@ -32,7 +32,6 @@ defmodule Darth.Controller.Asset do
       name
       raw_metadata
       static_filename
-      static_path
       static_url
       status
       updated_at
@@ -54,15 +53,16 @@ defmodule Darth.Controller.Asset do
   end
 
   def init(asset, params, is_mv_asset \\ false) do
+    static_path = base_path(asset)
+
     new_params = %{
       "data_filename" => filename(asset, "original"),
-      "static_path" => base_path(asset),
       "status" => "initialized"
     }
 
-    input_file = "#{new_params["static_path"]}/#{new_params["data_filename"]}"
+    input_file = Path.join(static_path, new_params["data_filename"])
 
-    with {:ok, _} <- write_data_file(new_params["static_path"], input_file, params["data_path"]),
+    with {:ok, _} <- write_data_file(static_path, input_file, params["data_path"]),
          delete_temp_downloaded_file(params["data_path"], is_mv_asset),
          {:ok, updated_asset} = ok <- update(asset, new_params, false, true),
          :ok <- broadcast("assets", {:asset_analyze_transcode, updated_asset.id}) do
@@ -136,7 +136,9 @@ defmodule Darth.Controller.Asset do
   @doc """
   Check if data_filename and static_path point to valid locations.
   """
-  def check_required_paths(%{data_filename: data_filename, static_path: static_path}) do
+  def check_required_paths(%{data_filename: data_filename} = asset) do
+    static_path = base_path(asset)
+
     if File.exists?(static_path) do
       data_path = Path.join(static_path, data_filename)
 
@@ -172,13 +174,17 @@ defmodule Darth.Controller.Asset do
     Path.join(app_path, asset.id)
   end
 
+  def original_path(%{data_filename: data_filename} = asset) do
+    static_path = base_path(asset)
+    Path.join([static_path, data_filename])
+  end
+
   # URL Schema: BASE_URL/ASSET_ID/NAME.SUFFIX
   # e.g. http://localhost:4000/media/4324/cool_video.mkv
   def generate_paths(asset) do
     paths = %{
       "data_filename" => original_file(asset),
       "static_filename" => filename(asset),
-      "static_path" => base_path(asset),
       "static_url" => static_asset_url(asset)
     }
 
@@ -274,7 +280,9 @@ defmodule Darth.Controller.Asset do
   @doc """
   Returns the number of transcoded resolutions for a given video asset. Returns `nil` for non-video assets.
   """
-  def video_resolutions_count(%Asset{static_path: static_path, static_filename: static_filename, media_type: mt}) do
+  def video_resolutions_count(%Asset{static_filename: static_filename, media_type: mt} = asset) do
+    static_path = base_path(asset)
+
     case normalized_media_type(mt) do
       :video ->
         path_staticfile = Path.join(static_path, static_filename)
@@ -448,7 +456,8 @@ defmodule Darth.Controller.Asset do
 
   defp delete_repo(err), do: err
 
-  defp maybe_move_datafile(%{data_filename: data_filename, id: id, static_path: static_path} = asset) do
+  defp maybe_move_datafile(%{data_filename: data_filename, id: id} = asset) do
+    static_path = base_path(asset)
     data_path = Path.join(static_path, data_filename)
     target_file = original_file(asset)
 

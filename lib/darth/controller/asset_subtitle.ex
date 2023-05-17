@@ -14,7 +14,6 @@ defmodule Darth.Controller.AssetSubtitle do
     ~w(
       asset_id
       mv_asset_subtitle_key
-      static_path
       static_url
       id
       inserted_at
@@ -93,6 +92,10 @@ defmodule Darth.Controller.AssetSubtitle do
     path = Application.get_env(:darth, :asset_static_base_path)
     app_path = Application.app_dir(:darth, path)
     Path.join([app_path, asset_id, "subtitles"])
+  end
+
+  def asset_subtitle_static_path(asset_id, asset_subtitle_filename) do
+    Path.join([asset_subtitle_base_path(asset_id), asset_subtitle_filename])
   end
 
   def query_by_asset(asset_id) do

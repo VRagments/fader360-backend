@@ -41,7 +41,7 @@ defmodule Darth.AssetProcessor.Analyser do
   def handle_cast(:run, %{asset_id: asset_id} = state) do
     # Prepare metadata retrieval.
     with {:ok, asset} <- Controller.Asset.update_status(asset_id, "analyzing_started"),
-         input_file = "#{asset.static_path}/#{asset.data_filename}",
+         input_file = Controller.Asset.original_path(asset),
          {:ok, mime_type} <- Darth.AssetFile.Helpers.mime_type(input_file),
          {:ok, updated_asset} <- Controller.Asset.update(asset_id, %{media_type: mime_type}, false, true),
          {:ok, res} <- analyze(updated_asset) do
@@ -114,8 +114,7 @@ defmodule Darth.AssetProcessor.Analyser do
   @svg_default_width 100
   @svg_default_height 100
   defp use_xml(asset) do
-    %{data_filename: data_filename, static_path: static_path} = asset
-    data_file = "#{static_path}/#{data_filename}"
+    data_file = Controller.Asset.original_path(asset)
 
     with {:ok, file} <- File.read(data_file) do
       width_str = SweetXml.xpath(file, ~x"/svg/@width"s)
@@ -167,8 +166,7 @@ defmodule Darth.AssetProcessor.Analyser do
         {:error, "Couldn't find imagemagick's convert executable"}
 
       bin ->
-        %{data_filename: data_filename, static_path: static_path} = asset
-        data_file = "#{static_path}/#{data_filename}"
+        data_file = Controller.Asset.original_path(asset)
         # INFO
         # using -ping is significantly faster.
         # However the info returned is slightly inaccurate.
@@ -193,8 +191,7 @@ defmodule Darth.AssetProcessor.Analyser do
         {:error, "Couldn't find ffmpeg's ffprobe executable"}
 
       bin ->
-        %{data_filename: data_filename, static_path: static_path} = asset
-        data_file = "#{static_path}/#{data_filename}"
+        data_file = Controller.Asset.original_path(asset)
         args = ["-v", "fatal", "-show_streams", "-show_format", "-print_format", "json", data_file]
         options = [:exit_status, parallelism: true, args: args]
         _ = Logger.debug(fn -> "Executing: #{bin} with #{inspect(options)}" end)

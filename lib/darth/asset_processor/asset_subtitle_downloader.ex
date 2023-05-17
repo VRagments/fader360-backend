@@ -95,12 +95,10 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
         download_url = Map.get(asset_subtitle, "externalFileUrl")
         mv_asset_subtitle_key = Map.get(asset_subtitle, "key")
         mv_token = mv_token
-        asset_subtitle_file_path = Path.join([asset_subtitle_base_path, asset_subtitle_filename])
 
         asset_subtitle_params = %{
           "name" => asset_subtitle_filename,
           "version" => version,
-          "static_path" => asset_subtitle_file_path,
           "language" => asset_subtitle_language,
           "asset_id" => asset_id,
           "mv_asset_subtitle_key" => mv_asset_subtitle_key
@@ -114,7 +112,9 @@ defmodule Darth.AssetProcessor.AssetSubtitleDownloader do
   end
 
   defp download_asset_subtitles(asset_subtitle_params, mv_token, download_url) do
-    asset_subtitle_file_path = Map.get(asset_subtitle_params, "static_path")
+    asset_id = Map.get(asset_subtitle_params, "asset_id")
+    asset_subtitle_filename = Map.get(asset_subtitle_params, "name")
+    asset_subtitle_file_path = AssetSubtitle.asset_subtitle_static_path(asset_id, asset_subtitle_filename)
 
     with {:ok, response} <- MvApiClient.download_asset_subtitle(mv_token, download_url),
          {:ok, file} <- File.open(asset_subtitle_file_path, [:write, :binary]),

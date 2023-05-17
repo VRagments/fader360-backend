@@ -195,22 +195,19 @@ defmodule Darth.AssetProcessor do
 
     # delete local directory, if it still exists
     _ =
-      case asset.static_path do
-        nil ->
-          _ = Logger.error(fn -> "Can't delete empty path for asset #{asset.id}" end)
-
+      case Controller.Asset.base_path(asset) do
         "/" ->
           _ = Logger.error(fn -> "Won't delete root path for asset #{asset.id}" end)
 
-        _ ->
-          with true <- File.dir?(asset.static_path),
-               [] <- delete_folder(asset.static_path) do
-            _ = Logger.debug(fn -> "Deleted all files for asset #{asset.id} at #{asset.static_path}" end)
+        static_path ->
+          with true <- File.dir?(static_path),
+               [] <- delete_folder(static_path) do
+            _ = Logger.debug(fn -> "Deleted all files for asset #{asset.id} at #{static_path}" end)
             :ok
           else
             false ->
               _ = Logger.error(fn -> "Error while deleting files for asset #{asset.id}: directory doesn't exist
-                #{asset.static_path}" end)
+                #{static_path}" end)
 
             errors ->
               _ = Logger.error(fn -> "Error while deleting files for asset #{asset.id}: #{errors |> inspect}" end)
@@ -282,7 +279,8 @@ defmodule Darth.AssetProcessor do
 
         _ =
           Logger.error(fn ->
-            "Error while applying metadata for asset #{asset_id} #{original_path(asset)}: #{inspect(err)}"
+            "Error while applying metadata for asset #{asset_id}
+              #{Controller.Asset.original_path(asset)}: #{inspect(err)}"
           end)
 
         Controller.Asset.update_status(asset_id, "analyzing_failed")
@@ -376,12 +374,8 @@ defmodule Darth.AssetProcessor do
   defp start_job_processor(:analyzing, asset_id), do: Analyser.start_link(asset_id)
   defp start_job_processor(:transcoding, asset_id), do: Transcoder.start_link(asset_id)
 
-  defp original_path(%{data_filename: data_filename, static_path: static_path}) do
-    "#{static_path}/#{data_filename}"
-  end
-
   defp stat_original(asset) do
-    with data_file <- original_path(asset),
+    with data_file <- Controller.Asset.original_path(asset),
          {:ok, stat} <- File.stat(data_file),
          {:ok, atime} <- NaiveDateTime.from_erl(stat.atime),
          {:ok, ctime} <- NaiveDateTime.from_erl(stat.ctime),

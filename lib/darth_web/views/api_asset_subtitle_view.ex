@@ -1,5 +1,6 @@
 defmodule DarthWeb.ApiAssetSubtitleView do
   use DarthWeb, :view
+  alias Darth.Controller.AssetSubtitle
 
   def render("index.json", %{entries: entries, total_entries: total}) do
     %{
@@ -17,7 +18,7 @@ defmodule DarthWeb.ApiAssetSubtitleView do
       created_at: render_date(as.inserted_at),
       id: as.id,
       name: as.name,
-      static_path: as.static_path,
+      static_path: AssetSubtitle.asset_subtitle_static_path(as.asset_id, as.name),
       static_url: as.static_url,
       language: as.language,
       version: as.version,

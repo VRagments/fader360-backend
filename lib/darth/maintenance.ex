@@ -13,11 +13,12 @@ defmodule Darth.Maintenance do
   # and deletes them, since they are no use to the user.
   def delete_empty_assets() do
     Asset
-    |> select([:id, :static_path, :data_filename, :status])
+    |> select([:id, :data_filename, :status])
     |> where([a], a.status != "ready")
     |> Repo.all()
     |> Enum.filter(fn a ->
-      data_path = Path.join(a.static_path, a.data_filename)
+      static_path = Controller.Asset.base_path(a)
+      data_path = Path.join(static_path, a.data_filename)
 
       case File.stat(data_path) do
         {:ok, %{size: 0}} ->
@@ -53,11 +54,12 @@ defmodule Darth.Maintenance do
     end
 
     Asset
-    |> select([:id, :static_path, :data_filename, :status])
+    |> select([:id, :data_filename, :status])
     |> where([a], a.status != "ready")
     |> Repo.all()
     |> Enum.filter(fn a ->
-      data_path = Path.join(a.static_path, a.data_filename)
+      static_path = Controller.Asset.base_path(a)
+      data_path = Path.join(static_path, a.data_filename)
 
       case AssetFile.Helpers.mime_type(data_path) do
         {:ok, "video/quicktime"} ->
@@ -112,7 +114,8 @@ defmodule Darth.Maintenance do
             Logger.info(fn -> "Maintenance: Checked file existance #{idx} of #{total_asset_count}" end)
           end
 
-        path = Path.join(a.static_path, a.data_filename)
+        static_path = Controller.Asset.base_path(a)
+        path = Path.join(static_path, a.data_filename)
 
         not File.exists?(path)
       end)
@@ -151,7 +154,8 @@ defmodule Darth.Maintenance do
       manual
       |> Enum.with_index(1)
       |> Enum.map(fn {{:noop, asset}, idx} ->
-        %{id: id, static_path: static_path, data_filename: data_filename} = asset
+        %{id: id, data_filename: data_filename} = asset
+        static_path = Controller.Asset.base_path(asset)
         "#{idx} | #{id} | #{static_path} | #{data_filename}"
       end)
 
@@ -181,7 +185,9 @@ defmodule Darth.Maintenance do
               output
             end
 
-          "#{idx} | #{asset.id} | #{asset.static_path} | #{output}"
+          static_path = Controller.Asset.base_path(asset)
+
+          "#{idx} | #{asset.id} | #{static_path} | #{output}"
         end)
 
       log_output = headers ++ print_values
@@ -293,11 +299,11 @@ defmodule Darth.Maintenance do
           data_filename: data_filename,
           id: id,
           media_type: media_type,
-          static_path: static_path,
           raw_metadata: raw_metadata,
           static_filename: static_filename
         } = asset
 
+        static_path = Controller.Asset.base_path(asset)
         path_datafile = Path.join(static_path, data_filename)
         path_staticfile = Path.join(static_path, static_filename)
 
@@ -356,7 +362,9 @@ defmodule Darth.Maintenance do
 
   defp recreate_cmd(asset, :audio), do: recreate_from_hls(asset, [])
 
-  defp recreate_from_hls(%Asset{static_path: static_path} = asset, manifests) do
+  defp recreate_from_hls(%Asset{} = asset, manifests) do
+    static_path = Controller.Asset.base_path(asset)
+
     [asset.static_filename | manifests]
     |> Enum.reverse()
     |> Enum.reduce_while({:error, :no_manifest_found}, fn manifest, acc ->
@@ -372,7 +380,8 @@ defmodule Darth.Maintenance do
     end)
   end
 
-  defp cmd_parts_txt(%Asset{static_path: static_path} = asset, path_manifest) do
+  defp cmd_parts_txt(%Asset{} = asset, path_manifest) do
+    static_path = Controller.Asset.base_path(asset)
     path_parts = Path.join(static_path, "parts.txt")
     params = ["s/dash_/file dash_/; w #{path_parts}", path_manifest]
 
@@ -386,7 +395,8 @@ defmodule Darth.Maintenance do
   end
 
   defp cmd_concat(asset, path_parts) do
-    %{data_filename: data_filename, static_path: static_path, media_type: media_type} = asset
+    %{data_filename: data_filename, media_type: media_type} = asset
+    static_path = Controller.Asset.base_path(asset)
     path_original = Path.join(static_path, data_filename)
 
     command =
@@ -409,7 +419,8 @@ defmodule Darth.Maintenance do
     end
   end
 
-  defp maybe_replacing_extension(%{data_filename: data_filename, static_path: static_path} = asset) do
+  defp maybe_replacing_extension(%{data_filename: data_filename} = asset) do
+    static_path = Controller.Asset.base_path(asset)
     one_ext = data_filename |> String.split(".") |> Enum.drop(-1)
     duplicate_ext = one_ext ++ [List.last(one_ext)]
     name = Enum.join(duplicate_ext, ".")
@@ -422,7 +433,8 @@ defmodule Darth.Maintenance do
     end
   end
 
-  defp maybe_replacing_jpeg_extension(%{static_path: static_path} = asset, one_ext) do
+  defp maybe_replacing_jpeg_extension(%{} = asset, one_ext) do
+    static_path = Controller.Asset.base_path(asset)
     [ext | _] = Enum.reverse(one_ext)
 
     if ext == "jpg" do
@@ -439,7 +451,8 @@ defmodule Darth.Maintenance do
     end
   end
 
-  defp maybe_removing_original(%{data_filename: data_filename, static_path: static_path} = asset) do
+  defp maybe_removing_original(%{data_filename: data_filename} = asset) do
+    static_path = Controller.Asset.base_path(asset)
     name = data_filename |> String.split("original_", trim: true) |> Enum.join("original_")
     p = Path.join(static_path, name)
 
@@ -463,7 +476,8 @@ defmodule Darth.Maintenance do
   end
 
   defp files_same_size?(asset) do
-    %{static_path: static_path, data_filename: data_filename, static_filename: static_filename} = asset
+    %{data_filename: data_filename, static_filename: static_filename} = asset
+    static_path = Controller.Asset.base_path(asset)
     path_transcoded = Path.join(static_path, static_filename)
     path_original = Path.join(static_path, data_filename)
 

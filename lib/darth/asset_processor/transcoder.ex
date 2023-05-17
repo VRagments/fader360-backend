@@ -102,8 +102,9 @@ defmodule Darth.AssetProcessor.Transcoder do
     script_path = default_transcoding_scripts[norm_media_type]
 
     [script] = Path.wildcard(script_path)
-    %{data_filename: data_filename, static_filename: static_filename, static_path: static_path} = asset
-    input_file = ~s(#{static_path}/#{data_filename})
+    %{static_filename: static_filename} = asset
+    static_path = Controller.Asset.base_path(asset)
+    input_file = Controller.Asset.original_path(asset)
 
     nr_threads = Application.get_env(:darth, :transcoding_threads, :erlang.system_info(:logical_processors))
 

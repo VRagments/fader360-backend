@@ -4,7 +4,6 @@ defmodule Darth.Model.AssetSubtitle do
 
   schema "asset_subtitles" do
     field(:name, :string)
-    field(:static_path, :string)
     field(:static_url, :string)
     field(:language, Ecto.Enum, values: [:-, :EN, :ES, :DE, :PL, :SL, :IT])
     field(:version, :string)
@@ -22,9 +21,9 @@ defmodule Darth.Model.AssetSubtitle do
      )
   end
 
-  @allowed_fields ~w(asset_id static_path static_url language name version mv_asset_subtitle_key)a
+  @allowed_fields ~w(asset_id static_url language name version mv_asset_subtitle_key)a
 
-  @required_fields ~w(asset_id static_path static_url name version)a
+  @required_fields ~w(asset_id static_url name version)a
 
   def delete_changeset(model), do: model |> common_changeset(%{}) |> Map.put(:action, :delete)
 
