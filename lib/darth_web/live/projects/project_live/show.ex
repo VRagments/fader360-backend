@@ -301,7 +301,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       <IndexCard.render
         show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
         title={@project_scene.name}
-        info={@project_scene.navigatable}
+        info={get_info(@project_scene.navigatable)}
         subtitle={@project_scene.duration <> " Sec"}
         image_source={@project_scene.primary_asset.thumbnail_image}
       >
@@ -329,7 +329,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       <IndexCard.render
         show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
         title={@project_scene.name}
-        info={@project_scene.navigatable}
+        info={get_info(@project_scene.navigatable)}
         subtitle={@project_scene.duration <> " Sec"}
         image_source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}
       >
@@ -358,6 +358,13 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       render_scene_with_image_card(assigns)
     else
       render_scene_with_default_card(assigns)
+    end
+  end
+
+  defp get_info(navigatable) do
+    case navigatable do
+      true -> "Navigatable"
+      false -> "Not Navigatable"
     end
   end
 end

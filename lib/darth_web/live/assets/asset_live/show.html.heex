@@ -1,4 +1,4 @@
-<Header.render heading={@asset_lease.asset.name}>
+<Header.render heading="Asset Details">
     <HeaderButtons.render
         buttons={[
             {
@@ -19,6 +19,11 @@
         ]}
     />
 </Header.render>
+
+<Header.render
+    heading={@asset_lease.asset.name}
+    size={:small}
+/>
 
 <%= if Asset.is_asset_status_ready?(@asset_lease.asset.status) do %>
     <div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">

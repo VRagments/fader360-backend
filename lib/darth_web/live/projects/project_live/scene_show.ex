@@ -295,7 +295,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
         path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
         source={@asset_lease.asset.thumbnail_image}
         subtitle={@asset_lease.asset.media_type}
-        status= "Added to Project Scene"
+        status= "using as scene background"
       >
         <CardButtons.render
           buttons={[

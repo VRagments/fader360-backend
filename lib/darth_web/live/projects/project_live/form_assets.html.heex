@@ -1,10 +1,15 @@
-<Header.render heading={"Manage assets of #{@project.name}"}>
+<Header.render heading="Manage Project Assets">
     <HeaderButtons.render
         buttons={
             render_buttons(@project.mv_project_id, @uploads, @project.id, @socket)
         }
     />
 </Header.render>
+
+<Header.render
+    heading={@project.name}
+    size={:small}
+/>
 
 <UploadProgress.render uploads={@uploads} />
 

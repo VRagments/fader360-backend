@@ -1,4 +1,4 @@
-<Header.render heading={@project_scene.name}>
+<Header.render heading="Project Scene Details">
     <HeaderButtons.render
         buttons={[
             {
@@ -19,6 +19,11 @@
         ]}
     />
 </Header.render>
+
+<Header.render
+    heading={@project_scene.name}
+    size={:small}
+/>
 
 <div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
     <div class="relative sm:py-16 lg:py-0">

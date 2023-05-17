@@ -57,7 +57,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
   def handle_params(%{"project_id" => project_id} = params, _url, socket) do
     with {:ok, project} <- Project.read(project_id, true),
          %{query_page: current_page, total_pages: total_pages, entries: asset_leases} <-
-           AssetLease.query_by_user(socket.assigns.current_user.id, params, false),
+           AssetLease.query_by_user(socket.assigns.current_user.id, params, true),
          true <- project.user_id == socket.assigns.current_user.id do
       asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
       asset_leases_list = Asset.get_sorted_asset_lease_list(asset_leases_map)

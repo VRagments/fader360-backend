@@ -30,9 +30,9 @@ defmodule DarthWeb.ApiProjectAssetController do
     fun = fn is_owner, _project ->
       assigns =
         if is_owner do
-          AssetLease.query_by_accessible_project(project_id, params, false)
+          AssetLease.query_by_accessible_project(project_id, params, true)
         else
-          AssetLease.query_by_accessible_project(project_id, params)
+          AssetLease.query_by_accessible_project(project_id, params, true)
         end
 
       render(conn, "index.json", assigns)
