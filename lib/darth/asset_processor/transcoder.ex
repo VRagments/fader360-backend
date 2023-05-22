@@ -125,7 +125,16 @@ defmodule Darth.AssetProcessor.Transcoder do
         {:error, "Couldn't find bash executable"}
 
       bin ->
-        c_args = ["#{script}", "-f", "#{input_file}", "-o", "#{static_path}", "-m", "#{static_filename}"]
+        c_args = [
+          "\"#{script}\"",
+          "-f",
+          "\"#{input_file}\"",
+          "-o",
+          "\"#{static_path}\"",
+          "-m",
+          "\"#{static_filename}\""
+        ]
+
         args = ["-c", Enum.join(c_args ++ extra_args, " ")]
         options = [:exit_status, parallelism: true, args: args]
         _ = Logger.debug(fn -> "Executing: #{bin} with #{inspect(options)}" end)
