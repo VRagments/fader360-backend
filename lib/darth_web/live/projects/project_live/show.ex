@@ -12,7 +12,6 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   alias DarthWeb.Components.{
     ShowImage,
     Header,
-    Icons,
     Stat,
     StatSelectField,
     Pagination,
@@ -20,7 +19,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     IndexCard,
     StatLinkButton,
     HeaderButtons,
-    CardButtons
+    CardButtons,
+    ShowDefault
   }
 
   @impl Phoenix.LiveView
@@ -258,7 +258,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     else
       nil ->
         ~H"""
-          <ShowImage.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
+          <ShowDefault.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
         """
 
       false ->

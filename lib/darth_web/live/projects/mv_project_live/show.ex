@@ -9,14 +9,13 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
 
   alias DarthWeb.Components.{
     Header,
-    ShowImage,
-    Icons,
     Stat,
     EmptyState,
     IndexCard,
     CardButtons,
     HeaderButtons,
-    Pagination
+    Pagination,
+    ShowDefault
   }
 
   @impl Phoenix.LiveView
