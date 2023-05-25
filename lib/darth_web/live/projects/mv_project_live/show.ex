@@ -120,8 +120,10 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
 
     socket =
       with {:ok, project_struct} <- Project.build_params_create_new_project(current_user, mv_project),
-           {:ok, mv_asset_list} <- Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id),
-           {:ok, asset_leases} <- Project.add_project_assets_to_fader(user_params, mv_asset_list, project_struct) do
+           {:ok, mv_asset_info} <-
+             Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id, "0"),
+           {:ok, asset_leases} <-
+             Project.add_project_assets_to_fader(user_params, mv_asset_info.filtered_mv_assets, project_struct) do
         Project.download_project_assets(user_params, asset_leases)
 
         socket

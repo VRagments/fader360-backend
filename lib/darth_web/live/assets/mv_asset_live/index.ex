@@ -60,7 +60,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
          "currentPage" => current_page,
          "totalPages" => total_pages
        }} ->
-        add_to_preview_downloader(assets, mv_node, mv_token)
+        PreviewDownloader.add_to_preview_downloader(assets, mv_node, mv_token)
         map_with_all_links = map_with_all_links(socket, total_pages)
 
         {:noreply,
@@ -160,27 +160,6 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
       |> put_flash(:info, "Asset already added to Fader")
 
     {:noreply, socket}
-  end
-
-  defp add_to_preview_downloader(assets, mv_node, mv_token) do
-    for asset <- assets do
-      filename = Map.get(asset, "originalFilename")
-      asset_previewlink_key = Map.get(asset, "previewLinkKey")
-      file_path = asset_file_path(asset_previewlink_key, filename)
-
-      if File.exists?(file_path) do
-        :ok
-      else
-        download_params = %{
-          mv_asset_previewlink_key: asset_previewlink_key,
-          mv_node: mv_node,
-          mv_token: mv_token,
-          mv_asset_filename: filename
-        }
-
-        PreviewDownloader.add_preview_download_params(download_params)
-      end
-    end
   end
 
   defp add_to_fader(socket, mv_asset_key) do
@@ -313,7 +292,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
 
   defp render_mv_asset_card(assigns) do
     if File.exists?(
-         asset_file_path(
+         PreviewDownloader.asset_file_path(
            Map.get(assigns.mv_asset, "previewLinkKey"),
            Map.get(assigns.mv_asset, "originalFilename")
          )
@@ -362,11 +341,5 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
         />
       <% end %>
     """
-  end
-
-  defp asset_file_path(preview_link_key, original_filename) do
-    download_path = Application.get_env(:darth, :mv_asset_preview_download_path)
-    app_path = Application.app_dir(:darth, download_path)
-    Path.join([app_path, preview_link_key, original_filename])
   end
 end

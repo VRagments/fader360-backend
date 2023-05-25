@@ -1,0 +1,41 @@
+<Header.render heading="MediaVerse Project Asset Previews">
+    <HeaderButtons.render
+        buttons={[
+            {
+                :back,
+                level: :primary,
+                type: :link,
+                path: Routes.mv_project_show_path(@socket, :show, @mv_project["id"]),
+                label: "Back"
+            }
+        ]}
+    />
+</Header.render>
+
+<Header.render
+    heading={@mv_project["name"]}
+    size={:small}
+/>
+
+<%= if @total_pages == "0" do %>
+    <EmptyState.render label="Create Projects in MediaVerse"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for mv_asset <- @mv_assets do %>
+                <.render_mv_asset_card
+                    mv_asset={mv_asset}
+                    socket={@socket}
+                    current_user={@current_user}
+                    asset_preview_static_url={@asset_preview_static_url}
+                />
+            <% end %>
+        </ul>
+    </section>
+
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+<% end %>

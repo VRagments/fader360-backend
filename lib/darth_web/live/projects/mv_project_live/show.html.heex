@@ -2,11 +2,11 @@
     <HeaderButtons.render
         buttons={[
             {
-                :back,
+                :preview,
                 level: :secondary,
                 type: :link,
-                path: Routes.mv_project_index_path(@socket, :index),
-                label: "Back"
+                path: Routes.mv_project_form_preview_assets_path(@socket, :index, @mv_project["id"]),
+                label: "Project Assets Preview"
             },
             nil,
             {
@@ -15,6 +15,14 @@
                 type: :link,
                 path: @current_user.mv_node <> "/app/project/" <> @mv_project["id"],
                 label: "View in MediaVerse"
+            },
+            nil,
+            {
+                :back,
+                level: :secondary,
+                type: :link,
+                path: Routes.mv_project_index_path(@socket, :index),
+                label: "Back"
             }
         ]}
     />

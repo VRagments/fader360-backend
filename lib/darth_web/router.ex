@@ -143,6 +143,7 @@ defmodule DarthWeb.Router do
     live "/users/mv-assets", Assets.MvAssetLive.Index, :index
     live "/users/mv-projects", Projects.MvProjectLive.Index, :index
     live "/users/mv-projects/:mv_project_id", Projects.MvProjectLive.Show, :show
+    live "/users/mv-projects/:mv_project_id/assets", Projects.MvProjectLive.FormPreviewAssets, :index
   end
 
   scope "/", DarthWeb do

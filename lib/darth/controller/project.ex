@@ -282,13 +282,10 @@ defmodule Darth.Controller.Project do
     end)
   end
 
-  def fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id) do
-    case MvApiClient.fetch_project_assets(mv_node, mv_token, mv_project_id) do
-      {:ok, []} ->
-        {:ok, []}
-
-      {:ok, mv_project_asset_list} ->
-        filter_mv_project_asset_list(mv_project_asset_list)
+  def fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id, current_page) do
+    case MvApiClient.fetch_project_assets(mv_node, mv_token, mv_project_id, current_page) do
+      {:ok, mv_project_asset_info} ->
+        filter_mv_project_asset_list(mv_project_asset_info)
 
       {:error, reason} ->
         Logger.error("Custom error message from MediaVerse while fetching subtitles: #{inspect(reason)}")
@@ -296,13 +293,17 @@ defmodule Darth.Controller.Project do
     end
   end
 
-  defp filter_mv_project_asset_list(filter_mv_project_asset_list) do
+  defp filter_mv_project_asset_list(mv_project_assets_info) do
+    mv_project_assets = Map.get(mv_project_assets_info, "assets")
+    total_pages = Map.get(mv_project_assets_info, "totalPages")
+    current_page = Map.get(mv_project_assets_info, "currentPage")
+
     filtered_mv_assets =
-      Enum.filter(filter_mv_project_asset_list, fn asset ->
+      Enum.filter(mv_project_assets, fn asset ->
         Controller.Asset.is_media_asset?(Map.get(asset, "contentType"))
       end)
 
-    {:ok, filtered_mv_assets}
+    {:ok, %{filtered_mv_assets: filtered_mv_assets, total_pages: total_pages, current_page: current_page}}
   end
 
   defp create_and_assign(user_params, mv_asset, project_struct) do
