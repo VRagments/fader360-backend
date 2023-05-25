@@ -58,6 +58,12 @@ if config_env() == :prod do
       environment variable FADER360_BACKEND_CONTAINER_PORT is missing.
       """
 
+  url_path =
+    System.get_env("FADER360_BACKEND_URL_PATH") ||
+      raise """
+      environment variable FADER360_BACKEND_URL_PATH is missing.
+      """
+
   config :darth, Darth.Repo,
     # ssl: true,
     url: database_url,
@@ -65,7 +71,7 @@ if config_env() == :prod do
     socket_options: maybe_ipv6
 
   config :darth, DarthWeb.Endpoint,
-    url: [host: host, port: String.to_integer(port), scheme: scheme],
+    url: [path: url_path, host: host, port: String.to_integer(port), scheme: scheme],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
