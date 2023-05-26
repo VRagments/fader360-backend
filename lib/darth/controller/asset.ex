@@ -409,6 +409,19 @@ defmodule Darth.Controller.Asset do
     end
   end
 
+  def filter_mv_asset_list(mv_project_assets_info) do
+    mv_project_assets = Map.get(mv_project_assets_info, "assets")
+    total_pages = Map.get(mv_project_assets_info, "totalPages")
+    current_page = Map.get(mv_project_assets_info, "currentPage")
+
+    filtered_mv_assets =
+      Enum.filter(mv_project_assets, fn asset ->
+        Controller.Asset.is_media_asset?(Map.get(asset, "contentType"))
+      end)
+
+    {:ok, %{filtered_mv_assets: filtered_mv_assets, total_pages: total_pages, current_page: current_page}}
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
