@@ -162,6 +162,21 @@ defmodule DarthWeb.Projects.MvProjectLive.FormPreviewAssets do
     """
   end
 
+  defp render_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={@current_user.mv_node <> "/app/model/" <> Map.get(@mv_asset, "key")}
+        image_source={Path.join([@asset_preview_static_url,
+          Map.get(@mv_asset, "previewLinkKey" ), Map.get(@mv_asset, "originalFilename" )])}
+        title={Map.get(@mv_asset, "originalFilename" )}
+        subtitle={Map.get(@mv_asset, "author")}
+        info={Map.get(@mv_asset, "contentType" )}
+      >
+        <%=%>
+      </IndexCard.render>
+    """
+  end
+
   defp render_mv_asset_card(assigns) do
     if File.exists?(
          PreviewDownloader.asset_file_path(
@@ -187,6 +202,9 @@ defmodule DarthWeb.Projects.MvProjectLive.FormPreviewAssets do
 
       :image ->
         render_image_card(assigns)
+
+      :model ->
+        render_model_card(assigns)
     end
   end
 

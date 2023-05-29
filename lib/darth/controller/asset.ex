@@ -65,7 +65,7 @@ defmodule Darth.Controller.Asset do
     with {:ok, _} <- write_data_file(static_path, input_file, params["data_path"]),
          delete_temp_downloaded_file(params["data_path"], is_mv_asset),
          {:ok, updated_asset} = ok <- update(asset, new_params, false, true),
-         :ok <- broadcast("assets", {:asset_analyze_transcode, updated_asset.id}) do
+         :ok <- maybe_initialize_analyze_transcode_pipeline(updated_asset) do
       ok
     else
       err ->
@@ -242,6 +242,7 @@ defmodule Darth.Controller.Asset do
   def preview_asset_url(asset), do: asset_url(asset, "preview")
   def squared_asset_url(asset), do: asset_url(asset, "squared")
   def static_asset_url(asset), do: asset_url(asset)
+  def static_model_asset_url(asset), do: model_asset_url(asset)
   def thumbnail_asset_url(asset), do: asset_url(asset, "thumb")
 
   def lowres_image_path(asset), do: image_path(asset, "lowres")
@@ -273,6 +274,7 @@ defmodule Darth.Controller.Asset do
   def normalized_media_type(media_type) when media_type in @bitmap_media_types, do: :image
   def normalized_media_type(media_type) when media_type in @svg_media_types, do: :image
   def normalized_media_type("image/" <> _s), do: :image
+  def normalized_media_type("model/" <> _s), do: :model
   def normalized_media_type(_), do: nil
 
   def svg?(asset), do: asset.media_type in @svg_media_types
@@ -362,13 +364,15 @@ defmodule Darth.Controller.Asset do
 
   def is_image_asset?(media_type), do: normalized_media_type(media_type) == :image
 
+  def is_model_asset?(media_type), do: normalized_media_type(media_type) == :model
+
   def is_audio_or_video_asset?(media_type),
     do: is_audio_asset?(media_type) or is_video_asset?(media_type)
 
   def is_media_asset?(mv_asset_media_type),
     do:
       is_audio_asset?(mv_asset_media_type) or is_video_asset?(mv_asset_media_type) or
-        is_image_asset?(mv_asset_media_type)
+        is_image_asset?(mv_asset_media_type) or is_model_asset?(mv_asset_media_type)
 
   def is_asset_status_ready?(asset_status), do: asset_status == "ready"
 
@@ -460,6 +464,12 @@ defmodule Darth.Controller.Asset do
   defp asset_url(asset, prefix \\ "") do
     base_url = DarthWeb.Endpoint.url()
     name = filename(asset, prefix)
+    "#{base_url}/media/#{asset.id}/#{name}"
+  end
+
+  defp model_asset_url(asset) do
+    base_url = DarthWeb.Endpoint.url()
+    name = asset.data_filename
     "#{base_url}/media/#{asset.id}/#{name}"
   end
 
@@ -614,6 +624,29 @@ defmodule Darth.Controller.Asset do
     case AssetLease.read_by_user_and_asset(user.id, asset_struct.id) do
       asset_lease = %AssetLeaseStruct{} -> {:ok, asset_lease}
       _ -> nil
+    end
+  end
+
+  defp maybe_initialize_analyze_transcode_pipeline(asset) do
+    normalized_media_type = normalized_media_type(asset.media_type)
+
+    case normalized_media_type do
+      :model ->
+        update_model_asset_static_url(asset)
+
+      _ ->
+        broadcast("assets", {:asset_analyze_transcode, asset.id})
+    end
+  end
+
+  defp update_model_asset_static_url(asset) do
+    params = %{
+      "static_url" => static_model_asset_url(asset)
+    }
+
+    case update(asset.id, params) do
+      {:ok, _a} -> :ok
+      _ -> {:error, "Error while updating the model asset with paths"}
     end
   end
 end

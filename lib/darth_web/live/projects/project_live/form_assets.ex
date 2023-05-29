@@ -496,6 +496,55 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     """
   end
 
+  defp render_added_model_card_with_two_buttons(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        model_source={@asset_lease.asset.static_url}
+        subtitle={@asset_lease.asset.media_type}
+        status= "Asset added to Project"
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :unassign,
+                phx_value_ref: @asset_lease.id,
+                label: "Remove"
+              },
+              {
+                :make_primary,
+                phx_value_ref: @asset_lease.id,
+                label: "Make Primary"
+              }
+            ]}
+          />
+      </ShowCard.render>
+    """
+  end
+
+  defp render_added_model_card_with_one_button(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        model_source={@asset_lease.asset.static_url}
+        subtitle={@asset_lease.asset.media_type}
+        status= "Asset added to Project"
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :unassign,
+                phx_value_ref: @asset_lease.id,
+                label: "Remove"
+              }
+            ]}
+          />
+      </ShowCard.render>
+    """
+  end
+
   defp render_available_audio_card_with_one_button(assigns) do
     if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
       ~H"""
@@ -548,6 +597,32 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     end
   end
 
+  defp render_available_model_card_with_one_button(assigns) do
+    if Asset.is_asset_status_ready?(assigns.asset_lease.asset.status) do
+      ~H"""
+        <ShowCard.render
+          title={@asset_lease.asset.name}
+          path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+          model_source={@asset_lease.asset.static_url}
+          subtitle={@asset_lease.asset.media_type}
+        >
+          <CardButtons.render
+            buttons={[
+              {
+                :assign,
+                phx_value_ref: @asset_lease.id,
+                label: "Add"
+              }
+            ]}
+          />
+        </ShowCard.render>
+      """
+    else
+      ~H"""
+      """
+    end
+  end
+
   defp render_asset_show_card(assigns) do
     if AssetLease.is_part_of_project?(assigns.asset_lease, assigns.project) do
       render_asset_card_with_one_or_two_buttons(assigns)
@@ -563,6 +638,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
       :audio -> render_audio_card_with_one_or_two_buttons(assigns)
       :image -> render_image_card_with_one_or_two_buttons(assigns)
       :video -> render_image_card_with_one_or_two_buttons(assigns)
+      :model -> render_model_card_with_one_or_two_buttons(assigns)
     end
   end
 
@@ -582,6 +658,14 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
     end
   end
 
+  defp render_model_card_with_one_or_two_buttons(assigns) do
+    if AssetLease.is_primary_asset_lease?(assigns.project, assigns.asset_lease) do
+      render_added_model_card_with_one_button(assigns)
+    else
+      render_added_model_card_with_two_buttons(assigns)
+    end
+  end
+
   defp render_asset_card_with_one_button(assigns) do
     media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
 
@@ -589,6 +673,7 @@ defmodule DarthWeb.Projects.ProjectLive.FormAssets do
       :audio -> render_available_audio_card_with_one_button(assigns)
       :image -> render_available_asset_card_with_one_button(assigns)
       :video -> render_available_asset_card_with_one_button(assigns)
+      :model -> render_available_model_card_with_one_button(assigns)
     end
   end
 

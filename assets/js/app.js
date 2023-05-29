@@ -22,6 +22,7 @@ import { Socket } from 'phoenix';
 import { LiveSocket } from 'phoenix_live_view';
 import topbar from '../vendor/topbar';
 import { media_hls_player } from './hls_player.js';
+import '@google/model-viewer';
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute('content');
 let liveSocket = new LiveSocket('/live', Socket, { params: { _csrf_token: csrfToken } });

@@ -476,6 +476,29 @@ defmodule DarthWeb.Assets.AssetLive.Index do
     """
   end
 
+  defp render_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        model_source={@asset_lease.asset.static_url}
+        title={@asset_lease.asset.name}
+        subtitle={@asset_lease.asset.media_type}
+        info={@asset_lease.asset.status}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :delete,
+              phx_value_ref: @asset_lease.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this asset? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
+    """
+  end
+
   defp render_asset_card(assigns) do
     asset = assigns.asset_lease.asset
 
@@ -497,6 +520,7 @@ defmodule DarthWeb.Assets.AssetLive.Index do
       :audio -> render_audio_card(assigns)
       :video -> render_image_card(assigns)
       :image -> render_image_card(assigns)
+      :model -> render_model_card(assigns)
     end
   end
 end

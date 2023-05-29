@@ -70,7 +70,7 @@ defmodule Darth.AssetProcessor.Downloader do
         asset_struct: asset_struct
       })
 
-      update_asset_status(download_params.asset_struct.id, "downloaded_successfully")
+      update_status(download_params.asset_struct.id, download_params.asset_struct.media_type)
       {:ok, asset_struct}
     else
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -116,6 +116,15 @@ defmodule Darth.AssetProcessor.Downloader do
         )
 
         {:error, reason}
+    end
+  end
+
+  defp update_status(asset_id, media_type) do
+    normalized_media_type = Asset.normalized_media_type(media_type)
+
+    case normalized_media_type do
+      :model -> update_asset_status(asset_id, "ready")
+      _ -> update_asset_status(asset_id, "downloaded_successfully")
     end
   end
 end

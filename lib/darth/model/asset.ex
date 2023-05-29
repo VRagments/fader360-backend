@@ -66,7 +66,7 @@ defmodule Darth.Model.Asset do
   @required_fields ~w(name media_type status)a
 
   @valid_media_type ~r/^(audio|image|video|application\/png|application\/x-png|application\/bmp|application\/x-bmp|\
-    application\/x-win-bitmap)\//
+    application\/x-win-bitmap|model)\//
 
   def delete_changeset(model),
     do:

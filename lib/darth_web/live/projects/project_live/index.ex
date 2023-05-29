@@ -219,6 +219,35 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
     """
   end
 
+  defp render_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        title={@user_project.name}
+        info={@user_project.visibility}
+        subtitle={@user_project.author}
+        model_source={@user_project.primary_asset.static_url}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_path(@socket, :edit, @user_project.id),
+              label: "Edit",
+              type: :link
+            },
+            {
+              :delete,
+              phx_value_ref: @user_project.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project? This action cannot be reverted.",
+            }
+          ]}
+        />
+      </IndexCard.render>
+    """
+  end
+
   defp render_default_card(assigns) do
     ~H"""
       <IndexCard.render
@@ -263,6 +292,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
       :audio -> render_audio_card(assigns)
       :video -> render_image_card(assigns)
       :image -> render_image_card(assigns)
+      :model -> render_model_card(assigns)
     end
   end
 end

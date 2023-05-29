@@ -19,7 +19,8 @@ defmodule DarthWeb.Assets.AssetLive.Show do
     Header,
     EmptyState,
     HeaderButtons,
-    SubtitlesTable
+    SubtitlesTable,
+    ShowModel
   }
 
   @impl Phoenix.LiveView
@@ -301,6 +302,11 @@ defmodule DarthWeb.Assets.AssetLive.Show do
         ~H"""
         <ShowImage.render source={@asset.static_url} />
         """
+
+      :model ->
+        ~H"""
+        <ShowModel.render source={@asset.static_url} />
+        """
     end
   end
 
@@ -331,6 +337,12 @@ defmodule DarthWeb.Assets.AssetLive.Show do
           <Stat.render title="Width" value= {get_width(@asset.attributes)} unit="px"/>
           <Stat.render title="Height" value= {get_height(@asset.attributes)} unit="px"/>
           <Stat.render title="Size" value= {get_file_size(@asset.attributes)} unit="MB"/>
+          <Stat.render title="Status" value={@asset.status} />
+          <Stat.render title="Media Type" value= {@asset.media_type} />
+        """
+
+      :model ->
+        ~H"""
           <Stat.render title="Status" value={@asset.status} />
           <Stat.render title="Media Type" value= {@asset.media_type} />
         """

@@ -3,7 +3,8 @@ defmodule DarthWeb.Components.ShowCard do
 
   attr :title, :string, required: true
   attr :path, :string, required: true
-  attr :source, :string, required: true
+  attr :source, :string, default: nil
+  attr :model_source, :string, default: nil
   attr :subtitle, :string, required: true
   attr :status, :string, default: nil
   slot(:inner_block, required: true)
@@ -23,7 +24,18 @@ defmodule DarthWeb.Components.ShowCard do
               px-2 py-0.5 text-xs font-medium text-green-800"><%=@status%></span>
           <%end%>
         </div>
-        <img class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl" src={@source} alt="">
+        <%= if @model_source do%>
+          <model-viewer
+            class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl"
+            src={@model_source}
+            shadow-intensity="1"
+            camera-controls
+            touch-action="pan-y"
+          >
+          </model-viewer>
+        <% else %>
+          <img class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl" src={@source} alt="">
+        <% end %>
       </div>
       </.link>
       <div>

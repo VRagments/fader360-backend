@@ -20,7 +20,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     StatLinkButton,
     HeaderButtons,
     CardButtons,
-    ShowDefault
+    ShowDefault,
+    ShowModel
   }
 
   @impl Phoenix.LiveView
@@ -249,21 +250,38 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   end
 
   defp render_media_display(assigns) do
-    with primary_asset_lease = %AssetLeaseStruct{} <- assigns.project.primary_asset_lease,
-         normalised_media_type = Asset.normalized_media_type(primary_asset_lease.asset.media_type),
-         true <- normalised_media_type == :audio do
-      ~H"""
-        <ShowImage.render source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}/>
-      """
-    else
+    case assigns.project.primary_asset_lease do
+      primary_asset_lease = %AssetLeaseStruct{} ->
+        normalised_media_type = Asset.normalized_media_type(primary_asset_lease.asset.media_type)
+        render_project_display(assigns, normalised_media_type)
+
       nil ->
         ~H"""
           <ShowDefault.render source={Routes.static_path(@socket, "/images/project_file_copy_outline.svg" )}/>
         """
+    end
+  end
 
-      false ->
+  defp render_project_display(assigns, normalised_media_type) do
+    case normalised_media_type do
+      :audio ->
+        ~H"""
+          <ShowImage.render source={Routes.static_path(@socket, "/images/audio_thumbnail_image.svg" )}/>
+        """
+
+      :image ->
         ~H"""
           <ShowImage.render source={@project.primary_asset.thumbnail_image}/>
+        """
+
+      :video ->
+        ~H"""
+          <ShowImage.render source={@project.primary_asset.thumbnail_image}/>
+        """
+
+      :model ->
+        ~H"""
+          <ShowModel.render source={@project.primary_asset.static_url}/>
         """
     end
   end
@@ -324,6 +342,34 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     """
   end
 
+  defp render_scene_with_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.project_scene_show_path(@socket, :show, @user_project.id, @project_scene.id)}
+        title={@project_scene.name}
+        info={get_info(@project_scene.navigatable)}
+        subtitle={@project_scene.duration <> " Sec"}
+        model_source={@project_scene.primary_asset.static_url}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :edit,
+              path: Routes.project_form_scenes_path(@socket, :edit, @user_project.id, @project_scene.id),
+              label: "Edit"
+            },
+            {
+              :delete,
+              phx_value_ref: @project_scene.id,
+              label: "Delete",
+              confirm_message: "Do you really want to delete this project scene? This action cannot be reverted."
+            }
+          ]}
+        />
+      </IndexCard.render>
+    """
+  end
+
   defp render_scene_with_default_card(assigns) do
     ~H"""
       <IndexCard.render
@@ -355,9 +401,19 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
 
   defp render_scene_card(assigns) do
     if ProjectScene.has_primary_asset_lease?(assigns.project_scene) do
-      render_scene_with_image_card(assigns)
+      render_scene_with_primary_asset(assigns)
     else
       render_scene_with_default_card(assigns)
+    end
+  end
+
+  defp render_scene_with_primary_asset(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.project_scene.primary_asset.media_type)
+
+    case normalised_media_type do
+      :video -> render_scene_with_image_card(assigns)
+      :image -> render_scene_with_image_card(assigns)
+      :model -> render_scene_with_model_card(assigns)
     end
   end
 

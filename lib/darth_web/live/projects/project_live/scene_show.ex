@@ -11,7 +11,9 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
     ShowImage,
     Stat,
     CardButtons,
-    HeaderButtons
+    HeaderButtons,
+    ShowDefault,
+    ShowModel
   }
 
   @impl Phoenix.LiveView
@@ -261,13 +263,31 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
 
   defp render_media_display(assigns) do
     if ProjectScene.has_primary_asset_lease?(assigns.project_scene) do
-      ~H"""
-      <ShowImage.render source={@project_scene.primary_asset.thumbnail_image}/>
-      """
+      normalised_media_type = Asset.normalized_media_type(assigns.project_scene.primary_asset.media_type)
+      render_project_scene_display(assigns, normalised_media_type)
     else
       ~H"""
-      <ShowImage.render source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}/>
+      <ShowDefault.render source={Routes.static_path(@socket, "/images/DefaultFileImage.svg")}/>
       """
+    end
+  end
+
+  defp render_project_scene_display(assigns, normalized_media_type) do
+    case normalized_media_type do
+      :image ->
+        ~H"""
+          <ShowImage.render source={@project_scene.primary_asset.thumbnail_image}/>
+        """
+
+      :video ->
+        ~H"""
+          <ShowImage.render source={@project_scene.primary_asset.thumbnail_image}/>
+        """
+
+      :model ->
+        ~H"""
+          <ShowModel.render source={@project_scene.primary_asset.static_url}/>
+        """
     end
   end
 
@@ -289,6 +309,16 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   end
 
   defp render_added_asset_card_with_one_button(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
+
+    case normalised_media_type do
+      :image -> render_added_image_card(assigns)
+      :video -> render_added_image_card(assigns)
+      :model -> render_added_model_card(assigns)
+    end
+  end
+
+  defp render_added_image_card(assigns) do
     ~H"""
       <ShowCard.render
         title={@asset_lease.asset.name}
@@ -310,12 +340,65 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
     """
   end
 
+  defp render_added_model_card(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        model_source={@asset_lease.asset.static_url}
+        subtitle={@asset_lease.asset.media_type}
+        status= "using as scene background"
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :unassign,
+              phx_value_ref: @asset_lease.id,
+              label: "Remove"
+            }
+          ]}
+        />
+      </ShowCard.render>
+    """
+  end
+
   defp render_available_asset_card_with_one_button(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.asset_lease.asset.media_type)
+
+    case normalised_media_type do
+      :image -> render_available_image_card(assigns)
+      :video -> render_available_image_card(assigns)
+      :model -> render_available_model_card(assigns)
+    end
+  end
+
+  defp render_available_image_card(assigns) do
     ~H"""
       <ShowCard.render
         title={@asset_lease.asset.name}
         path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
         source={@asset_lease.asset.thumbnail_image}
+        subtitle={@asset_lease.asset.media_type}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :assign,
+              phx_value_ref: @asset_lease.id,
+              label: "Add"
+            }
+          ]}
+        />
+      </ShowCard.render>
+    """
+  end
+
+  defp render_available_model_card(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@asset_lease.asset.name}
+        path={Routes.asset_show_path(@socket, :show, @asset_lease.id)}
+        model_source={@asset_lease.asset.static_url}
         subtitle={@asset_lease.asset.media_type}
       >
         <CardButtons.render

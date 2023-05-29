@@ -285,6 +285,20 @@ defmodule DarthWeb.PageLive.Page do
     """
   end
 
+  defp render_asset_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.asset_show_path(@socket, :show,@card.id)}
+        title={@card.asset.name}
+        info={@card.asset.status}
+        subtitle={@card.asset.media_type}
+        model_source={@card.asset.static_url}
+      >
+        <%=%>
+      </IndexCard.render>
+    """
+  end
+
   defp render_asset_default_card(assigns) do
     ~H"""
       <IndexCard.render
@@ -327,6 +341,20 @@ defmodule DarthWeb.PageLive.Page do
     """
   end
 
+  defp render_project_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @card.id)}
+        title={@card.name}
+        info={@card.visibility}
+        subtitle={@card.author}
+        model_source={@card.primary_asset.static_url}
+      >
+        <%=%>
+      </IndexCard.render>
+    """
+  end
+
   defp render_project_default_card(assigns) do
     ~H"""
       <IndexCard.render
@@ -341,11 +369,14 @@ defmodule DarthWeb.PageLive.Page do
   end
 
   defp get_asset_card(assigns) do
+    normalised_media_type = Asset.normalized_media_type(assigns.card.asset.media_type)
+
     if Asset.is_asset_status_ready?(assigns.card.asset.status) do
-      if Asset.is_audio_asset?(assigns.card.asset.media_type) do
-        render_asset_audio_card(assigns)
-      else
-        render_asset_image_card(assigns)
+      case normalised_media_type do
+        :audio -> render_asset_audio_card(assigns)
+        :image -> render_asset_image_card(assigns)
+        :video -> render_asset_image_card(assigns)
+        :model -> render_asset_model_card(assigns)
       end
     else
       render_asset_default_card(assigns)
@@ -354,10 +385,13 @@ defmodule DarthWeb.PageLive.Page do
 
   defp get_project_card(assigns) do
     if Project.has_primary_asset_lease?(assigns.card) do
-      if Asset.is_audio_asset?(assigns.card.primary_asset.media_type) do
-        render_project_audio_card(assigns)
-      else
-        render_project_image_card(assigns)
+      normalised_media_type = Asset.normalized_media_type(assigns.card.primary_asset.media_type)
+
+      case normalised_media_type do
+        :audio -> render_project_audio_card(assigns)
+        :image -> render_project_image_card(assigns)
+        :video -> render_project_image_card(assigns)
+        :model -> render_project_model_card(assigns)
       end
     else
       render_project_default_card(assigns)
