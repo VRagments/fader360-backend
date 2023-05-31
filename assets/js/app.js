@@ -24,8 +24,11 @@ import topbar from '../vendor/topbar';
 import { media_hls_player } from './hls_player.js';
 import '@google/model-viewer';
 
+const endpoint = document.getElementById('endpoint').content;
+let url = convertHttpsToWs(endpoint + '/live');
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute('content');
-let liveSocket = new LiveSocket('/live', Socket, { params: { _csrf_token: csrfToken } });
+let liveSocket = new LiveSocket(url, Socket, { params: { _csrf_token: csrfToken } });
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: '#29d' }, shadowColor: 'rgba(0, 0, 0, .3)' });
@@ -41,3 +44,9 @@ liveSocket.connect();
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
+
+function convertHttpsToWs(url) {
+    let urlObj = new URL(url);
+    urlObj.protocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
+    return urlObj.href;
+}
