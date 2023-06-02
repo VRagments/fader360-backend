@@ -15,7 +15,8 @@ defmodule DarthWeb.ApiAssetController do
 
           properties do
             attributes(Schema.ref(:AssetAttributes), "Custom attributes")
-            id(:string, "Asset ID")
+            id(:string, "Asset Lease ID")
+            asset_id(:string, "Asset ID")
             inserted_at(:string, "created at this time (Date)")
             lowres_image(:string, "URL for the asset's low-resolution version (only applicable to image)")
             media_type(:string, "Media Type")
@@ -35,6 +36,7 @@ defmodule DarthWeb.ApiAssetController do
               "key_two" => "someotherdate"
             },
             id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+            asset_id: "a6509e72-099b-4ee3-8954-52fc56bc8b9",
             lowres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/lowres_picture.jpg",
             media_type: "image/jpeg",
             midres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/midres_picture.jpg",
@@ -52,7 +54,8 @@ defmodule DarthWeb.ApiAssetController do
           description("A partial asset")
 
           properties do
-            id(:string, "Asset ID")
+            id(:string, "Asset Lease ID")
+            asset_id(:string, "Asset ID")
             name(:string, "User-provided asset name")
             preview_image(:string, "URL for the asset's preview image")
             squared_image(:string, "URL for the asset's squared image")
@@ -63,6 +66,7 @@ defmodule DarthWeb.ApiAssetController do
 
           example(%{
             id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+            asset_id: "a6509e72-099b-4ee3-8954-52fc56bc8b9",
             name: "my asset one",
             preview_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
             squared_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/squared_picture.jpg",
@@ -86,6 +90,7 @@ defmodule DarthWeb.ApiAssetController do
             entries: [
               %{
                 id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+                asset_id: "a6509e72-099b-4ee3-8954-52fc56bc8b9",
                 name: "my asset one",
                 preview_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
                 squared_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/squared_picture.jpg",
@@ -95,6 +100,7 @@ defmodule DarthWeb.ApiAssetController do
               },
               %{
                 id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+                asset_id: "a6509e72-099b-4ee3-8954-52fc56bc8b9",
                 name: "my asset one",
                 preview_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
                 squared_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/squared_picture.jpg",
@@ -177,14 +183,15 @@ defmodule DarthWeb.ApiAssetController do
     response(404, "Not Found, if the asset visibility prohibits the call")
   end
 
-  def show(conn, %{"id" => lease_id}) do
-    fun = fn _user, lease ->
-      conn
-      |> put_status(:ok)
-      |> render("show.json", object: lease)
-    end
+  def show(conn, %{"id" => asset_lease_id} = params) do
+    asset_lease = ensure_user_asset_lease(conn, asset_lease_id, params)
 
-    ensure_lease_owner_or_public(conn, lease_id, fun)
+    if asset_lease do
+      conn
+      |> render("show.json", object: asset_lease)
+    else
+      {:error, :not_found}
+    end
   end
 
   swagger_path(:create) do
@@ -233,18 +240,19 @@ defmodule DarthWeb.ApiAssetController do
     response(422, "Error")
   end
 
-  def update(conn, %{"id" => lease_id} = params) do
-    fun = fn _user, lease ->
-      with {:ok, _updated_asset} <- Asset.update(lease.asset_id, read_media_file_data(params)) do
-        lease = Repo.preload(lease, [:asset])
+  def update(conn, %{"id" => asset_lease_id} = params) do
+    asset_lease = ensure_user_asset_lease(conn, asset_lease_id, params)
 
-        conn
-        |> put_status(:ok)
-        |> render("show.json", object: lease)
-      end
+    with false <- is_nil(asset_lease),
+         {:ok, _updated_asset} <- Asset.update(asset_lease.asset_id, read_media_file_data(params)) do
+      asset_lease = Repo.preload(asset_lease, [:asset])
+
+      conn
+      |> put_status(:ok)
+      |> render("show.json", object: asset_lease)
+    else
+      _ -> {:error, :not_found}
     end
-
-    ensure_lease_owner(conn, lease_id, fun)
   end
 
   swagger_path(:delete) do
@@ -267,19 +275,22 @@ defmodule DarthWeb.ApiAssetController do
     response(422, "Error")
   end
 
-  def delete(conn, %{"id" => lease_id}) do
-    fun = fn user, lease ->
-      with {:ok, asset_lease} <- AssetLease.remove_user(lease, user),
+  def delete(conn, %{"id" => asset_lease_id}) do
+    user = conn.assigns.current_api_user
+    asset_lease = ensure_user_asset_lease(conn, asset_lease_id, %{})
+
+    if asset_lease do
+      with {:ok, asset_lease} <- AssetLease.remove_user(asset_lease, user),
            :ok <- AssetLease.maybe_delete(asset_lease),
            :ok <- Asset.delete(asset_lease.asset) do
         send_resp(conn, :no_content, "")
       else
         _ ->
-          handle_asset_lease_deletion(conn.assigns.current_api_user, lease_id)
+          handle_asset_lease_deletion(user, asset_lease_id)
       end
+    else
+      {:error, :not_found}
     end
-
-    ensure_lease_user(conn, lease_id, fun)
   end
 
   swagger_path(:change_license) do
@@ -305,14 +316,15 @@ defmodule DarthWeb.ApiAssetController do
     response(422, "Error")
   end
 
-  def change_license(conn, %{"api_asset_id" => lease_id, "license" => license}) do
-    fun = fn _user, lease ->
-      with {:ok, _active_lease} <- Asset.change_license(lease.asset, license) do
-        send_resp(conn, :no_content, "")
-      end
-    end
+  def change_license(conn, %{"api_asset_id" => asset_lease_id, "license" => license}) do
+    asset_lease = ensure_user_asset_lease(conn, asset_lease_id, %{})
 
-    ensure_lease_owner(conn, lease_id, fun)
+    with false <- is_nil(asset_lease),
+         {:ok, _active_lease} <- Asset.change_license(asset_lease.asset, license) do
+      send_resp(conn, :no_content, "")
+    else
+      _ -> {:error, :not_found}
+    end
   end
 
   swagger_path(:assign_user) do
@@ -437,43 +449,10 @@ defmodule DarthWeb.ApiAssetController do
     end
   end
 
-  defp ensure_lease_owner_or_public(conn, lease_id, fun) do
-    user = conn.assigns.current_api_user
-
-    with {:ok, lease} <- AssetLease.read(lease_id) do
-      if AssetLease.is_owner?(lease, user) or lease.license == :public do
-        fun.(user, lease)
-      else
-        # Even if the lease exists, we report it as not found
-        {:error, :not_found}
-      end
-    end
-  end
-
-  defp ensure_lease_user(conn, lease_id, fun) do
-    user = conn.assigns.current_api_user
-
-    with {:ok, lease} <- AssetLease.read(lease_id) do
-      if AssetLease.has_user?(lease, user) do
-        fun.(user, lease)
-      else
-        # Even if the lease exists, we report it as not found
-        {:error, :not_found}
-      end
-    end
-  end
-
-  defp ensure_lease_owner(conn, lease_id, fun) do
-    user = conn.assigns.current_api_user
-
-    with {:ok, lease} <- AssetLease.read(lease_id) do
-      if AssetLease.is_owner?(lease, user) do
-        fun.(user, lease)
-      else
-        # Even if the lease exists, we report it as not found
-        {:error, :not_found}
-      end
-    end
+  defp ensure_user_asset_lease(conn, asset_lease_id, params) do
+    current_user = conn.assigns.current_api_user
+    user_asset_leases = AssetLease.query_by_user(current_user.id, params)
+    Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
   end
 
   defp handle_asset_lease_deletion(user, asset_lease_id) do

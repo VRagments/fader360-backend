@@ -91,17 +91,20 @@ defmodule DarthWeb.ApiAssetSubtitleController do
     QueryParameters.list_query()
 
     parameters do
-      id(:path, :string, "Asset ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:AssetSubtitles))
     response(404, "Not Found")
   end
 
-  def index(conn, %{"api_asset_id" => asset_id} = params) do
+  def index(conn, %{"api_asset_id" => asset_lease_id} = params) do
     current_user = conn.assigns.current_api_user
     user_asset_leases = AssetLease.query_by_user(current_user.id, params)
-    asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.asset_id == asset_id end)
+    asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
 
     unless is_nil(asset_lease) do
       query = AssetSubtitleStruct |> where([as], as.asset_id == ^asset_lease.asset.id)
@@ -113,7 +116,7 @@ defmodule DarthWeb.ApiAssetSubtitleController do
   end
 
   swagger_path(:show) do
-    get("/api/assets/{api_asset_id}/asset_subtitles/{id}")
+    get("/api/assets/{api_asset_lease_id}/asset_subtitles/{id}")
     summary("Details of Asset subtitle")
 
     description(~s(Returns details of a given asset subtitle.
@@ -123,7 +126,7 @@ defmodule DarthWeb.ApiAssetSubtitleController do
     security([%{Bearer: []}])
 
     parameters do
-      api_asset_id(:path, :string, "Asset ID",
+      api_asset_lease_id(:path, :string, "Asset Lease ID",
         required: true,
         example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
       )
@@ -138,10 +141,11 @@ defmodule DarthWeb.ApiAssetSubtitleController do
     response(404, "Not Found")
   end
 
-  def show(conn, %{"api_asset_id" => asset_id, "id" => asset_subtitle_id} = params) do
+  def show(conn, %{"api_asset_id" => asset_lease_id, "id" => asset_subtitle_id} = params) do
     current_user = conn.assigns.current_api_user
     user_asset_leases = AssetLease.query_by_user(current_user.id, params)
-    asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.asset_id == asset_id end)
+
+    asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
 
     with true <- not is_nil(asset_lease),
          {:ok, asset_subtitle} <- AssetSubtitle.read(asset_subtitle_id),

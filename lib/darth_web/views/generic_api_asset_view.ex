@@ -22,6 +22,7 @@ defmodule DarthWeb.GenericApiAssetView do
         %{
           attributes: a.attributes,
           id: model.id,
+          asset_id: a.id,
           inserted_at: a.inserted_at,
           lowres_image: a.lowres_image,
           media_type: a.media_type,
@@ -48,6 +49,7 @@ defmodule DarthWeb.GenericApiAssetView do
         %{
           attributes: a.attributes,
           id: model.id,
+          asset_id: a.id,
           inserted_at: a.inserted_at,
           lowres_image: a.lowres_image,
           media_type: a.media_type,
