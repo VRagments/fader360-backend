@@ -12,7 +12,8 @@ defmodule DarthWeb.ApiPublicAssetController do
 
           properties do
             attributes(:object, "Custom asset attributes")
-            id(:string, "Asset ID")
+            id(:string, "Asset Lease ID")
+            asset_id(:string, "Asset ID")
             inserted_at(:string, "created at this time (Date)")
             lowres_image(:string, "URL for the asset's low-resolution version (only applicable to image)")
             media_type(:string, "Media Type")
@@ -32,6 +33,7 @@ defmodule DarthWeb.ApiPublicAssetController do
               "key_two" => "someotherdate"
             },
             id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+            asset_id: "33da7ff6-2951-4b80-94fc-a90c65ff4a91",
             lowres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/lowres_picture.jpg",
             media_type: "image/jpeg",
             midres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/midres_picture.jpg",
@@ -49,7 +51,8 @@ defmodule DarthWeb.ApiPublicAssetController do
           description("A partial public assets")
 
           properties do
-            id(:string, "Asset ID")
+            id(:string, "Asset Lease ID")
+            asset_id(:string, "Asset ID")
             media_type(:string, "Media Type")
             name(:string, "User-provided asset name")
             preview_image(:string, "URL for the asset's preview image")
@@ -61,6 +64,7 @@ defmodule DarthWeb.ApiPublicAssetController do
 
           example(%{
             id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+            asset_id: "33da7ff6-2951-4b80-94fc-a90c65ff4a91",
             media_type: "image/jpeg",
             name: "my asset one",
             preview_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/preview_picture.jpg",
@@ -89,6 +93,7 @@ defmodule DarthWeb.ApiPublicAssetController do
                   "key_two" => "someotherdate"
                 },
                 id: "fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7",
+                asset_id: "33da7ff6-2951-4b80-94fc-a90c65ff4a91",
                 lowres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/lowres_picture.jpg",
                 media_type: "image/jpeg",
                 midres_image: "http://localhost/assets/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/midres_picture.jpg",
