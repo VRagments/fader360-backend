@@ -17,7 +17,7 @@ defmodule DarthWeb.Endpoint do
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.
   plug Plug.Static,
-    at: "/",
+    at: System.get_env("FADER360_BACKEND_URL_PATH") || "/",
     from: :darth,
     gzip: false,
     only: ~w(assets media fonts images preview_download favicon.ico robots.txt)
