@@ -119,7 +119,7 @@ defmodule Darth.Controller.AssetSubtitle do
   def normalized_media_type(_), do: nil
 
   defp create_static_url(asset_id, filename) do
-    base_url = DarthWeb.Endpoint.url()
+    base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
     Path.join([base_url, "media", asset_id, "subtitles", filename])
   end
 

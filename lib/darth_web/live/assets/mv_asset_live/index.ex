@@ -49,7 +49,7 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
   def handle_params(params, _url, socket) do
     mv_token = socket.assigns.mv_token
     mv_node = socket.assigns.current_user.mv_node
-    base_url = DarthWeb.Endpoint.url()
+    base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
     asset_preview_static_url = "#{base_url}/preview_download/"
     current_page = Map.get(params, "page", "1")
 

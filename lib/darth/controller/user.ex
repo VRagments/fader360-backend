@@ -508,7 +508,7 @@ defmodule Darth.Controller.User do
     uploads_path = Application.get_env(:darth, :uploads_base_path)
     app_uploads_path = Application.app_dir(:darth, uploads_path)
     path = Path.join(app_uploads_path, new_filename)
-    base_url = DarthWeb.Endpoint.url()
+    base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
     url = "#{base_url}/files/#{new_filename}"
     {:ok, mime_type} = AssetFile.Helpers.mime_type(params.path)
 

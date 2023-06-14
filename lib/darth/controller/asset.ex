@@ -462,13 +462,13 @@ defmodule Darth.Controller.Asset do
   end
 
   defp asset_url(asset, prefix \\ "") do
-    base_url = DarthWeb.Endpoint.url()
+    base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
     name = filename(asset, prefix)
     "#{base_url}/media/#{asset.id}/#{name}"
   end
 
   defp model_asset_url(asset) do
-    base_url = DarthWeb.Endpoint.url()
+    base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
     name = asset.data_filename
     "#{base_url}/media/#{asset.id}/#{name}"
   end
