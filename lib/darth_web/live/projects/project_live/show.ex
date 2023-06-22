@@ -306,7 +306,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       <StatLinkButton.render
         action={:launch}
         level= {:primary}
-        path={DarthWeb.Endpoint.url()<>Application.fetch_env!(:darth, :editor_url)
+        path={Path.join([DarthWeb.Endpoint.url(),DarthWeb.Endpoint.path("/"),
+          Application.fetch_env!(:darth, :editor_url)])
           <> "?project_id=#{@project.id}"}
         label={"Open in Editor"}
         type={:link}
