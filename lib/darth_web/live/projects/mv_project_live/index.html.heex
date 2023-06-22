@@ -1,5 +1,5 @@
 <Header.render heading="MediaVerse Projects"/>
-<%= if @total_pages == 0 do %>
+<%= if Enum.empty?(@mv_projects) do %>
     <EmptyState.render label="Create Projects in MediaVerse"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">

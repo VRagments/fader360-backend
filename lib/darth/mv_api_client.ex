@@ -30,7 +30,15 @@ defmodule Darth.MvApiClient do
   def fetch_assets(mv_node, mv_token, current_page) do
     int_current_page = String.to_integer(current_page)
     url = mv_node <> "/dam/assets/paginated"
-    params = [page: int_current_page - 1, per_page: 12]
+
+    params = [
+      page: int_current_page - 1,
+      media_type: "image",
+      media_type: "video",
+      media_type: "audio",
+      media_type: "model",
+      per_page: 12
+    ]
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, assets} when is_list(assets) <- Jason.decode(body) do
@@ -139,7 +147,15 @@ defmodule Darth.MvApiClient do
   def fetch_project_assets(mv_node, mv_token, mv_project_id, current_page) do
     url = mv_node <> "/dam/project/" <> mv_project_id <> "/assets/paginated"
     int_current_page = String.to_integer(current_page)
-    params = [page: int_current_page - 1, per_page: 12]
+
+    params = [
+      page: int_current_page - 1,
+      media_type: "image",
+      media_type: "video",
+      media_type: "audio",
+      media_type: "model",
+      per_page: 12
+    ]
 
     with {:ok, %{body: body}} <- HTTPoison.get(url, get_headers(mv_token), params: params),
          {:ok, project_assets} when is_list(project_assets) <- Jason.decode(body) do

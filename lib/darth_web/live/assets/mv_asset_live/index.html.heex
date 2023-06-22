@@ -11,7 +11,7 @@
     />
 </Header.render>
 
-<%= if @total_pages == 0 do %>
+<%= if Enum.empty?(@mv_assets) do %>
     <EmptyState.render label="Add Assets in MediaVerse"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">

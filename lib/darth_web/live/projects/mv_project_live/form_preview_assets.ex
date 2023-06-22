@@ -52,19 +52,19 @@ defmodule DarthWeb.Projects.MvProjectLive.FormPreviewAssets do
 
     socket =
       with {:ok, mv_project} <- MvApiClient.show_project(mv_node, mv_token, mv_project_id),
-           {:ok, mv_asset_info} <-
-             Project.fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id, current_page) do
-        PreviewDownloader.add_to_preview_downloader(mv_asset_info.filtered_mv_assets, mv_node, mv_token)
-        map_with_all_links = map_with_all_links(socket, mv_project_id, mv_asset_info.total_pages)
+           {:ok, %{"assets" => assets, "currentPage" => current_page, "totalPages" => total_pages}} <-
+             Project.fetch_mv_project_assets(mv_node, mv_token, mv_project_id, current_page) do
+        PreviewDownloader.add_to_preview_downloader(assets, mv_node, mv_token)
+        map_with_all_links = map_with_all_links(socket, mv_project_id, total_pages)
 
         socket
         |> assign(
           mv_project: mv_project,
-          mv_assets: mv_asset_info.filtered_mv_assets,
+          mv_assets: assets,
           asset_preview_static_url: asset_preview_static_url,
           map_with_all_links: map_with_all_links,
-          total_pages: mv_asset_info.total_pages,
-          current_page: mv_asset_info.current_page + 1
+          total_pages: total_pages,
+          current_page: current_page + 1
         )
       else
         {:error, query_error = %Ecto.QueryError{}} ->

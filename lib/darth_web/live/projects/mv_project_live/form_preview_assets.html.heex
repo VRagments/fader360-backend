@@ -17,8 +17,8 @@
     size={:small}
 />
 
-<%= if @total_pages == "0" do %>
-    <EmptyState.render label="Create Projects in MediaVerse"/>
+<%= if Enum.empty?(@mv_assets) do %>
+    <EmptyState.render label="Add Assets to this project in MediaVerse"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">
         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

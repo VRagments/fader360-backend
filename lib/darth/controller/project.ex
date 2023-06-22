@@ -282,10 +282,10 @@ defmodule Darth.Controller.Project do
     end)
   end
 
-  def fetch_and_filter_mv_project_assets(mv_node, mv_token, mv_project_id, current_page) do
+  def fetch_mv_project_assets(mv_node, mv_token, mv_project_id, current_page) do
     case MvApiClient.fetch_project_assets(mv_node, mv_token, mv_project_id, current_page) do
-      {:ok, mv_project_asset_info} ->
-        Controller.Asset.filter_mv_asset_list(mv_project_asset_info)
+      {:ok, mv_project_assets} ->
+        {:ok, mv_project_assets}
 
       {:error, reason} ->
         Logger.error("Custom error message from MediaVerse while fetching subtitles: #{inspect(reason)}")

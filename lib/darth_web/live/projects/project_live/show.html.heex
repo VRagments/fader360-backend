@@ -61,7 +61,7 @@
     />
 </Header.render>
 
-<%= if @total_pages == 0 do %>
+<%= if Enum.empty?(@project_scenes_list) do %>
     <EmptyState.render label="Create Project Scene"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">

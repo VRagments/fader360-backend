@@ -13,7 +13,7 @@
 
 <UploadProgress.render uploads={@uploads} />
 
-<%= if @total_pages == 0 do %>
+<%= if Enum.empty?(@asset_leases_list) do %>
     <EmptyState.render label="Add asset"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">

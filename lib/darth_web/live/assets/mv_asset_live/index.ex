@@ -53,41 +53,37 @@ defmodule DarthWeb.Assets.MvAssetLive.Index do
     asset_preview_static_url = "#{base_url}/preview_download/"
     current_page = Map.get(params, "page", "1")
 
-    with {:ok, mv_assets} <- MvApiClient.fetch_assets(mv_node, mv_token, current_page),
-         {:ok, mv_asset_info} <- Asset.filter_mv_asset_list(mv_assets) do
-      PreviewDownloader.add_to_preview_downloader(mv_asset_info.filtered_mv_assets, mv_node, mv_token)
-      map_with_all_links = map_with_all_links(socket, mv_asset_info.total_pages)
+    socket =
+      case MvApiClient.fetch_assets(mv_node, mv_token, current_page) do
+        {:ok, %{"assets" => assets, "currentPage" => current_page, "totalPages" => total_pages}} ->
+          PreviewDownloader.add_to_preview_downloader(assets, mv_node, mv_token)
+          map_with_all_links = map_with_all_links(socket, total_pages)
 
-      {:noreply,
-       socket
-       |> assign(
-         mv_assets: mv_asset_info.filtered_mv_assets,
-         asset_preview_static_url: asset_preview_static_url,
-         current_page: mv_asset_info.current_page + 1,
-         total_pages: mv_asset_info.total_pages,
-         map_with_all_links: map_with_all_links
-       )}
-    else
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+          socket
+          |> assign(
+            mv_assets: assets,
+            asset_preview_static_url: asset_preview_static_url,
+            current_page: current_page + 1,
+            total_pages: total_pages,
+            map_with_all_links: map_with_all_links
+          )
 
-        socket =
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
           socket
           |> put_flash(:error, inspect(reason))
           |> redirect(to: Routes.page_page_path(socket, :index))
 
-        {:noreply, socket}
+        err ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(err)}")
 
-      err ->
-        Logger.error("Custom error message from MediaVerse: #{inspect(err)}")
-
-        socket =
           socket
           |> put_flash(:error, inspect(err))
           |> redirect(to: Routes.page_page_path(socket, :index))
+      end
 
-        {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
