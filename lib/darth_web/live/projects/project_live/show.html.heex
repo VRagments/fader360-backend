@@ -40,8 +40,12 @@
     <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
         <div class="mt-10">
             <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
-                <.render_project_stats project={@project} changeset={@changeset}
-                    select_options={@select_options} />
+                <.render_project_stats project={@project}
+                    changeset={@changeset}
+                    select_options={@select_options}
+                    base_url={@base_url}
+                    editor_url={@editor_url}
+                />
             </dl>
         </div>
     </div>

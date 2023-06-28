@@ -72,6 +72,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       project_scenes_map = Map.new(project_scenes, fn ps -> {ps.id, ps} end)
       project_scenes_list = ProjectScene.get_sorted_project_scenes_list(project_scenes_map)
       map_with_all_links = map_with_all_links(socket, total_pages, project)
+      base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
+      editor_url = Application.fetch_env!(:darth, :editor_url)
 
       {:noreply,
        socket
@@ -83,7 +85,9 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          total_pages: total_pages,
          current_page: current_page,
          changeset: ProjectStruct.changeset(project),
-         map_with_all_links: map_with_all_links
+         map_with_all_links: map_with_all_links,
+         base_url: base_url,
+         editor_url: editor_url
        )}
     else
       {:error, query_error = %Ecto.QueryError{}} ->
@@ -306,9 +310,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       <StatLinkButton.render
         action={:launch}
         level= {:primary}
-        path={Path.join([DarthWeb.Endpoint.url(),DarthWeb.Endpoint.path("/"),
-          Application.fetch_env!(:darth, :editor_url)])
-          <> "?project_id=#{@project.id}"}
+        path={Path.join([@base_url, @editor_url]) <> "?project_id=#{@project.id}"}
         label={"Open in Editor"}
         type={:link}
       />
