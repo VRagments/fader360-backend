@@ -31,6 +31,7 @@ defmodule DarthWeb.Components.HeaderButtons do
         type={@type}
         phx_value_ref={@phx_value_ref}
         uploads={@uploads}
+        confirm_message={@confirm_message}
       />
     """
   end
@@ -45,7 +46,8 @@ defmodule DarthWeb.Components.HeaderButtons do
       path: Keyword.get(opts, :path),
       label: Keyword.get(opts, :label),
       phx_value_ref: Keyword.get(opts, :phx_value_ref),
-      uploads: Keyword.get(opts, :uploads)
+      uploads: Keyword.get(opts, :uploads),
+      confirm_message: Keyword.get(opts, :confirm_message)
     }
   end
 

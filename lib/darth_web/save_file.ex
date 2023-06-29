@@ -24,4 +24,11 @@ defmodule DarthWeb.SaveFile do
 
     save_file.(response, file, save_file)
   end
+
+  def write_to_file(file_path, content) do
+    case File.write(file_path, content) do
+      :ok -> :ok
+      {:error, reason} -> {:error, "unable to write into project result text file #{inspect(reason)}"}
+    end
+  end
 end

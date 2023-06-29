@@ -2,12 +2,14 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   use DarthWeb, :live_navbar_view
   require Logger
   import Ecto.Query
+  alias Darth.MvApiClient
   alias Darth.Controller.ProjectScene
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.AssetLease, as: AssetLeaseStruct
   alias Darth.Model.ProjectScene, as: ProjectSceneStruct
   alias Darth.Controller.{Project, Asset, User, ProjectScene}
   alias Darth.Model.Project, as: ProjectStruct
+  alias DarthWeb.SaveFile
 
   alias DarthWeb.Components.{
     ShowImage,
@@ -17,7 +19,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     Pagination,
     EmptyState,
     IndexCard,
-    StatLinkButton,
+    StatButton,
     HeaderButtons,
     CardButtons,
     ShowDefault,
@@ -25,7 +27,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   }
 
   @impl Phoenix.LiveView
-  def mount(_params, %{"user_token" => user_token}, socket) do
+  def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
     with %UserStruct{} = user <- User.get_user_by_token(user_token, "session"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "asset_leases"),
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "projects"),
@@ -33,7 +35,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          :ok <- Phoenix.PubSub.subscribe(Darth.PubSub, "project_scenes") do
       {:ok,
        socket
-       |> assign(current_user: user)}
+       |> assign(current_user: user)
+       |> assign(mv_token: mv_token)}
     else
       {:error, reason} ->
         Logger.error("Error while reading user information: #{inspect(reason)}")
@@ -67,6 +70,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
 
     with {:ok, project} <- Project.read(project_id, true),
          true <- project.user_id == socket.assigns.current_user.id,
+         :ok <- Project.project_publish_status(project.published?),
          %{query_page: current_page, total_pages: total_pages, entries: project_scenes} <-
            ProjectScene.query(params, project_scenes_query, true) do
       project_scenes_map = Map.new(project_scenes, fn ps -> {ps.id, ps} end)
@@ -74,6 +78,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       map_with_all_links = map_with_all_links(socket, total_pages, project)
       base_url = Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])
       editor_url = Application.fetch_env!(:darth, :editor_url)
+
+      header_buttons = header_buttons(Project.is_mv_project?(project.mv_project_id), project.id, socket)
 
       {:noreply,
        socket
@@ -86,6 +92,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
          current_page: current_page,
          changeset: ProjectStruct.changeset(project),
          map_with_all_links: map_with_all_links,
+         header_buttons: header_buttons,
          base_url: base_url,
          editor_url: editor_url
        )}
@@ -96,6 +103,16 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         socket =
           socket
           |> put_flash(:error, "Unable to project scenes")
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
+
+        {:noreply, socket}
+
+      {:error, :project_published} ->
+        Logger.error("Error message: Cannot edit or view the project as it is already published to MediaVerse")
+
+        socket =
+          socket
+          |> put_flash(:error, "Project already published to MediaVerse")
           |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         {:noreply, socket}
@@ -164,6 +181,96 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("upload_to_mediverse", _, socket) do
+    project = socket.assigns.project
+    now = Project.sanitized_current_date_time()
+    project_data_filename = "fader_result_#{project.name}_#{now}.txt"
+    published_project_name = project.name <> "_published_#{now}"
+    mv_node = socket.assigns.current_user.mv_node
+    mv_token = socket.assigns.mv_token
+
+    socket =
+      with {:ok, new_project} <- deep_copy_project_and_scenes(project, published_project_name),
+           published_project_base_path = Project.published_project_base_path(new_project),
+           project_data = inspect(new_project),
+           external_url =
+             DarthWeb.Endpoint.url() <>
+               Application.fetch_env!(:darth, :player_url) <> "?project_id=#{new_project.id}",
+           {:ok, project_data_file_path} <-
+             Project.create_project_result_file_path(published_project_base_path, project_data_filename),
+           :ok <- SaveFile.write_to_file(project_data_file_path, project_data),
+           asset_params = %{
+             mv_node: mv_node,
+             mv_token: mv_token,
+             data_file_path: Path.join([published_project_base_path, project_data_filename]),
+             description: project_data_filename,
+             external_url: external_url
+           },
+           {:ok, %{"key" => mv_asset_key}} <- MvApiClient.upload_asset_to_mediaverse(asset_params),
+           {:ok, %{status_code: 200}} <-
+             MvApiClient.update_project(project.mv_project_id, mv_asset_key, mv_node, mv_token) do
+        socket
+        |> put_flash(:info, "Successfully pushed project result to MediaVerse")
+        |> push_navigate(to: Routes.mv_project_published_projects_path(socket, :index))
+      else
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          Logger.error("Custom error message from MediaVerse: #{inspect(reason)}")
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while uploading project result file to MediaVerse: #{inspect(reason)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        # Custom error message from MediaVerse
+        {:ok, %{"message" => message}} ->
+          Logger.error(inspect(message))
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while pushing project result to MediaVerse: #{inspect(message)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        {:ok, %{status_code: _, body: body}} ->
+          decoded_body = Jason.decode(body)
+
+          Logger.error(inspect(decoded_body))
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while pushing project result to MediaVerse: #{inspect(decoded_body)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        {:error, %Jason.DecodeError{} = reason} ->
+          Logger.error("Jason Decode Error while pushing project result to MediaVerse: #{inspect(reason)}")
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while pushing project result to MediaVerse: #{inspect(reason)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        {:error, reason} ->
+          Logger.error("Error while pushing project result to MediaVerse: #{inspect(reason)}")
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while pushing project result to MediaVerse: #{inspect(reason)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:project_deleted, project}, socket) do
     socket =
       if socket.assigns.project.id == project.id do
@@ -218,6 +325,17 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   @impl Phoenix.LiveView
   def handle_info(_, socket) do
     {:noreply, socket}
+  end
+
+  defp deep_copy_project_and_scenes(project, published_project_name) do
+    with {:ok, new_project} <- Project.duplicate_to_publish(project, published_project_name),
+         {:ok, new_project} <- ProjectScene.dublicate(project, new_project) do
+      {:ok, new_project}
+    else
+      err ->
+        Logger.error("Error while dublicating project to publish: #{inspect(err)}")
+        err
+    end
   end
 
   defp get_updated_project_scene_list(socket) do
@@ -307,7 +425,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         title="Last Updated at"
         value={NaiveDateTime.to_date(@project.updated_at)}
       />
-      <StatLinkButton.render
+      <StatButton.render
         action={:launch}
         level= {:primary}
         path={Path.join([@base_url, @editor_url]) <> "?project_id=#{@project.id}"}
@@ -425,5 +543,64 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       true -> "Navigatable"
       false -> "Not Navigatable"
     end
+  end
+
+  defp header_buttons(true, project_id, socket) do
+    [
+      {
+        :edit,
+        level: :secondary,
+        type: :link,
+        path: Routes.project_form_path(socket, :edit, project_id),
+        label: "Edit Project"
+      },
+      nil,
+      {
+        :manage,
+        level: :secondary,
+        type: :link,
+        path: Routes.project_form_assets_path(socket, :index, project_id),
+        label: "Manage Project Assets"
+      },
+      nil,
+      {
+        :upload_to_mediverse,
+        level: :secondary,
+        type: :click,
+        label: "Publish to MediaVerse",
+        confirm_message: "Avoid clicking this button multiple times.
+                Send only valid and publishable project to MediaVerse"
+      },
+      nil,
+      {
+        :back,
+        level: :secondary, type: :link, path: Routes.project_index_path(socket, :index), label: "Back"
+      }
+    ]
+  end
+
+  defp header_buttons(false, project_id, socket) do
+    [
+      {
+        :edit,
+        level: :secondary,
+        type: :link,
+        path: Routes.project_form_path(socket, :edit, project_id),
+        label: "Edit Project"
+      },
+      nil,
+      {
+        :manage,
+        level: :secondary,
+        type: :link,
+        path: Routes.project_form_assets_path(socket, :index, project_id),
+        label: "Manage Project Assets"
+      },
+      nil,
+      {
+        :back,
+        level: :secondary, type: :link, path: Routes.project_index_path(socket, :index), label: "Back"
+      }
+    ]
   end
 end

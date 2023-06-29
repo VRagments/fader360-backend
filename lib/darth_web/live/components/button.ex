@@ -19,11 +19,14 @@ defmodule DarthWeb.Components.Button do
   attr :phx_value_ref, :string, default: nil
   # Map will upload file information for LiveFormUpload
   attr :uploads, :map, default: nil
+  # A popup message before deleting a card
+  attr :confirm_message, :string, default: nil
 
   def render(%{type: :click} = assigns) do
     ~H"""
       <button
         phx-click= {@action}
+        data-confirm={@confirm_message}
         phx-value-ref={@phx_value_ref}
         class={button_class(@level)}
       >
@@ -135,4 +138,5 @@ defmodule DarthWeb.Components.Button do
   defp render_svg(%{action: :sync_with_mv_project} = assigns), do: Icons.re_transcode_arrow_path(assigns)
   defp render_svg(%{action: :sync_with_mv_asset} = assigns), do: Icons.re_transcode_arrow_path(assigns)
   defp render_svg(%{action: :preview} = assigns), do: Icons.view_finder_circle(assigns)
+  defp render_svg(%{action: :upload_to_mediverse} = assigns), do: Icons.cloud_arrow_up(assigns)
 end

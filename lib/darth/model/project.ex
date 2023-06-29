@@ -30,6 +30,7 @@ defmodule Darth.Model.Project do
     has_many(:assets, through: [:asset_leases, :asset])
     has_many(:project_scenes, ProjectScene)
     field(:mv_project_id, :string)
+    field(:published?, :boolean)
 
     timestamps()
 
@@ -63,9 +64,9 @@ defmodule Darth.Model.Project do
     )
   end
 
-  @allowed_fields ~w(author name visibility user_id data primary_asset_lease_id mv_project_id)a
+  @allowed_fields ~w(author name visibility user_id data primary_asset_lease_id mv_project_id published?)a
 
-  @required_fields ~w(name visibility user_id)a
+  @required_fields ~w(name visibility user_id published?)a
 
   def delete_changeset(model), do: model |> common_changeset(%{}) |> Map.put(:action, :delete)
 

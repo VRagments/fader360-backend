@@ -49,7 +49,9 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
 
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
-    query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id)
+    query =
+      ProjectStruct
+      |> where([p], p.user_id == ^socket.assigns.current_user.id and p.published? == false)
 
     case Project.query(params, query, true) do
       %{query_page: current_page, total_pages: total_pages, entries: user_projects} ->
@@ -88,7 +90,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
         :ok ->
           socket
           |> put_flash(:info, "Project deleted successfully")
-          |> push_patch(to: Routes.project_index_path(socket, :index))
+          |> push_navigate(to: Routes.project_index_path(socket, :index))
 
         _ ->
           socket

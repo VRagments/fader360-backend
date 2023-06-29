@@ -1,4 +1,4 @@
-defmodule DarthWeb.Components.StatLinkButton do
+defmodule DarthWeb.Components.StatButton do
   use DarthWeb, :component
   alias DarthWeb.Components.HeaderButtons
 

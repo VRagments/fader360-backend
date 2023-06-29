@@ -66,7 +66,9 @@ defmodule DarthWeb.PageLive.Page do
     socket =
       with %{entries: asset_leases} <-
              AssetLease.query_by_user(socket.assigns.current_user.id, %{"size" => "5"}, false),
-           query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
+           query =
+             ProjectStruct
+             |> where([p], p.user_id == ^socket.assigns.current_user.id and p.published? == false),
            %{entries: projects} <- Project.query(%{"size" => "5"}, query, true) do
         asset_leases_map = Map.new(asset_leases, fn al -> {al.id, al} end)
 

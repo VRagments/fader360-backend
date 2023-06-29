@@ -169,6 +169,37 @@ defmodule Darth.MvApiClient do
     end
   end
 
+  def upload_asset_to_mediaverse(asset_params) do
+    url = asset_params.mv_node <> "/dam/assets"
+
+    headers = [
+      {"accept", "*/*"},
+      {"Content-Type", "multipart/form-data"},
+      {"Authorization", "Bearer #{asset_params.mv_token}"}
+    ]
+
+    params = [
+      {:file, asset_params.data_file_path},
+      {"description", asset_params.description},
+      # TODO: External Tool and External URL are not getting
+      #  updated after the successful file upload
+      {"externalUrl", asset_params.external_url},
+      {"externalTool", "Fader360"}
+    ]
+
+    {:ok, %{body: body}} = HTTPoison.post(url, {:multipart, params}, headers)
+    Jason.decode(body)
+  end
+
+  def update_project(project_id, asset_id, mv_node, mv_token) do
+    url = mv_node <> "/dam/project/" <> project_id
+
+    with {:ok, request_body} <- Jason.encode(%{projectOutput: [asset_id]}),
+         {:ok, response} <- HTTPoison.put(url, request_body, get_headers(mv_token)) do
+      {:ok, response}
+    end
+  end
+
   defp get_headers(mv_token) do
     [
       {"Content-type", "application/json"},

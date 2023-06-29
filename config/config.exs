@@ -11,7 +11,8 @@ config :darth,
   ecto_repos: [Darth.Repo],
   asset_static_base_path: ["priv", "static", "media"],
   uploads_base_path: ["priv", "static", "uploads"],
-  mv_asset_preview_download_path: ["priv", "static", "preview_download"]
+  mv_asset_preview_download_path: ["priv", "static", "preview_download"],
+  project_static_base_path: ["priv", "static", "published_projects"]
 
 config :darth, Darth.Repo,
   migration_primary_key: [name: :id, type: :uuid],
@@ -66,7 +67,8 @@ config :darth,
   upload_file_size: 80_000_000,
   upload_subtitle_file_size: 80_000,
   default_project_scene_duration: "12",
-  editor_url: "/editor/edit"
+  editor_url: "/editor/edit",
+  player_url: "/editor/view"
 
 config :darth,
   reset_password_validity_in_days: 1,

@@ -4,6 +4,7 @@ defmodule Darth.Controller.ProjectScene do
   use Darth.Controller, include_crud: true
 
   alias Darth.Model.ProjectScene, as: ProjectSceneStruct
+  alias Darth.Controller.Project
 
   def model_mod, do: Darth.Model.ProjectScene
 
@@ -40,7 +41,13 @@ defmodule Darth.Controller.ProjectScene do
       else
         params
       end
-      |> Map.put("duration", Application.fetch_env!(:darth, :default_project_scene_duration))
+
+    params =
+      if is_nil(params["duration"]) or params["duration"] == "" do
+        Map.put(params, "duration", Application.fetch_env!(:darth, :default_project_scene_duration))
+      else
+        params
+      end
 
     ProjectSceneStruct.changeset(%ProjectSceneStruct{}, params)
   end
@@ -95,6 +102,58 @@ defmodule Darth.Controller.ProjectScene do
     project_scenes_map
     |> Map.values()
     |> Enum.sort_by(& &1.inserted_at)
+  end
+
+  def dublicate(old_project, new_project) do
+    old_project_data = old_project.data
+    old_project_scene_list_in_order = Map.get(old_project_data, "sceneOrder")
+
+    with new_project_scene_list_in_order <-
+           Enum.map(old_project_scene_list_in_order, fn old_project_scene_id ->
+             create_and_copy_scene(old_project_scene_id, new_project.id)
+           end),
+         false <-
+           Enum.any?(new_project_scene_list_in_order, fn new_project_scene -> new_project_scene == :error end),
+         new_project_data = Map.put(old_project_data, "sceneOrder", new_project_scene_list_in_order),
+         {:ok, project} <- Project.update(new_project, %{data: new_project_data}) do
+      {:ok, project}
+    else
+      _ ->
+        {:error, "Error while coping the project scenes"}
+    end
+  end
+
+  defp create_and_copy_scene(original_scene_id, new_project_id) do
+    with {:ok, original_scene} <- read(original_scene_id, [:primary_asset_lease]),
+         params = %{
+           "name" => original_scene.name,
+           "duration" => original_scene.duration,
+           "navigatable" => original_scene.navigatable,
+           "project_id" => new_project_id,
+           "data" => original_scene.data,
+           "user_id" => original_scene.user_id
+         },
+         {:ok, new_scene} <- create(params),
+         {:ok, _new_scene} <- copy_primary_asset_lease(new_scene, original_scene.primary_asset_lease) do
+      new_scene.id
+    else
+      err ->
+        Logger.error("Error while dublicating the scene: #{inspect(err)}")
+        :error
+    end
+  end
+
+  defp copy_primary_asset_lease(scene, nil), do: {:ok, scene}
+
+  defp copy_primary_asset_lease(scene, lease) do
+    case update(scene, %{primary_asset_lease_id: lease.id}) do
+      {:ok, scene} ->
+        {:ok, scene}
+
+      err ->
+        Logger.error("Error while dublicating the scene: #{inspect(err)}")
+        {:ok, scene}
+    end
   end
 
   defp delete_repo({:ok, project_scene}) do

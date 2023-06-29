@@ -44,3 +44,4 @@ docker/media/
 docker/preview_download/
 docker_data/
 .vscode/
+priv/static/published_projects/

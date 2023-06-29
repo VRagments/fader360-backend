@@ -1,0 +1,24 @@
+<Header.render heading="Projects Published to MediaVerse">
+    <% %>
+</Header.render>
+
+<%= if Enum.empty?(@user_projects_list) do %>
+    <EmptyState.render label="Publish a Project to MediaVerse"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for user_project <- @user_projects_list do %>
+                <.render_project_card
+                    user_project={user_project}
+                    socket={@socket}
+                />
+            <% end %>
+        </ul>
+    </section>
+
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+<% end %>

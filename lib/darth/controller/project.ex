@@ -25,6 +25,7 @@ defmodule Darth.Controller.Project do
       custom_logo
       custom_player_settings
       mv_project_id
+      published?
       name
       primary_asset_lease_id
       updated_at
@@ -58,7 +59,19 @@ defmodule Darth.Controller.Project do
         params
       end
 
-    params = Map.put_new(params, "visibility", :private)
+    params =
+      if is_nil(params["published?"]) or params["published?"] == "" do
+        Map.put(params, "published?", false)
+      else
+        params
+      end
+
+    params =
+      if is_nil(params["visibility"]) or params["visibility"] == "" do
+        Map.put_new(params, "visibility", :private)
+      else
+        params
+      end
 
     Project.changeset(%Project{}, params)
   end
@@ -102,11 +115,15 @@ defmodule Darth.Controller.Project do
   def delete(nil), do: {:error, :not_found}
   def delete(id), do: Project |> Repo.get(id) |> delete
 
-  def duplicate(project, name) do
+  def duplicate_to_publish(project, name) do
     params = %{
       "name" => name,
       "data" => project.data,
-      "user_id" => project.user_id
+      "user_id" => project.user_id,
+      "visibility" => :discoverable,
+      "author" => project.author,
+      "mv_project_id" => project.mv_project_id,
+      "published?" => true
     }
 
     with {:ok, new_project} <- create(params),
@@ -164,6 +181,21 @@ defmodule Darth.Controller.Project do
     end
   end
 
+  def published_project_base_path(project) do
+    path = Application.get_env(:darth, :project_static_base_path)
+    app_path = Application.app_dir(:darth, path)
+    Path.join(app_path, project.id)
+  end
+
+  def sanitized_current_date_time() do
+    DateTime.utc_now()
+    |> DateTime.to_string()
+    # Replace non-alphanumeric characters with _
+    |> String.replace(~r/[^a-zA-Z0-9]/, "_")
+    # Replace spaces with _
+    |> String.replace(" ", "_")
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
@@ -174,7 +206,7 @@ defmodule Darth.Controller.Project do
 
   defp delete_repo(err), do: err
 
-  defp copy_primary_asset_lease(_project, nil), do: :ok
+  defp copy_primary_asset_lease(project, nil), do: {:ok, project}
 
   defp copy_primary_asset_lease(project, lease) do
     with {:ok, _} <- Controller.AssetLease.assign_project(lease, project.user, project) do
@@ -235,7 +267,8 @@ defmodule Darth.Controller.Project do
       "name" => Map.get(mv_project, "name"),
       "user_id" => current_user.id,
       "visibility" => "private",
-      "mv_project_id" => Map.get(mv_project, "id")
+      "mv_project_id" => Map.get(mv_project, "id"),
+      "published?" => false
     }
 
     case create(project_params) do
@@ -290,6 +323,29 @@ defmodule Darth.Controller.Project do
       {:error, reason} ->
         Logger.error("Custom error message from MediaVerse while fetching subtitles: #{inspect(reason)}")
         {:error, reason}
+    end
+  end
+
+  def create_project_result_file_path(published_project_base_path, project_data_filename) do
+    case File.mkdir_p(published_project_base_path) do
+      :ok ->
+        path = Path.join([published_project_base_path, project_data_filename])
+        {:ok, path}
+
+      {:error, _} ->
+        {:error, "Unable to create the project result file path"}
+    end
+  end
+
+  def is_mv_project?(mv_project_id) do
+    not is_nil(mv_project_id)
+  end
+
+  def project_publish_status(published?) do
+    case published? do
+      true -> {:error, :project_published}
+      false -> :ok
+      nil -> :ok
     end
   end
 
