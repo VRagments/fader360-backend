@@ -47,7 +47,7 @@ defmodule DarthWeb.UserSessionView do
       {
         :text,
         name: :username,
-        placeholder: "Username to use in Fader",
+        placeholder: "Provide username to use in Fader",
         label: "Fader Username",
         autocomplete: "username",
         form: form
