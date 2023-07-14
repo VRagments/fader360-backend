@@ -9,6 +9,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   alias Darth.Model.ProjectScene, as: ProjectSceneStruct
   alias Darth.Controller.{Project, Asset, User, ProjectScene}
   alias Darth.Model.Project, as: ProjectStruct
+  alias Darth.QrCodeGenerator
   alias DarthWeb.SaveFile
 
   alias DarthWeb.Components.{
@@ -184,21 +185,19 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   def handle_event("upload_to_mediverse", _, socket) do
     project = socket.assigns.project
     now = Project.sanitized_current_date_time()
-    project_data_filename = "fader_result_#{project.name}_#{now}.txt"
+    project_data_filename = project.name <> "_fader_result_#{now}.png"
     published_project_name = project.name <> "_published_#{now}"
     mv_node = socket.assigns.current_user.mv_node
     mv_token = socket.assigns.mv_token
+    published_project_base_path = Project.published_project_base_path(project)
 
     socket =
       with {:ok, new_project} <- deep_copy_project_and_scenes(project, published_project_name),
-           published_project_base_path = Project.published_project_base_path(new_project),
-           project_data = inspect(new_project),
-           external_url =
-             DarthWeb.Endpoint.url() <>
-               Application.fetch_env!(:darth, :player_url) <> "?project_id=#{new_project.id}",
+           external_url = Project.generate_player_url(new_project.id),
            {:ok, project_data_file_path} <-
              Project.create_project_result_file_path(published_project_base_path, project_data_filename),
-           :ok <- SaveFile.write_to_file(project_data_file_path, project_data),
+           qr_code_png = QrCodeGenerator.generate_project_result_qr_code(external_url),
+           :ok <- SaveFile.write_to_file(project_data_file_path, qr_code_png),
            asset_params = %{
              mv_node: mv_node,
              mv_token: mv_token,
@@ -207,8 +206,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
              external_url: external_url
            },
            {:ok, %{"key" => mv_asset_key}} <- MvApiClient.upload_asset_to_mediaverse(asset_params),
-           {:ok, %{status_code: 200}} <-
-             MvApiClient.update_project(project.mv_project_id, mv_asset_key, mv_node, mv_token) do
+           :ok <- MvApiClient.update_project(project.mv_project_id, mv_asset_key, mv_node, mv_token) do
         socket
         |> put_flash(:info, "Successfully pushed project result to MediaVerse")
         |> push_navigate(to: Routes.mv_project_published_projects_path(socket, :index))

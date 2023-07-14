@@ -191,12 +191,13 @@ defmodule Darth.MvApiClient do
     Jason.decode(body)
   end
 
-  def update_project(project_id, asset_id, mv_node, mv_token) do
-    url = mv_node <> "/dam/project/" <> project_id
+  def update_project(project_id, project_output, mv_node, mv_token) do
+    url = mv_node <> "/dam/project/" <> project_id <> "/projectOutput"
 
-    with {:ok, request_body} <- Jason.encode(%{projectOutput: [asset_id]}),
-         {:ok, response} <- HTTPoison.put(url, request_body, get_headers(mv_token)) do
-      {:ok, response}
+    case HTTPoison.put(url, "", get_headers(mv_token), params: [projectOutput: project_output]) do
+      {:ok, %{body: _body}} -> :ok
+      {:ok, %{"message" => message}} -> {:error, message}
+      error -> error
     end
   end
 

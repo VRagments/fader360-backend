@@ -81,7 +81,7 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
 
   defp map_with_all_links(socket, total_pages) do
     Map.new(1..total_pages, fn page ->
-      {page, Routes.mv_project_published_projects_path(socket, :index)}
+      {page, Routes.mv_project_published_projects_path(socket, :index, page: page)}
     end)
   end
 
@@ -107,7 +107,7 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
   defp render_audio_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={generate_player_url(@user_project.id)}
+        show_path={Project.generate_player_url(@user_project.id)}
         title={@user_project.name}
         info={@user_project.visibility}
         subtitle={@user_project.author}
@@ -121,7 +121,7 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
   defp render_image_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={generate_player_url(@user_project.id)}
+        show_path={Project.generate_player_url(@user_project.id)}
         title={@user_project.name}
         info={@user_project.visibility}
         subtitle={@user_project.author}
@@ -135,7 +135,7 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
   defp render_model_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={generate_player_url(@user_project.id)}
+        show_path={Project.generate_player_url(@user_project.id)}
         title={@user_project.name}
         info={@user_project.visibility}
         subtitle={@user_project.author}
@@ -149,7 +149,7 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
   defp render_default_card(assigns) do
     ~H"""
       <IndexCard.render
-        show_path={generate_player_url(@user_project.id)}
+        show_path={Project.generate_player_url(@user_project.id)}
         title={@user_project.name}
         info={@user_project.visibility}
         subtitle={@user_project.author}
@@ -158,10 +158,5 @@ defmodule DarthWeb.Projects.MvProjectLive.PublishedProjects do
         <% %>
       </IndexCard.render>
     """
-  end
-
-  defp generate_player_url(project_id) do
-    DarthWeb.Endpoint.url() <>
-      Application.fetch_env!(:darth, :player_url) <> "?project_id=#{project_id}"
   end
 end

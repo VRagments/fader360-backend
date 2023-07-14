@@ -189,11 +189,21 @@ defmodule Darth.Controller.Project do
 
   def sanitized_current_date_time() do
     DateTime.utc_now()
-    |> DateTime.to_string()
-    # Replace non-alphanumeric characters with _
-    |> String.replace(~r/[^a-zA-Z0-9]/, "_")
-    # Replace spaces with _
-    |> String.replace(" ", "_")
+    |> DateTime.to_naive()
+    |> NaiveDateTime.truncate(:second)
+    |> NaiveDateTime.to_string()
+    |> String.replace("-", "")
+    |> String.replace(":", "")
+    |> String.replace(" ", "-")
+  end
+
+  def generate_player_url(project_id) do
+    Path.join([
+      DarthWeb.Endpoint.url(),
+      DarthWeb.Endpoint.path("/"),
+      Application.fetch_env!(:darth, :player_url),
+      "?project_id=#{project_id}"
+    ])
   end
 
   #
