@@ -183,6 +183,7 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
 
   @impl Phoenix.LiveView
   def handle_event("upload_to_mediverse", _, socket) do
+    project_scenes_list = socket.assigns.project_scenes_list
     project = socket.assigns.project
     now = Project.sanitized_current_date_time()
     project_data_filename = project.name <> "_fader_result_#{now}.png"
@@ -192,10 +193,12 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     published_project_base_path = Project.published_project_base_path(project)
 
     socket =
-      with {:ok, new_project} <- deep_copy_project_and_scenes(project, published_project_name),
-           external_url = Project.generate_player_url(new_project.id),
+      with true <- Project.project_contain_scenes_and_scene_order_list?(project, project_scenes_list),
+           {:ok, new_project} <- deep_copy_project_and_scenes(project, published_project_name),
            {:ok, project_data_file_path} <-
              Project.create_project_result_file_path(published_project_base_path, project_data_filename),
+           {:ok, encoded_project_data} <- Project.build_project_hash_to_publish(project.id),
+           external_url = Project.generate_player_url(new_project.id) <> "&project_hash=#{encoded_project_data}",
            qr_code_png = QrCodeGenerator.generate_project_result_qr_code(external_url),
            :ok <- SaveFile.write_to_file(project_data_file_path, qr_code_png),
            asset_params = %{
@@ -261,6 +264,18 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
           |> put_flash(
             :error,
             "Error while pushing project result to MediaVerse: #{inspect(reason)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        false ->
+          Logger.error(
+            "Error while pushing project result to MediaVerse: Project does not contain valid Fader story"
+          )
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while pushing project result to MediaVerse: Project does not contain valid Fader story"
           )
           |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
       end

@@ -54,7 +54,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
 
     query =
       ProjectStruct
-      |> where([p], p.user_id == ^user_id and p.mv_project_id == ^mv_project_id)
+      |> where([p], p.user_id == ^user_id and p.mv_project_id == ^mv_project_id and p.published? == false)
 
     socket =
       with {:ok, mv_project} <- MvApiClient.show_project(mv_node, mv_token, mv_project_id),

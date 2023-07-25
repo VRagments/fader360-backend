@@ -181,8 +181,6 @@ defmodule Darth.MvApiClient do
     params = [
       {:file, asset_params.data_file_path},
       {"description", asset_params.description},
-      # TODO: External Tool and External URL are not getting
-      #  updated after the successful file upload
       {"externalUrl", asset_params.external_url},
       {"externalTool", "Fader360"}
     ]

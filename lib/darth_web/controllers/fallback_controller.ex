@@ -31,6 +31,13 @@ defmodule DarthWeb.FallbackController do
     |> render(:"404", %{})
   end
 
+  def call(conn, {:error, :forbidden}) do
+    conn
+    |> put_status(:forbidden)
+    |> put_view(ErrorView)
+    |> render(:"403", %{})
+  end
+
   def call(conn, {:error, reason}) when is_binary(reason) or is_atom(reason) do
     conn
     |> put_status(:unprocessable_entity)

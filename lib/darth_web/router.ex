@@ -70,6 +70,7 @@ defmodule DarthWeb.Router do
     pipe_through([:api])
 
     resources "/projects", ApiPublicProjectController, only: [:index, :show] do
+      get("/verify_project_hash/:project_hash", ApiPublicProjectController, :verify_hash)
       get("/recommendations", ApiPublicProjectController, :recommendations)
 
       resources("/assets", ApiPublicProjectAssetController, only: [:index, :show]) do

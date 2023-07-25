@@ -4,6 +4,7 @@ defmodule Darth.Controller.Project do
   use Darth.Controller, include_crud: true
 
   alias Darth.Controller
+  alias Darth.Model.ProjectScene, as: ProjectSceneStruct
   alias Darth.Model.Asset
   alias Darth.MvApiClient
   alias Darth.AssetProcessor.Downloader
@@ -204,6 +205,41 @@ defmodule Darth.Controller.Project do
       Application.fetch_env!(:darth, :player_url),
       "?project_id=#{project_id}"
     ])
+  end
+
+  def project_contain_scenes_and_scene_order_list?(project, project_scenes_list) do
+    project_data = project.data
+    project_scene_list_in_order = Map.get(project_data, "sceneOrder")
+    !is_nil(project_scene_list_in_order) and !Enum.empty?(project_scenes_list)
+  end
+
+  def build_project_hash_to_publish(project_id) do
+    project_scenes_query = ProjectSceneStruct |> where([ps], ps.project_id == ^project_id)
+
+    with {:ok, project} <- read(project_id, true),
+         %{entries: project_scenes} <- Controller.ProjectScene.query(%{}, project_scenes_query, true) do
+      project_scenes_map = Map.new(project_scenes, fn ps -> {ps.id, ps} end)
+      project_scenes_list = Controller.ProjectScene.get_sorted_project_scenes_list(project_scenes_map)
+
+      binary_project_data =
+        %{
+          fader_project_name: project.name,
+          fader_project_author: project.author,
+          fader_project_data: project.data,
+          fader_project_scenes_data: Enum.map(project_scenes_list, fn project_scene -> project_scene.data end),
+          mediaverse_project_id: project.mv_project_id,
+          mediaverse_assets: get_project_assets_mediaverse_ids(project)
+        }
+        |> :erlang.term_to_binary()
+
+      encoded_data =
+        :crypto.hash(:sha256, binary_project_data)
+        |> Base.encode32()
+
+      {:ok, encoded_data}
+    else
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   #
@@ -418,5 +454,13 @@ defmodule Darth.Controller.Project do
       mv_asset_filename: Map.get(mv_asset, "originalFilename"),
       current_user: current_user
     }
+  end
+
+  defp get_project_assets_mediaverse_ids(project) do
+    project_with_asset_leases = Repo.preload(project, asset_leases: :asset)
+
+    Enum.map(project_with_asset_leases.asset_leases, fn project_asset_lease ->
+      project_asset_lease.asset.mv_asset_key
+    end)
   end
 end
