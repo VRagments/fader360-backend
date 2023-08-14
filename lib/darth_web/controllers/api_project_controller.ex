@@ -70,6 +70,8 @@ defmodule DarthWeb.ApiProjectController do
             updated_at(:string, "Last update datetime")
             user_display_name(:string, "display name of story creator")
             visibility(:string, "Current project visibility")
+            published?(:boolean, "Shows if the project is the result published to MediaVerse")
+            template?(:boolean, "Shows if the project is the template created from other project")
           end
 
           example(%{
@@ -95,7 +97,9 @@ defmodule DarthWeb.ApiProjectController do
             updated_at: "2015-11-10T02:15:25Z",
             user_display_name: "Marie Curie",
             last_updated_at: "2015-11-10T02:15:25Z",
-            created_at: "2015-11-10T02:15:25Z"
+            created_at: "2015-11-10T02:15:25Z",
+            published?: false,
+            template?: true
           })
         end,
       PartialProject:
@@ -113,6 +117,8 @@ defmodule DarthWeb.ApiProjectController do
             thumbnail_image(:string, "URL for the project's thumbnail image")
             updated_at(:string, "Last update datetime")
             visibility(:string, "Current project visibility")
+            published?(:boolean, "Shows if the project is the result published to MediaVerse")
+            template?(:boolean, "Shows if the project is the template created from other project")
           end
 
           example(%{
@@ -124,7 +130,9 @@ defmodule DarthWeb.ApiProjectController do
             thumbnail_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/thumb_picture.jpg",
             visibility: "public",
             updated_at: "2015-11-10T02:15:25Z",
-            last_updated_at: "2015-11-10T02:15:25Z"
+            last_updated_at: "2015-11-10T02:15:25Z",
+            published?: false,
+            template?: true
           })
         end,
       Projects:
@@ -149,7 +157,9 @@ defmodule DarthWeb.ApiProjectController do
                 thumbnail_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/thumb_picture.jpg",
                 visibility: "public",
                 updated_at: "2015-11-10T02:15:25Z",
-                last_updated_at: "2015-11-10T02:15:25Z"
+                last_updated_at: "2015-11-10T02:15:25Z",
+                published?: false,
+                template?: true
               },
               %{
                 author: "Mister X",
@@ -160,7 +170,9 @@ defmodule DarthWeb.ApiProjectController do
                 thumbnail_image: "http://localhost/projects/fd414dd5-1f91-4a22-9ca4-275dd6ddf7b7/thumb_picture.jpg",
                 visibility: "public",
                 updated_at: "2015-11-10T02:15:25Z",
-                last_updated_at: "2015-11-10T02:15:25Z"
+                last_updated_at: "2015-11-10T02:15:25Z",
+                published?: true,
+                template?: false
               }
             ]
           })

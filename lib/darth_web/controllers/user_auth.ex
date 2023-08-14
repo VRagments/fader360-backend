@@ -2,6 +2,7 @@ defmodule DarthWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias Darth.Controller.Asset
   alias Darth.Controller.User
   alias Darth.Model.User, as: UserStruct
   alias DarthWeb.Router.Helpers, as: Routes
@@ -29,7 +30,11 @@ defmodule DarthWeb.UserAuth do
     user_return_to = get_session(conn, :user_return_to)
 
     case User.record_login(user) do
-      {:ok, _user} ->
+      {:ok, user} ->
+        Enum.each(Asset.get_placeholder_assets(), fn placeholder_asset ->
+          Asset.ensure_user_asset_lease(placeholder_asset, user, %{})
+        end)
+
         conn
         |> renew_session()
         |> put_session(:user_token, token)
@@ -51,7 +56,11 @@ defmodule DarthWeb.UserAuth do
     user_return_to = get_session(conn, :user_return_to)
 
     case User.record_login(user) do
-      {:ok, _user} ->
+      {:ok, user} ->
+        Enum.each(Asset.get_placeholder_assets(), fn placeholder_asset ->
+          Asset.ensure_user_asset_lease(placeholder_asset, user, %{})
+        end)
+
         conn
         |> renew_session()
         |> put_session(:user_token, token)

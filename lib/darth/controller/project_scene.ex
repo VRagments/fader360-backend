@@ -4,7 +4,7 @@ defmodule Darth.Controller.ProjectScene do
   use Darth.Controller, include_crud: true
 
   alias Darth.Model.ProjectScene, as: ProjectSceneStruct
-  alias Darth.Controller.Project
+  alias Darth.Controller.{Project, AssetLease}
 
   def model_mod, do: Darth.Model.ProjectScene
 
@@ -104,26 +104,30 @@ defmodule Darth.Controller.ProjectScene do
     |> Enum.sort_by(& &1.inserted_at)
   end
 
-  def dublicate(old_project, new_project) do
+  def dublicate(old_project, new_project, user) do
     old_project_data = old_project.data
     old_project_scene_list_in_order = Map.get(old_project_data, "sceneOrder")
 
-    with new_project_scene_list_in_order <-
-           Enum.map(old_project_scene_list_in_order, fn old_project_scene_id ->
-             create_and_copy_scene(old_project_scene_id, new_project.id)
-           end),
-         false <-
-           Enum.any?(new_project_scene_list_in_order, fn new_project_scene -> new_project_scene == :error end),
-         new_project_data = Map.put(old_project_data, "sceneOrder", new_project_scene_list_in_order),
-         {:ok, project} <- Project.update(new_project, %{data: new_project_data}) do
-      {:ok, project}
+    if old_project_scene_list_in_order != nil do
+      with new_project_scene_list_in_order <-
+             Enum.map(old_project_scene_list_in_order, fn old_project_scene_id ->
+               create_and_copy_scene(old_project_scene_id, new_project.id, user)
+             end),
+           false <-
+             Enum.any?(new_project_scene_list_in_order, fn new_project_scene -> new_project_scene == :error end),
+           new_project_data = Map.put(old_project_data, "sceneOrder", new_project_scene_list_in_order),
+           {:ok, project} <- Project.update(new_project, %{data: new_project_data}) do
+        {:ok, project}
+      else
+        _ ->
+          {:error, "Error while coping the project scenes"}
+      end
     else
-      _ ->
-        {:error, "Error while coping the project scenes"}
+      {:ok, new_project}
     end
   end
 
-  defp create_and_copy_scene(original_scene_id, new_project_id) do
+  defp create_and_copy_scene(original_scene_id, new_project_id, user) do
     with {:ok, original_scene} <- read(original_scene_id, [:primary_asset_lease]),
          params = %{
            "name" => original_scene.name,
@@ -131,7 +135,7 @@ defmodule Darth.Controller.ProjectScene do
            "navigatable" => original_scene.navigatable,
            "project_id" => new_project_id,
            "data" => original_scene.data,
-           "user_id" => original_scene.user_id
+           "user_id" => user.id
          },
          {:ok, new_scene} <- create(params),
          {:ok, _new_scene} <- copy_primary_asset_lease(new_scene, original_scene.primary_asset_lease) do
@@ -141,6 +145,85 @@ defmodule Darth.Controller.ProjectScene do
         Logger.error("Error while dublicating the scene: #{inspect(err)}")
         :error
     end
+  end
+
+  def dublicate_from_template(old_project, new_project, user) do
+    old_project_data = old_project.data
+    old_project_scene_list_in_order = Map.get(old_project_data, "sceneOrder")
+
+    if old_project_scene_list_in_order != nil do
+      with new_project_scene_list_in_order <-
+             Enum.map(old_project_scene_list_in_order, fn old_project_scene_id ->
+               create_and_copy_scene_from_template(old_project_scene_id, new_project.id, user)
+             end),
+           false <-
+             Enum.any?(new_project_scene_list_in_order, fn new_project_scene -> new_project_scene == :error end),
+           new_project_data = Map.put(old_project_data, "sceneOrder", new_project_scene_list_in_order),
+           {:ok, project} <- Project.update(new_project, %{data: new_project_data}) do
+        {:ok, project}
+      else
+        _ ->
+          {:error, "Error while coping the project scenes"}
+      end
+    else
+      {:ok, new_project}
+    end
+  end
+
+  defp create_and_copy_scene_from_template(original_scene_id, new_project_id, user) do
+    with {:ok, original_scene} <- read(original_scene_id, [:primary_asset_lease]),
+         params = %{
+           "name" => original_scene.name,
+           "duration" => original_scene.duration,
+           "navigatable" => original_scene.navigatable,
+           "project_id" => new_project_id,
+           "data" => replace_assets_with_placeholders(original_scene.data, user),
+           "user_id" => user.id
+         },
+         {:ok, new_scene} <- create(params),
+         {:ok, _new_scene} <- copy_primary_asset_lease(new_scene, original_scene.primary_asset_lease) do
+      new_scene.id
+    else
+      err ->
+        Logger.error("Error while dublicating the scene: #{inspect(err)}")
+        :error
+    end
+  end
+
+  defp replace_assets_with_placeholders(scene_data, user) do
+    placeholders_status_to_id_map =
+      AssetLease.query_user_placeholder_asset_leases(user.id)
+      |> Enum.reduce(%{}, fn %{id: lease_id, asset: %{status: status}}, acc ->
+        Map.update(acc, status, lease_id, &[lease_id | &1])
+      end)
+
+    audio_placeholder_asset_lease_id = Map.get(placeholders_status_to_id_map, "audio_placeholder")
+    video_placeholder_asset_lease_id = Map.get(placeholders_status_to_id_map, "video_placeholder")
+    image_placeholder_asset_lease_id = Map.get(placeholders_status_to_id_map, "image_placeholder")
+    assets_map = Map.get(scene_data, "assets")
+    scene_environment = Map.get(scene_data, "environment")
+
+    updated_scene_environment =
+      case Map.get(scene_environment, "preset") do
+        nil -> scene_environment
+        "" -> scene_environment
+        _ -> Map.put(scene_environment, "preset", image_placeholder_asset_lease_id)
+      end
+
+    updated_assets_map =
+      Enum.reduce(assets_map, %{}, fn {key, value}, acc ->
+        updated_value =
+          case value["type"] do
+            "Audio" -> Map.update!(value, "backendId", fn _ -> audio_placeholder_asset_lease_id end)
+            "Video" -> Map.update!(value, "backendId", fn _ -> video_placeholder_asset_lease_id end)
+            "Image" -> Map.update!(value, "backendId", fn _ -> image_placeholder_asset_lease_id end)
+            _ -> value
+          end
+
+        Map.put(acc, key, updated_value)
+      end)
+
+    Map.put(scene_data, "environment", updated_scene_environment) |> Map.put("assets", updated_assets_map)
   end
 
   defp copy_primary_asset_lease(scene, nil), do: {:ok, scene}

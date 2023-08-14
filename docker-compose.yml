@@ -78,3 +78,18 @@ services:
       - MIX_ENV
     env_file:
       - "docker/${MIX_ENV}.env"
+
+  darth_mock_db:
+    build:
+      context: ./docker
+      target: darth_base
+      args:
+        - MIX_ENV
+    depends_on:
+      - db
+    command:
+      - "make mock-db"
+    environment:
+      - MIX_ENV
+    env_file:
+      - "docker/${MIX_ENV}.env"

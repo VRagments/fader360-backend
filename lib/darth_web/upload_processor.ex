@@ -72,7 +72,7 @@ defmodule DarthWeb.UploadProcessor do
   end
 
   def get_required_subtitle_file_details(socket, filepath) do
-    with {:ok, subtitle_file_mime_type} <- get_subtitle_file_mime_type(filepath),
+    with {:ok, subtitle_file_mime_type} <- get_mime_type(filepath),
          [%Phoenix.LiveView.UploadEntry{} = uploaded_file] <- socket.assigns.uploads.subtitle.entries do
       %{
         "name" => uploaded_file.client_name,
@@ -98,7 +98,7 @@ defmodule DarthWeb.UploadProcessor do
     end
   end
 
-  defp get_subtitle_file_mime_type(file_path) do
+  def get_mime_type(file_path) do
     case System.cmd("file", ["--mime-type", to_string(file_path)]) do
       {result, 0} ->
         if String.contains?(result, "cannot open") do

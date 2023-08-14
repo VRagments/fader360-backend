@@ -3,7 +3,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
   require Logger
   alias Darth.Model.User, as: UserStruct
   alias DarthWeb.Components.{Header, IndexCard, Pagination, EmptyState, CardButtons}
-  alias Darth.{Controller.User, MvApiClient, Controller.Project}
+  alias Darth.{Controller.User, Controller.AssetLease, MvApiClient, Controller.Project}
 
   @impl Phoenix.LiveView
   def mount(_params, %{"user_token" => user_token, "mv_token" => mv_token}, socket) do
@@ -89,6 +89,13 @@ defmodule DarthWeb.Projects.MvProjectLive.Index do
     socket =
       with {:ok, mv_project} <- MvApiClient.show_project(mv_node, mv_token, mv_project_id),
            {:ok, project_struct} <- Project.build_params_create_new_project(current_user, mv_project),
+           :ok <-
+             Enum.each(
+               AssetLease.query_user_placeholder_asset_leases(current_user.id),
+               fn placeholder_asset_lease ->
+                 AssetLease.assign_project(placeholder_asset_lease, current_user, project_struct)
+               end
+             ),
            {:ok, %{"assets" => assets}} <- Project.fetch_mv_project_assets(mv_node, mv_token, mv_project_id, "0"),
            {:ok, asset_leases} <- Project.add_project_assets_to_fader(user_params, assets, project_struct) do
         Project.download_project_assets(user_params, asset_leases)

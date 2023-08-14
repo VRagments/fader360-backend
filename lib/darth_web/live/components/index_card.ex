@@ -12,21 +12,22 @@ defmodule DarthWeb.Components.IndexCard do
 
   def render(assigns) do
     ~H"""
-    <li class="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center shadow-xl">
+    <li class="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center border shadow-xl">
       <div class="flex flex-1 flex-col p-8">
         <.link navigate={@show_path}>
           <%= if @model_source do %>
             <model-viewer
-              class="object-cover mx-auto h-64 w-64 overflow-hidden rounded-2xl shadow-xl"
+              class="object-cover mx-auto h-64 w-64 overflow-hidden rounded-2xl border shadow-xl"
               src={@model_source}
-              shadow-intensity="1"
+              autoplay
+              ar
               camera-controls
               touch-action="pan-y"
             >
             </model-viewer>
           <%else%>
             <img
-              class="object-cover mx-auto h-64 w-64 overflow-hidden rounded-2xl shadow-xl"
+              class="object-cover mx-auto h-64 w-64 overflow-hidden rounded-2xl shadow-xl border"
               src={@image_source}
               alt=""
             >

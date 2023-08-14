@@ -2,7 +2,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
   use DarthWeb, :live_navbar_view
   require Logger
   import Ecto.Query
-  alias Darth.Controller.{User, Project, Asset}
+  alias Darth.Controller.{User, Project, Asset, AssetLease}
   alias Darth.Model.User, as: UserStruct
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.MvApiClient
@@ -120,6 +120,13 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
 
     socket =
       with {:ok, project_struct} <- Project.build_params_create_new_project(current_user, mv_project),
+           :ok <-
+             Enum.each(
+               AssetLease.query_user_placeholder_asset_leases(current_user.id),
+               fn placeholder_asset_lease ->
+                 AssetLease.assign_project(placeholder_asset_lease, current_user, project_struct)
+               end
+             ),
            {:ok, %{"assets" => assets}} <- Project.fetch_mv_project_assets(mv_node, mv_token, mv_project_id, "0"),
            {:ok, asset_leases} <- Project.add_project_assets_to_fader(user_params, assets, project_struct) do
         Project.download_project_assets(user_params, asset_leases)
@@ -290,6 +297,7 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
       :audio -> render_audio_card(assigns)
       :video -> render_image_card(assigns)
       :image -> render_image_card(assigns)
+      :model -> render_model_card(assigns)
     end
   end
 
@@ -318,6 +326,35 @@ defmodule DarthWeb.Projects.MvProjectLive.Show do
             }
           ]}
         />
+      </IndexCard.render>
+    """
+  end
+
+  defp render_model_card(assigns) do
+    ~H"""
+      <IndexCard.render
+        show_path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        title={@user_project.name}
+        info={@user_project.visibility}
+        subtitle={@user_project.author}
+        model_source={@user_project.primary_asset.static_url}
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :edit,
+                path: Routes.project_form_path(@socket, :edit, @user_project.id),
+                label: "Edit",
+                type: :link
+              },
+              {
+                :delete,
+                phx_value_ref: @user_project.id,
+                label: "Delete",
+                confirm_message: "Do you really want to delete this project? This action cannot be reverted.",
+              }
+            ]}
+          />
       </IndexCard.render>
     """
   end

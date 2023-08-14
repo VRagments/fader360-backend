@@ -114,7 +114,7 @@ defmodule DarthWeb.ApiPublicProjectController do
     end
 
     response(204, "Success - No Content")
-    response(422, "Result altered")
+    response(403, "Result altered")
   end
 
   def verify_hash(conn, %{

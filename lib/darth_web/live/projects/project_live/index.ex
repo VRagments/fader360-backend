@@ -51,7 +51,7 @@ defmodule DarthWeb.Projects.ProjectLive.Index do
   def handle_params(params, _url, socket) do
     query =
       ProjectStruct
-      |> where([p], p.user_id == ^socket.assigns.current_user.id and p.published? == false)
+      |> where([p], p.user_id == ^socket.assigns.current_user.id and p.published? == false and p.template? == false)
 
     case Project.query(params, query, true) do
       %{query_page: current_page, total_pages: total_pages, entries: user_projects} ->

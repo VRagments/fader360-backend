@@ -103,7 +103,7 @@ defmodule DarthWeb.ApiAssetSubtitleController do
 
   def index(conn, %{"api_asset_id" => asset_lease_id} = params) do
     current_user = conn.assigns.current_api_user
-    user_asset_leases = AssetLease.query_by_user(current_user.id, params)
+    user_asset_leases = AssetLease.query_by_user_include_placeholders(current_user.id, params)
     asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
 
     unless is_nil(asset_lease) do
@@ -143,7 +143,7 @@ defmodule DarthWeb.ApiAssetSubtitleController do
 
   def show(conn, %{"api_asset_id" => asset_lease_id, "id" => asset_subtitle_id} = params) do
     current_user = conn.assigns.current_api_user
-    user_asset_leases = AssetLease.query_by_user(current_user.id, params)
+    user_asset_leases = AssetLease.query_by_user_include_placeholders(current_user.id, params)
 
     asset_lease = Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
 

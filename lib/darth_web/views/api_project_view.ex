@@ -36,7 +36,9 @@ defmodule DarthWeb.ApiProjectView do
       thumbnail_image: render_primary_asset(p, :thumbnail_image),
       updated_at: render_date(p.updated_at),
       user_display_name: p.user.display_name,
-      visibility: p.visibility
+      visibility: p.visibility,
+      published?: p.published?,
+      template?: p.template?
     }
   end
 
@@ -47,6 +49,8 @@ defmodule DarthWeb.ApiProjectView do
       name: p.name,
       preview_image: render_primary_asset(p, :preview_image),
       visibility: p.visibility,
+      published?: p.published?,
+      template?: p.template?,
       squared_image: render_primary_asset(p, :squared_image),
       thumbnail_image: render_primary_asset(p, :thumbnail_image),
       updated_at: render_date(p.updated_at),

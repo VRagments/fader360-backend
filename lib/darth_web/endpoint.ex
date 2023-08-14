@@ -20,7 +20,7 @@ defmodule DarthWeb.Endpoint do
     at: System.get_env("FADER360_BACKEND_URL_PATH") || "/",
     from: :darth,
     gzip: false,
-    only: ~w(assets media fonts images preview_download favicon.ico robots.txt)
+    only: ~w(assets media fonts images preview_download placeholder_assets favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

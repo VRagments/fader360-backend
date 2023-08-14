@@ -413,6 +413,15 @@ defmodule Darth.Controller.Asset do
     end
   end
 
+  def get_placeholder_assets() do
+    AssetStruct
+    |> where(
+      [a],
+      a.status == "image_placeholder" or a.status == "video_placeholder" or a.status == "audio_placeholder"
+    )
+    |> Repo.all()
+  end
+
   #
   # INTERNAL FUNCTIONS
   #
@@ -571,7 +580,11 @@ defmodule Darth.Controller.Asset do
   end
 
   defp create_asset_lease(user, params, asset_struct) do
-    license = decide_asset_lease_license(params)
+    license =
+      case params do
+        %{} -> :owner
+        params -> decide_asset_lease_license(params)
+      end
 
     case create_asset_lease_for_mv_asset(asset_struct, user, license) do
       {:ok, asset_lease} ->

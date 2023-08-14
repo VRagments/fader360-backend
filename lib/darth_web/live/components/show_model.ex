@@ -9,7 +9,8 @@ defmodule DarthWeb.Components.ShowModel do
           class="container"
           style="inline-block width: 100%; height:600px;"
           src={@source}
-          shadow-intensity="1"
+          autoplay
+          ar
           camera-controls
           touch-action="pan-y"
         >

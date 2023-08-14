@@ -139,4 +139,6 @@ defmodule DarthWeb.Components.Button do
   defp render_svg(%{action: :sync_with_mv_asset} = assigns), do: Icons.re_transcode_arrow_path(assigns)
   defp render_svg(%{action: :preview} = assigns), do: Icons.view_finder_circle(assigns)
   defp render_svg(%{action: :upload_to_mediverse} = assigns), do: Icons.cloud_arrow_up(assigns)
+  defp render_svg(%{action: :create_template} = assigns), do: Icons.square_stack_3d(assigns)
+  defp render_svg(%{action: :download} = assigns), do: Icons.download_arrow_down_tray(assigns)
 end

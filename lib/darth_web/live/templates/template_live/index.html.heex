@@ -1,13 +1,14 @@
-<Header.render heading="Projects Published to MediaVerse"/>
+<Header.render heading="Templates"/>
 
-<%= if Enum.empty?(@user_projects_list) do %>
-    <EmptyState.render label="Publish a Project to MediaVerse"/>
+<%= if Enum.empty?(@user_templates_list) do %>
+    <EmptyState.render label="Create a Project Template"/>
 <% else %>
     <section class="py-2 lg:pt-12 md:mx-auto lg:container">
         <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            <%= for user_project <- @user_projects_list do %>
-                <.render_project_card
-                    user_project={user_project}
+            <%= for user_template <- @user_templates_list do %>
+                <.render_template_card
+                    user_template={user_template}
+                    current_user={@current_user}
                     socket={@socket}
                 />
             <% end %>

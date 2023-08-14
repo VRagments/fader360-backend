@@ -122,7 +122,7 @@ defmodule DarthWeb.ApiPublicAssetController do
   end
 
   def index(conn, params) do
-    assigns = AssetLease.query_by_license("public", params)
+    assigns = AssetLease.query_by_license("public", params, false)
     render(conn, "index.json", assigns)
   end
 

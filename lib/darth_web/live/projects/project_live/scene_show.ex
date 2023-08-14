@@ -256,8 +256,9 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
   end
 
   defp filter_video_and_image_asset_leases(project_asset_leases) do
-    Enum.reject(project_asset_leases, fn project_asset_lease ->
-      Asset.normalized_media_type(project_asset_lease.asset.media_type) == :audio
+    Enum.filter(project_asset_leases, fn project_asset_lease ->
+      Asset.normalized_media_type(project_asset_lease.asset.media_type) != :audio and
+        project_asset_lease.asset.status == "ready"
     end)
   end
 
@@ -385,7 +386,7 @@ defmodule DarthWeb.Projects.ProjectLive.SceneShow do
             {
               :assign,
               phx_value_ref: @asset_lease.id,
-              label: "Add"
+              label: "Make scene background"
             }
           ]}
         />

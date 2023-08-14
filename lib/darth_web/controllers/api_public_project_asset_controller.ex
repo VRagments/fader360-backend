@@ -33,7 +33,7 @@ defmodule DarthWeb.ApiPublicProjectAssetController do
   def index(conn, %{"api_public_project_id" => project_id} = params) do
     with {:ok, project} <- Project.read(project_id),
          true <- project.visibility != :private do
-      assigns = AssetLease.query_by_public_project(project_id, params)
+      assigns = AssetLease.query_by_public_project(project_id, params, false)
       render(conn, "index.json", assigns)
     else
       _ -> {:error, :not_found}

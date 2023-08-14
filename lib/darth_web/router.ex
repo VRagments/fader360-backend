@@ -130,6 +130,8 @@ defmodule DarthWeb.Router do
     live "/users/projects/:project_id/project_scenes/:project_scene_id/edit", Projects.ProjectLive.FormScenes, :edit
     live "/users/assets/:asset_lease_id/projects", Assets.AssetLive.FormProjects, :index
     live "/users/assets/:asset_lease_id/projects/new", Projects.ProjectLive.Form, :new
+    live "/users/fader-templates", Templates.TemplateLive.Index, :index
+    live "/users/fader-templates/:template_id", Templates.TemplateLive.Show, :show
   end
 
   scope "/", DarthWeb do

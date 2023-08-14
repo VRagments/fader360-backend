@@ -7,7 +7,7 @@
                 <div
                     class="py-5 flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                     <div class="flex flex-shrink-0 items-center px-4">
-                        <.link href="/">
+                        <.link href={Path.join([DarthWeb.Endpoint.url(), DarthWeb.Endpoint.path("/")])}>
                             <img src={Routes.static_path(@socket, "/images/Fader_Color_20180326-182538.svg"
                                 )} class="h-8 w-auto" , alt="Your Company" />
                         </.link>
@@ -21,6 +21,10 @@
                         <.link navigate={Routes.project_index_path(@socket, :index)}
                             class="inline-flex items-center border-b-2 border-transparent px-1 text-sm font-medium text-gray-500">
                             Projects
+                        </.link>
+                        <.link navigate={Routes.template_index_path(@socket, :index)}
+                            class="inline-flex items-center border-b-2 border-transparent px-1 text-sm font-medium text-gray-500">
+                            Templates
                         </.link>
                         <%= if User.is_mediaverse_account?(@current_user) do %>
                         <DropDown.render buttons={[

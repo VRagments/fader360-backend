@@ -5,6 +5,7 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
   alias Darth.Model.Project, as: ProjectStruct
   alias Darth.Controller.User
   alias Darth.Controller.Project
+  alias Darth.Controller.AssetLease
   alias DarthWeb.Components.{FormHeader, FormInputField, FormSelectField}
 
   @impl Phoenix.LiveView
@@ -67,18 +68,26 @@ defmodule DarthWeb.Projects.ProjectLive.Form do
   end
 
   defp save_project(socket, :new, params) do
+    current_user = socket.assigns.current_user
+
     params =
       params
-      |> Map.put("user_id", socket.assigns.current_user.id)
+      |> Map.put("user_id", current_user.id)
       |> Map.put("author", socket.assigns.current_user.display_name)
 
     socket =
-      case Project.create(params) do
-        {:ok, %ProjectStruct{}} ->
-          socket
-          |> put_flash(:info, "Project created successfully")
-          |> push_navigate(to: socket.assigns.return_to)
-
+      with {:ok, %ProjectStruct{} = project} <- Project.create(params),
+           :ok <-
+             Enum.each(
+               AssetLease.query_user_placeholder_asset_leases(current_user.id),
+               fn placeholder_asset_lease ->
+                 AssetLease.assign_project(placeholder_asset_lease, current_user, project)
+               end
+             ) do
+        socket
+        |> put_flash(:info, "Project created successfully")
+        |> push_navigate(to: socket.assigns.return_to)
+      else
         {:error, reason} ->
           Logger.error("Project creation failed: #{inspect(reason)}")
 

@@ -29,6 +29,7 @@ defmodule Darth.Controller.Project do
       published?
       name
       primary_asset_lease_id
+      template?
       updated_at
       user_id
       visibility
@@ -70,6 +71,13 @@ defmodule Darth.Controller.Project do
     params =
       if is_nil(params["visibility"]) or params["visibility"] == "" do
         Map.put_new(params, "visibility", :private)
+      else
+        params
+      end
+
+    params =
+      if is_nil(params["template?"]) or params["template?"] == "" do
+        Map.put(params, "template?", false)
       else
         params
       end
@@ -132,6 +140,60 @@ defmodule Darth.Controller.Project do
          project <- Repo.preload(project, [:primary_asset_lease, :asset_leases]),
          {:ok, new_project} <- copy_primary_asset_lease(new_project, project.primary_asset_lease),
          :ok <- copy_asset_leases(new_project, project.asset_leases) do
+      read(new_project.id)
+    end
+  end
+
+  def duplicate_to_template(project, name) do
+    params = %{
+      "name" => name,
+      "data" => project.data,
+      "user_id" => project.user_id,
+      "visibility" => project.visibility,
+      "author" => project.author,
+      "template?" => true
+    }
+
+    with {:ok, new_project} <- create(params),
+         new_project <- Repo.preload(new_project, [:user]),
+         project <- Repo.preload(project, [:primary_asset_lease, :asset_leases]),
+         {:ok, new_project} <- copy_primary_asset_lease(new_project, project.primary_asset_lease),
+         :ok <- copy_asset_leases(new_project, project.asset_leases) do
+      read(new_project.id)
+    end
+  end
+
+  def create_project_from_template(template, user) do
+    params = %{
+      "name" => template.name,
+      "data" => template.data,
+      "user_id" => user.id,
+      "visibility" => template.visibility,
+      "author" => template.author,
+      "mv_project_id" => template.mv_project_id
+    }
+
+    new_project_primary_asset_lease =
+      case template.primary_asset_lease do
+        nil ->
+          nil
+
+        _ ->
+          [image_placeholder_asset_lease] = Controller.AssetLease.query_user_placeholder_image_asset_lease(user.id)
+
+          image_placeholder_asset_lease
+      end
+
+    with {:ok, new_project} <- create(params),
+         new_project <- Repo.preload(new_project, [:user]),
+         {:ok, new_project} <- copy_primary_asset_lease(new_project, new_project_primary_asset_lease),
+         :ok <-
+           Enum.each(
+             Controller.AssetLease.query_user_placeholder_asset_leases(user.id),
+             fn placeholder_asset_lease ->
+               Controller.AssetLease.assign_project(placeholder_asset_lease, user, new_project)
+             end
+           ) do
       read(new_project.id)
     end
   end
@@ -255,8 +317,11 @@ defmodule Darth.Controller.Project do
   defp copy_primary_asset_lease(project, nil), do: {:ok, project}
 
   defp copy_primary_asset_lease(project, lease) do
-    with {:ok, _} <- Controller.AssetLease.assign_project(lease, project.user, project) do
-      update(project, %{primary_asset_lease_id: lease.id})
+    preloaded_lease = Repo.preload(lease, :asset)
+
+    with {:ok, asset_lease} <- Controller.Asset.ensure_user_asset_lease(preloaded_lease.asset, project.user, %{}),
+         {:ok, _} <- Controller.AssetLease.assign_project(asset_lease, project.user, project) do
+      update(project, %{primary_asset_lease_id: asset_lease.id})
     else
       err ->
         _ =
@@ -269,10 +334,12 @@ defmodule Darth.Controller.Project do
 
   defp copy_asset_leases(project, leases) do
     Enum.each(leases, fn lease ->
-      case Controller.AssetLease.assign_project(lease, project.user, project) do
-        {:ok, _} ->
-          :ok
+      preloaded_lease = Repo.preload(lease, :asset)
 
+      with {:ok, asset_lease} <- Controller.Asset.ensure_user_asset_lease(preloaded_lease.asset, project.user, %{}),
+           {:ok, _} <- Controller.AssetLease.assign_project(asset_lease, project.user, project) do
+        :ok
+      else
         {:error, err} ->
           Logger.warn(~s(Couldn't assign asset lease #{lease.id} to project #{project.id}: #{inspect(err)}))
       end
@@ -314,7 +381,8 @@ defmodule Darth.Controller.Project do
       "user_id" => current_user.id,
       "visibility" => "private",
       "mv_project_id" => Map.get(mv_project, "id"),
-      "published?" => false
+      "published?" => false,
+      "template?" => false
     }
 
     case create(project_params) do
@@ -393,6 +461,10 @@ defmodule Darth.Controller.Project do
       false -> :ok
       nil -> :ok
     end
+  end
+
+  def is_template?(project) do
+    project.template?
   end
 
   defp create_and_assign(user_params, mv_asset, project_struct) do

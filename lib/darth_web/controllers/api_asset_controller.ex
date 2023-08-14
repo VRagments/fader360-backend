@@ -18,9 +18,19 @@ defmodule DarthWeb.ApiAssetController do
             id(:string, "Asset Lease ID")
             asset_id(:string, "Asset ID")
             inserted_at(:string, "created at this time (Date)")
-            lowres_image(:string, "URL for the asset's low-resolution version (only applicable to image)")
+
+            lowres_image(
+              :string,
+              "URL for the asset's low-resolution version (only applicable to image)"
+            )
+
             media_type(:string, "Media Type")
-            midres_image(:string, "URL for the asset's mid-resolution version (only applicable to image)")
+
+            midres_image(
+              :string,
+              "URL for the asset's mid-resolution version (only applicable to image)"
+            )
+
             name(:string, "User-provided asset name")
             preview_image(:string, "URL for the asset's preview image")
             squared_image(:string, "URL for the asset's squared image")
@@ -161,7 +171,7 @@ defmodule DarthWeb.ApiAssetController do
 
   def index(conn, params) do
     user = conn.assigns.current_api_user
-    assigns = AssetLease.query_by_user(user.id, params)
+    assigns = AssetLease.query_by_user_include_placeholders(user.id, params)
     render(conn, "index.json", assigns)
   end
 
@@ -176,7 +186,10 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:Asset))
@@ -230,7 +243,10 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     QueryParameters.asset_create_or_update(false)
@@ -267,7 +283,10 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(204, "Success - No Content")
@@ -306,7 +325,10 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
 
       asset(:body, Schema.ref(:AssetLicense), "Asset License", required: true)
     end
@@ -330,12 +352,17 @@ defmodule DarthWeb.ApiAssetController do
   swagger_path(:assign_user) do
     put("/api/assets/{id}/users")
     summary("Add User to Asset Lease")
+
     description("Adds the authenticated user to a given asset lease. Only allowed for public asset leases.")
+
     produces("application/json")
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:Asset))
@@ -365,7 +392,10 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:Asset))
@@ -396,9 +426,15 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
 
-      project_id(:query, :string, "Project ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      project_id(:query, :string, "Project ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:Asset))
@@ -428,9 +464,15 @@ defmodule DarthWeb.ApiAssetController do
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Asset Lease ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      id(:path, :string, "Asset Lease ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
 
-      project_id(:query, :string, "Project ID", required: true, example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55")
+      project_id(:query, :string, "Project ID",
+        required: true,
+        example: "5d7e8d3d-2505-4ea6-af2c-d304a3159e55"
+      )
     end
 
     response(200, "OK", Schema.ref(:Asset))
@@ -451,7 +493,8 @@ defmodule DarthWeb.ApiAssetController do
 
   defp ensure_user_asset_lease(conn, asset_lease_id, params) do
     current_user = conn.assigns.current_api_user
-    user_asset_leases = AssetLease.query_by_user(current_user.id, params)
+    user_asset_leases = AssetLease.query_by_user_include_placeholders(current_user.id, params)
+
     Enum.find(user_asset_leases.entries, fn asset_lease -> asset_lease.id == asset_lease_id end)
   end
 

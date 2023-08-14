@@ -33,7 +33,7 @@ defmodule DarthWeb.Components.DropDown do
                   <%= for {option_label, option_link} <- options do %>
                     <.link navigate={option_link}
                       class="font-medium text-gray-900 block px-4 py-2 text-sm"
-                        role="menuitem" tabindex="-2" id="menu-item-2">
+                        role="menuitem" tabindex="-2">
                       <%= option_label %>
                     </.link>
                   <% end %>

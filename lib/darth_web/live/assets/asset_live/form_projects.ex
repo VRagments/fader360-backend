@@ -59,9 +59,12 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
 
   @impl Phoenix.LiveView
   def handle_params(%{"asset_lease_id" => asset_lease_id} = params, _url, socket) do
+    query =
+      ProjectStruct
+      |> where([p], p.user_id == ^socket.assigns.current_user.id and p.published? == false and p.template? == false)
+
     with {:ok, asset_lease} <- AssetLease.read(asset_lease_id),
          true <- AssetLease.has_user?(asset_lease, socket.assigns.current_user.id),
-         query = ProjectStruct |> where([p], p.user_id == ^socket.assigns.current_user.id),
          %{query_page: current_page, total_pages: total_pages, entries: user_projects} <-
            Project.query(params, query, true) do
       map_with_all_links = map_with_all_links(socket, asset_lease, total_pages)
@@ -315,6 +318,28 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     """
   end
 
+  defp render_added_model_project_card(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@user_project.name}
+        path={Routes.project_show_path(@socket, :show, @user_project.id)}
+        model_source={@user_project.primary_asset.static_url}
+        subtitle={@user_project.visibility}
+        status= "Asset added to Project"
+      >
+        <CardButtons.render
+            buttons={[
+              {
+                :unassign,
+                phx_value_ref: @user_project.id,
+                label: "Remove"
+              }
+            ]}
+          />
+      </ShowCard.render>
+    """
+  end
+
   defp render_added_default_project_card(assigns) do
     ~H"""
     <ShowCard.render
@@ -379,6 +404,27 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
     """
   end
 
+  defp render_available_model_project_card(assigns) do
+    ~H"""
+      <ShowCard.render
+        title={@user_project.name}
+        path={Routes.asset_show_path(@socket, :show, @user_project.id)}
+        model_source={@user_project.primary_asset.static_url}
+        subtitle={@user_project.visibility}
+      >
+        <CardButtons.render
+          buttons={[
+            {
+              :assign,
+              phx_value_ref: @user_project.id,
+              label: "Add"
+            }
+          ]}
+        />
+      </ShowCard.render>
+    """
+  end
+
   defp render_available_default_project_card(assigns) do
     ~H"""
     <ShowCard.render
@@ -422,6 +468,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
       :audio -> render_available_audio_project_card(assigns)
       :image -> render_available_image_project_card(assigns)
       :video -> render_available_image_project_card(assigns)
+      :model -> render_available_model_project_card(assigns)
     end
   end
 
@@ -439,6 +486,7 @@ defmodule DarthWeb.Assets.AssetLive.FormProjects do
       :audio -> render_added_audio_project_card(assigns)
       :image -> render_added_image_project_card(assigns)
       :video -> render_added_image_project_card(assigns)
+      :model -> render_added_model_project_card(assigns)
     end
   end
 end

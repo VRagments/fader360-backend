@@ -333,6 +333,19 @@ defmodule Darth.Controller.AssetLease do
     custom_query =
       AssetLease
       |> query_ready(only_ready)
+      |> join(:inner, [al], a in assoc(al, :asset),
+        on: a.status != "video_placeholder" and a.status != "audio_placeholder" and a.status != "image_placeholder"
+      )
+      |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
+
+    query(params, custom_query, true, Darth.Model.Asset)
+  end
+
+  def query_by_user_include_placeholders(user_id, params) do
+    custom_query =
+      AssetLease
+      |> query_ready(false)
+      |> join(:inner, [al], a in assoc(al, :asset))
       |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
 
     query(params, custom_query, true, Darth.Model.Asset)
@@ -512,6 +525,24 @@ defmodule Darth.Controller.AssetLease do
   end
 
   def is_primary_asset_lease?(project, asset_lease), do: project.primary_asset_lease_id == asset_lease.id
+
+  def query_user_placeholder_asset_leases(user_id) do
+    AssetLease
+    |> join(:inner, [al], a in assoc(al, :asset),
+      on: a.status == "video_placeholder" or a.status == "audio_placeholder" or a.status == "image_placeholder"
+    )
+    |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
+    |> preload([al], [:asset])
+    |> Repo.all()
+  end
+
+  def query_user_placeholder_image_asset_lease(user_id) do
+    AssetLease
+    |> join(:inner, [al], a in assoc(al, :asset), on: a.status == "image_placeholder")
+    |> join(:inner, [al], u in assoc(al, :users), on: u.id == ^user_id)
+    |> preload([al], [:asset])
+    |> Repo.all()
+  end
 
   #
   # INTERNAL FUNCTIONS

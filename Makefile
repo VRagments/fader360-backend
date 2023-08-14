@@ -34,6 +34,11 @@ refresh-db: ## re-initialize database
 	mix do ecto.drop, ecto.create, ecto.migrate
 	mix run priv/repo/seeds.exs
 
+.PHONY: mock-db
+mock-db: ## Load Databse with placeholder assets
+mock-db:
+	mix run priv/repo/mock_data.exs
+
 .PHONY: migrate-db
 migrate-db: ## run the new migrations on the already initialised database
 	mix do ecto.migrate
@@ -113,8 +118,8 @@ docker-pull: ## pull docker image from repository
 .PHONY: docker-build
 docker-build: ## build docker based image for distribution
 	rsync --verbose --human-readable --progress --archive --compress --delete \
-		--exclude 'media' --exclude 'preview_download' Makefile config lib assets \
-		priv mix.exs mix.lock docker/work/
+		--exclude 'media' --exclude 'preview_download' --exclude 'published_projects' \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
 	MIX_ENV=${MIX_ENV} \
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
@@ -128,8 +133,8 @@ build-upload-release: ## build, tag and push a new release docker image
 .PHONY: docker-dev
 docker-dev: ## run local docker container in interactive iex mode
 	rsync --verbose --human-readable --progress --archive --compress --delete \
-		--exclude 'media' --exclude 'preview_download' Makefile config lib assets \
-		priv mix.exs mix.lock docker/work/
+		--exclude 'media' --exclude 'preview_download' --exclude 'published_projects' \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
 	MIX_ENV=${MIX_ENV} \
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
@@ -139,8 +144,8 @@ docker-dev: ## run local docker container in interactive iex mode
 .PHONY: docker-refresh-db
 docker-refresh-db: ## run local docker container to refresh database
 	rsync --verbose --human-readable --progress --archive --compress --delete \
-		--exclude 'media' --exclude 'preview_download' Makefile config lib assets \
-		priv mix.exs mix.lock docker/work/
+		--exclude 'media' --exclude 'preview_download' --exclude 'published_projects' \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
 	MIX_ENV=${MIX_ENV} \
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
@@ -150,13 +155,24 @@ docker-refresh-db: ## run local docker container to refresh database
 .PHONY: docker-migrate-db
 docker-migrate-db: ## run local docker container to refresh database
 	rsync --verbose --human-readable --progress --archive --compress --delete \
-		--exclude 'media' --exclude 'preview_download' Makefile config lib assets \
-		priv mix.exs mix.lock docker/work/
+		--exclude 'media' --exclude 'preview_download' --exclude 'published_projects' \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
 	MIX_ENV=${MIX_ENV} \
 	DOCKER_IMAGE=${DOCKER_IMAGE} \
 	DOCKER_TAG=${DOCKER_TAG} \
 	VERSION=${VERSION} \
 	docker compose up darth_migrate_db
+
+.PHONY: docker-mock-db
+docker-mock-db: ## run local docker container to refresh database
+	rsync --verbose --human-readable --progress --archive --compress --delete \
+		--exclude 'media' --exclude 'preview_download' --exclude 'published_projects' \
+		Makefile config lib assets priv mix.exs mix.lock docker/work/
+	MIX_ENV=${MIX_ENV} \
+	DOCKER_IMAGE=${DOCKER_IMAGE} \
+	DOCKER_TAG=${DOCKER_TAG} \
+	VERSION=${VERSION} \
+	docker compose up darth_mock_db
 
 .PHONY: help
 help:

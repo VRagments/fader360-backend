@@ -1,0 +1,53 @@
+<Header.render heading="Template Details">
+    <HeaderButtons.render
+        buttons={@header_buttons}
+    />
+</Header.render>
+
+<Header.render
+    heading={@template.name}
+    size={:small}
+/>
+
+<div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+    <div class="relative sm:py-16 lg:py-0">
+        <.render_media_display template={@template} socket={@socket} />
+    </div>
+    <div class="relative mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:px-0">
+        <div class="mt-10">
+            <dl class="grid grid-cols-2 gap-x-8 gap-y-8">
+                <.render_template_stats template={@template}
+                    changeset={@changeset}
+                    select_options={@select_options}
+                    base_url={@base_url}
+                    editor_url={@editor_url}
+                    editable?={@editable?}
+                />
+            </dl>
+        </div>
+    </div>
+</div>
+
+<Header.render heading="Template Scenes"/>
+
+<%= if Enum.empty?(@template_scenes_list) do %>
+    <EmptyState.render label="Create Project Scene"/>
+<% else %>
+    <section class="py-2 lg:pt-12 md:mx-auto lg:container">
+        <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <%= for template_scene <- @template_scenes_list do %>
+                <.render_scene_card
+                    template_scene={template_scene}
+                    user_template={@template}
+                    socket={@socket}
+                />
+            <%end%>
+        </ul>
+    </section>
+
+    <Pagination.render
+        current_page={@current_page}
+        total_pages={@total_pages}
+        map_with_all_links={@map_with_all_links}
+    />
+<% end %>

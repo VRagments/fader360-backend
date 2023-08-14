@@ -11,7 +11,7 @@ defmodule DarthWeb.Components.ShowCard do
 
   def render(assigns) do
     ~H"""
-      <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow-xl">
+      <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white border shadow-xl">
       <.link navigate={@path}>
       <div class="flex w-full items-center justify-between space-x-6 p-6">
         <div class="flex-1 truncate">
@@ -26,15 +26,16 @@ defmodule DarthWeb.Components.ShowCard do
         </div>
         <%= if @model_source do%>
           <model-viewer
-            class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl"
+            class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl border"
             src={@model_source}
-            shadow-intensity="1"
+            autoplay
+            ar
             camera-controls
             touch-action="pan-y"
           >
           </model-viewer>
         <% else %>
-          <img class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl" src={@source} alt="">
+          <img class="h-20 w-20 overflow-hidden rounded-2xl shadow-xl border" src={@source} alt="">
         <% end %>
       </div>
       </.link>

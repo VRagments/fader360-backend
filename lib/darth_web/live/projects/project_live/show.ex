@@ -191,13 +191,15 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     mv_node = socket.assigns.current_user.mv_node
     mv_token = socket.assigns.mv_token
     published_project_base_path = Project.published_project_base_path(project)
+    current_user = socket.assigns.current_user
 
     socket =
       with true <- Project.project_contain_scenes_and_scene_order_list?(project, project_scenes_list),
-           {:ok, new_project} <- deep_copy_project_and_scenes(project, published_project_name),
+           {:ok, new_project} <-
+             deep_copy_project_and_scenes_to_publish(project, published_project_name, current_user),
            {:ok, project_data_file_path} <-
              Project.create_project_result_file_path(published_project_base_path, project_data_filename),
-           {:ok, encoded_project_data} <- Project.build_project_hash_to_publish(project.id),
+           {:ok, encoded_project_data} <- Project.build_project_hash_to_publish(new_project.id),
            external_url = Project.generate_player_url(new_project.id) <> "&project_hash=#{encoded_project_data}",
            qr_code_png = QrCodeGenerator.generate_project_result_qr_code(external_url),
            :ok <- SaveFile.write_to_file(project_data_file_path, qr_code_png),
@@ -284,6 +286,45 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("create_template", _, socket) do
+    project = socket.assigns.project
+    now = Project.sanitized_current_date_time()
+    new_project_name = project.name <> "_template_#{now}"
+    current_user = socket.assigns.current_user
+    project_scenes_list = socket.assigns.project_scenes_list
+
+    socket =
+      with true <- Project.project_contain_scenes_and_scene_order_list?(project, project_scenes_list),
+           {:ok, _new_project} <- deep_copy_project_and_scenes_to_template(project, new_project_name, current_user) do
+        socket
+        |> put_flash(:info, "Successfully created a project template")
+        |> push_navigate(to: Routes.template_index_path(socket, :index))
+      else
+        {:error, reason} ->
+          Logger.error("Error while creating a project template: #{inspect(reason)}")
+
+          socket
+          |> put_flash(
+            :error,
+            "Error while creating a project template: #{inspect(reason)}"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+
+        false ->
+          Logger.error("Error creating project template: Project does not contain valid Fader story")
+
+          socket
+          |> put_flash(
+            :error,
+            "Error creating project template: Project does not contain valid Fader story"
+          )
+          |> push_patch(to: Routes.project_show_path(socket, :show, socket.assigns.project.id))
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:project_deleted, project}, socket) do
     socket =
       if socket.assigns.project.id == project.id do
@@ -340,9 +381,20 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
     {:noreply, socket}
   end
 
-  defp deep_copy_project_and_scenes(project, published_project_name) do
-    with {:ok, new_project} <- Project.duplicate_to_publish(project, published_project_name),
-         {:ok, new_project} <- ProjectScene.dublicate(project, new_project) do
+  defp deep_copy_project_and_scenes_to_publish(project, new_project_name, user) do
+    with {:ok, new_project} <- Project.duplicate_to_publish(project, new_project_name),
+         {:ok, new_project} <- ProjectScene.dublicate(project, new_project, user) do
+      {:ok, new_project}
+    else
+      err ->
+        Logger.error("Error while dublicating project to publish: #{inspect(err)}")
+        err
+    end
+  end
+
+  defp deep_copy_project_and_scenes_to_template(project, new_project_name, user) do
+    with {:ok, new_project} <- Project.duplicate_to_template(project, new_project_name),
+         {:ok, new_project} <- ProjectScene.dublicate(project, new_project, user) do
       {:ok, new_project}
     else
       err ->
@@ -462,7 +514,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
             {
               :edit,
               path: Routes.project_form_scenes_path(@socket, :edit, @user_project.id, @project_scene.id),
-              label: "Edit"
+              label: "Edit",
+              type: :link
             },
             {
               :delete,
@@ -490,7 +543,8 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
             {
               :edit,
               path: Routes.project_form_scenes_path(@socket, :edit, @user_project.id, @project_scene.id),
-              label: "Edit"
+              label: "Edit",
+              type: :link
             },
             {
               :delete,
@@ -586,6 +640,15 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
       },
       nil,
       {
+        :create_template,
+        level: :secondary,
+        type: :click,
+        label: "Create Template",
+        confirm_message: "Avoid clicking this button multiple times.
+                Create templates only with the completed projects."
+      },
+      nil,
+      {
         :back,
         level: :secondary, type: :link, path: Routes.project_index_path(socket, :index), label: "Back"
       }
@@ -608,6 +671,15 @@ defmodule DarthWeb.Projects.ProjectLive.Show do
         type: :link,
         path: Routes.project_form_assets_path(socket, :index, project_id),
         label: "Manage Project Assets"
+      },
+      nil,
+      {
+        :create_template,
+        level: :secondary,
+        type: :click,
+        label: "Create Template",
+        confirm_message: "Avoid clicking this button multiple times.
+                Create templates only with the completed projects."
       },
       nil,
       {
